@@ -1,3 +1,6 @@
+using System;
+using Domain.Common;
+
 namespace Domain
 {
     public struct VersionItem<T>
