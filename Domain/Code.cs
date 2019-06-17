@@ -1,11 +1,14 @@
-﻿using Domain.Common;
+﻿using System.Runtime.Serialization;
 
 namespace Domain
 {
-    public struct Code
+    [DataContract]
+    public class Code
     {
-        public CodeId Id { get; set; }
+        [DataMember(Name = "id")]
+        public string Id { get; set; }
 
+        [DataMember(Name = "content")]
         public string Content { get; set; }
     }
 }

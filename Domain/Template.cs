@@ -1,11 +1,14 @@
-using Domain.Common;
+using System.Runtime.Serialization;
 
 namespace Domain
 {
-    public struct Template
+    [DataContract]
+    public class Template
     {
-        public TemplateId Id { get; set; }
+        [DataMember(Name = "id")]
+        public string Id { get; set; }
 
+        [DataMember(Name = "content")]
         public string Content { get; set; }
     }
 }

@@ -1,18 +1,27 @@
 using System;
-using Domain.Common;
+using System.Runtime.Serialization;
 
 namespace Domain
 {
-    public struct VersionItem<T>
+    [DataContract]
+    public class VersionItem
     {
-        public VersionItemId Id { get; set; }
+        [DataMember(Name = "id")]
+        public string Id { get; set; }
 
-        public UserId AuthorId { get; set; }
+        [DataMember(Name = "author_id")]
+        public string AuthorId { get; set; }
 
-        public T TargetId { get; set; }
+        [DataMember(Name = "target_id")]
+        public int TargetId { get; set; }
 
+        [DataMember(Name = "target_type")]
+        public string TargetType { get; set; }
+
+        [DataMember(Name = "timestamp")]
         public DateTimeOffset Timestamp { get; set; }
 
-        public VersionItemId ParentId { get; set; }
+        [DataMember(Name = "parent_id")]
+        public string ParentId { get; set; }
     }
 }
