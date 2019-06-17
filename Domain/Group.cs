@@ -11,5 +11,5 @@ public class Group
     public string ItemsType { get; set; }
 
     [DataMember(Name = "items")]
-    public IList<string> Items { get; set; };
+    public IList<string> Items { get; set; }
 }
