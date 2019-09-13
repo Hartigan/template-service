@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/Api/bin/Debug/netcoreapp2.2/Api.dll",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/Api",
             "console": "internalConsole",
             "stopAtEntry": false
         },
@@ -19,7 +19,25 @@
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
-            "processId": "${command:pickProcess}"
+            "processId": "${command:pickProcess}",
+        },
+        {
+            "name": "Attach to Docker",
+            "type": "coreclr",
+            "request": "attach",
+            "sourceFileMap": {
+                "/build": "${workspaceFolder}"
+            },
+            "processId" : "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeProgram": "docker",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false,
+                "pipeArgs": [
+                    "exec -i template-service"
+                ]
+            }
         }
     ]
 }
