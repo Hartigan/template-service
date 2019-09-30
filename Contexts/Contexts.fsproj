@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Utils/Utils.fsproj" />
+    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../Storage/Storage.csproj" />
+    <Compile Include="Results/GetFail.fs" />
+    <Compile Include="Results/InsertFail.fs" />
+    <Compile Include="Results/UpdateFail.fs" />
+    <Compile Include="Results/UpsertFail.fs" />
+    <Compile Include="Results/RemoveFail.fs" />
+    <Compile Include="IContext.fs" />
+    <Compile Include="CommonContext.fs" />
+  </ItemGroup>
+
+</Project>

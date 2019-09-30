@@ -22,15 +22,19 @@ namespace Storage
 
         public async Task<IBucket> GetOrCreate()
         {
-            var options = new BucketManagerOptions();
+            var options = new UpsertBucketOptions();
+            var settings = new BucketSettings()
+            {
+                Name = _bucketName
+            };
 
             if (!_inited)
             {
-                await _couchbaseCluster.Cluster.Buckets.Upsert(_bucketName, options);
+                await _couchbaseCluster.Cluster.Buckets.UpsertAsync(settings, options);
                 _inited = true;
             }
-            
-            return await _couchbaseCluster.Cluster.Bucket(_bucketName);
+
+            return await _couchbaseCluster.Cluster.BucketAsync(_bucketName);
         }
     }
 }
