@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace Domain
 {
     [DataContract]
-    public class User
+    public class User : IDocumentKey
     {
         [DataMember(Name = "id")]
         public string Id { get; set; }
@@ -16,5 +16,10 @@ namespace Domain
 
         [DataMember(Name = "nickname")]
         public string Nickname { get; set; }
+
+        public string Key => $"{Type}::{Id}";
+
+        [DataMember(Name = "type")]
+        public string Type { get; } = "user";
     }
 }

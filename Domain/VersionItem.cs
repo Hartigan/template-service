@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace Domain
 {
     [DataContract]
-    public class VersionItem
+    public class VersionItem : IDocumentKey
     {
         [DataMember(Name = "id")]
         public string Id { get; set; }
@@ -23,5 +23,10 @@ namespace Domain
 
         [DataMember(Name = "parent_id")]
         public string ParentId { get; set; }
+
+        public string Key => $"{Type}::{Id}";
+
+        [DataMember(Name = "type")]
+        public string Type { get; } = "version_item";
     }
 }

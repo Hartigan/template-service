@@ -15,6 +15,7 @@
     <Compile Include="Results/RemoveFail.fs" />
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
+    <Compile Include="CodeContext.fs" />
   </ItemGroup>
 
 </Project>

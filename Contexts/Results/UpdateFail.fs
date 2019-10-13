@@ -2,5 +2,5 @@ namespace Contexts.Results
 
 open System
 
-type UpdateFail(ex: Exception) =
-    member val Error = ex
+type UpdateFail =
+    | Error of Exception

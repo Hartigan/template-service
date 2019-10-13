@@ -3,7 +3,7 @@
 namespace Domain
 {
     [DataContract]
-    public class Code
+    public class Code : IDocumentKey
     {
         [DataMember(Name = "id")]
         public string Id { get; set; }
@@ -13,5 +13,10 @@ namespace Domain
 
         [DataMember(Name = "content")]
         public string Content { get; set; }
+
+        public string Key => $"{Type}::{Id}";
+
+        [DataMember(Name = "type")]
+        public string Type { get; } = "code";
     }
 }

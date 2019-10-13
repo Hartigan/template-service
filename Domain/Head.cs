@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 
 [DataContract]
-public class Head<T>
+public class Head<T> : IDocumentKey where T : IDocumentKey
 {
     [DataMember(Name = "id")]
     public string Id { get; set; }
@@ -12,4 +12,9 @@ public class Head<T>
 
     [DataMember(Name = "version_item_id")]
     public string VersionItemId { get; set; }
+
+    public string Key => $"{Type}::{Id}";
+
+    [DataMember(Name = "type")]
+    public string Type { get; } = "head";
 }
