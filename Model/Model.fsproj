@@ -5,9 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+    <PackageReference Include="System.Security.Principal" Version="4.3.0" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
-    <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../Contexts/Contexts.fsproj" />
+    <Compile Include="Authentication/UserIdentity.fs" />
+    <Compile Include="Authentication/RoleIdentity.fs" />
+    <Compile Include="Authentication/UserConverter.fs" />
+    <Compile Include="Authentication/UserStore.fs" />
   </ItemGroup>
 
 </Project>

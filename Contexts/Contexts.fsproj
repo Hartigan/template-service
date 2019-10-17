@@ -16,6 +16,7 @@
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
     <Compile Include="CodeContext.fs" />
+    <Compile Include="UserContext.fs" />
   </ItemGroup>
 
 </Project>

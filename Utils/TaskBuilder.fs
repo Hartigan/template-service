@@ -1,0 +1,31 @@
+namespace Utils
+
+module TaskHelper =
+    open System.Threading
+    open System.Threading.Tasks
+
+    [<AbstractClass>]
+    type AsyncBuilderAbstract() =
+        // AsyncBuilder is marked sealed, so we need this wrapper
+        member __.Zero() = async.Zero()
+        member __.Return t = async.Return t
+        member __.ReturnFrom t = async.ReturnFrom t
+        member __.Bind(f,g) = async.Bind(f,g)
+        member __.Combine(f,g) = async.Combine(f,g)
+        member __.Delay f = async.Delay f
+        member __.While(c,b) = async.While(c,b)
+        member __.For(xs,b) = async.For(xs,b)
+        member __.TryWith(b,e) = async.TryWith(b,e)
+
+    type TaskBuilder(?ct : CancellationToken) =
+        inherit AsyncBuilderAbstract()
+        member __.Run f : Task<'T> = Async.StartAsTask(f, ?cancellationToken = ct)
+
+    type UntypedTaskBuilder(?ct : CancellationToken) =
+        inherit AsyncBuilderAbstract()
+        member __.Run f : Task = Async.StartAsTask(f, ?cancellationToken = ct) :> Task
+
+    let task = TaskBuilder()
+    let taskC cancellationToken = TaskBuilder(cancellationToken)
+    let taskU = UntypedTaskBuilder()
+    let taskUC cancellationToken = UntypedTaskBuilder(cancellationToken)

@@ -24,7 +24,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
 
                 if not getResult.HasValue then
-                    return Result.Error(UpdateFail(Exception("TODO")))
+                    return Result.Error(UpdateFail.Error(Exception("TODO")))
                 else
                     let item = getResult.ContentAs<'T>()
                     let replaceOptions = ReplaceOptions()
@@ -32,7 +32,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                     let! updateResult = collection.ReplaceAsync(key.Key, updater(item))
                     return Result.Ok()
 
-            with ex -> return Result.Error(UpdateFail(ex))
+            with ex -> return Result.Error(UpdateFail.Error(ex))
         }
 
     interface IContext<'T> with
@@ -42,7 +42,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                     let! collection = this.GetCollection()
                     let! insertResult = collection.InsertAsync(key.Key, doc, InsertOptions())
                     return Result.Ok(())
-                with ex -> return Result.Error(InsertFail(ex))
+                with ex -> return Result.Error(InsertFail.Error(ex))
             } 
 
         member this.Remove(key) =
@@ -51,7 +51,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                     let! collection = this.GetCollection()
                     do! collection.RemoveAsync(key.Key, RemoveOptions())
                     return Result.Ok(())
-                with ex -> return Result.Error(RemoveFail(ex))
+                with ex -> return Result.Error(RemoveFail.Error(ex))
             }
 
         member this.Update(key, updater) = 
@@ -74,7 +74,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
 
                     return! retroLoop updateAttempts
 
-                with ex -> return Result.Error(UpdateFail(ex))
+                with ex -> return Result.Error(UpdateFail.Error(ex))
             }
 
         member this.Upsert(key, updater, getDefault) =
@@ -92,12 +92,13 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                                 if restAttemps > 0 then 
                                     return! retroLoop (restAttemps - 1)
                                 else
-                                    return Result.Error(UpsertFail(error.Error))
+                                    match error with
+                                        | UpdateFail.Error(ex) -> return Result.Error(UpsertFail.Error(ex))
                     }
 
                     return! retroLoop updateAttempts
 
-                with ex -> return Result.Error(UpsertFail(ex))
+                with ex -> return Result.Error(UpsertFail.Error(ex))
             }
 
 
@@ -111,8 +112,8 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                         if getResult.HasValue then
                             Result.Ok(getResult.ContentAs<'T>())
                         else 
-                            Result.Error(GetFail(Exception("TODO")))
+                            Result.Error(GetFail.Error(Exception("TODO")))
 
                     return result
-                with ex -> return Result.Error(GetFail(ex))
+                with ex -> return Result.Error(GetFail.Error(ex))
             }

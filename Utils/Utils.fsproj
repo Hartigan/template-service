@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="AsyncBuilder.fs" />
+    <Compile Include="TaskBuilder.fs" />
   </ItemGroup>
 
 </Project>
