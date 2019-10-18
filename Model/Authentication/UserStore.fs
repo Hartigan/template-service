@@ -13,7 +13,22 @@ open System
 
 type UserStore(context: UserContext, logger: ILogger<UserStore>) =
 
-    interface IUserStore<UserIdentity> with
+    interface IUserPasswordStore<UserIdentity> with
+        member this.GetPasswordHashAsync(user, cancellationToken) =
+            taskC cancellationToken {
+                return user.PasswordHash
+            }
+
+        member this.HasPasswordAsync(user, cancellationToken) = 
+            taskC cancellationToken {
+                return true
+            }
+
+        member this.SetPasswordHashAsync(user, passwordHash, cancellationToken) = 
+            taskUC cancellationToken {
+                user.PasswordHash <- passwordHash
+            }
+
         member this.DeleteAsync(user, cancellationToken) = 
             taskC cancellationToken {
                 if not cancellationToken.IsCancellationRequested then
@@ -63,8 +78,6 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
 
         member this.FindByNameAsync(normalizedUserName, cancellationToken) = 
             taskC cancellationToken {
-                let entity = User()
-                entity.Id <- userId
                 let! result = context.GetByName(normalizedUserName)
                 match result with
                 | Result.Ok(user) ->
