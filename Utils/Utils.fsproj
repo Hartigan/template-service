@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="AsyncBuilder.fs" />
     <Compile Include="TaskBuilder.fs" />
+    <Compile Include="ReflectionHelper.fs" />
   </ItemGroup>
 
 </Project>

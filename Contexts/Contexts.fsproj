@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,10 @@
     <Compile Include="CommonContext.fs" />
     <Compile Include="CodeContext.fs" />
     <Compile Include="UserContext.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CouchbaseNetClient" Version="3.0.0-beta1" />
   </ItemGroup>
 
 </Project>

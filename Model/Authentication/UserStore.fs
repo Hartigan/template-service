@@ -61,8 +61,23 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                         return userIdentity;
             }
 
-        member this.FindByNameAsync(normalizedUserName, cancellationToken): Task<UserIdentity> = 
-            failwith "Not Implemented"
+        member this.FindByNameAsync(normalizedUserName, cancellationToken) = 
+            taskC cancellationToken {
+                let entity = User()
+                entity.Id <- userId
+                let! result = context.GetByName(normalizedUserName)
+                match result with
+                | Result.Ok(user) ->
+                    logger.LogInformation(sprintf "User %s successfuly found by normalized name" normalizedUserName)
+                    return user.ToModel()
+                | Result.Error(fail) ->
+                    match fail with
+                    | GetFail.Error(ex) ->
+                        logger.LogError(sprintf "User %s not found by normalized name" normalizedUserName, ex)
+                        let userIdentity = UserIdentity()
+                        userIdentity.Id <- Guid.Empty
+                        return userIdentity;
+            }
 
         member this.GetNormalizedUserNameAsync(user, cancellationToken) = 
             taskC cancellationToken {

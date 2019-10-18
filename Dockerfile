@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-sdk AS build-env
+FROM microsoft/dotnet:3.0-sdk AS build-env
 WORKDIR /build
 
 # Copy everything else and build
@@ -7,7 +7,7 @@ RUN dotnet restore
 RUN dotnet publish ./Api/Api.csproj -c Debug -o out /property:GenerateFullPaths=true
 
 # Build runtime image
-FROM microsoft/dotnet:2.2-aspnetcore-runtime as runtime
+FROM microsoft/dotnet:3.0-aspnetcore-runtime as runtime
 WORKDIR /app
 
 RUN apt update && \

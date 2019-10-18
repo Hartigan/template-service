@@ -11,12 +11,11 @@ namespace Storage
 
         public CouchbaseCluster(IOptions<CouchbaseConfig> config)
         {
-            _cluster = new Cluster
-            (
-                new Configuration()
-                    .WithServers(config.Value.Domain)
-                    .WithCredentials(config.Value.Username, config.Value.Password)
-            );
+            var options = new ClusterOptions()
+                .WithServers(config.Value.Domain)
+                .WithCredentials(config.Value.Username, config.Value.Password)
+                .WithBucket("default");
+            _cluster = new Cluster(config.Value.Domain, options);
         }
 
         public Cluster Cluster => _cluster;

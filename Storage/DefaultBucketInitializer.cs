@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Couchbase;
 using Couchbase.Management;
+using Couchbase.Management.Buckets;
 
 namespace Storage
 {
@@ -30,7 +31,7 @@ namespace Storage
 
             if (!_inited)
             {
-                await _couchbaseCluster.Cluster.Buckets.UpsertAsync(settings, options);
+                await _couchbaseCluster.Cluster.Buckets.UpsertBucketAsync(settings, options);
                 _inited = true;
             }
 

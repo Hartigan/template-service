@@ -3,34 +3,38 @@ namespace Contexts
 open Storage
 open Contexts.Results
 open Couchbase
+open Couchbase.Core
 open Utils.AsyncHelper
 open System.Threading.Tasks
 open System
+open Couchbase.KeyValue
 
 type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) = 
 
     let updateAttempts = 10
 
-    member private this.GetCollection(): Async<ICollection> = 
+    member internal this.GetCollection(): Async<ICollection> = 
         async {
             let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
-            let! (collection: ICollection) = bucket.DefaultCollectionAsync()
+            let (collection: ICollection) = bucket.DefaultCollection()
             return collection
+        }
+
+    member internal this.GetBucket(): Async<IBucket> =
+        async {
+            let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
+            return bucket
         }
 
     member private this.DoUpdateAttempt(collection: ICollection, key: IDocumentKey, updater: ('T -> 'T)): Async<Result<unit, UpdateFail>> =
         async {
             try
                 let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
-
-                if not getResult.HasValue then
-                    return Result.Error(UpdateFail.Error(Exception("TODO")))
-                else
-                    let item = getResult.ContentAs<'T>()
-                    let replaceOptions = ReplaceOptions()
-                    replaceOptions.Cas <- getResult.Cas
-                    let! updateResult = collection.ReplaceAsync(key.Key, updater(item))
-                    return Result.Ok()
+                let item = getResult.ContentAs<'T>()
+                let replaceOptions = ReplaceOptions()
+                replaceOptions.Cas <- getResult.Cas
+                let! updateResult = collection.ReplaceAsync(key.Key, updater(item))
+                return Result.Ok()
 
             with ex -> return Result.Error(UpdateFail.Error(ex))
         }
@@ -107,13 +111,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
+                    return Result.Ok(getResult.ContentAs<'T>())
 
-                    let result = 
-                        if getResult.HasValue then
-                            Result.Ok(getResult.ContentAs<'T>())
-                        else 
-                            Result.Error(GetFail.Error(Exception("TODO")))
-
-                    return result
                 with ex -> return Result.Error(GetFail.Error(ex))
             }
