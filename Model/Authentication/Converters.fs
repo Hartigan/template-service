@@ -33,3 +33,17 @@ module Converters =
             result.IsAuthenticated      <- this.IsAuthenticated
             result.AuthenticationType   <- this.AuthenticationType
             result
+
+    type RoleIdentity with
+        member this.ToEntity() =
+            let result = UserRole()
+            result.Id                   <- this.Id.ToString()
+            result.Name                 <- this.Name
+            result
+
+    type UserRole with
+        member this.ToModel() =
+            let result = RoleIdentity()
+            result.Id                   <- Guid.Parse(this.Id)
+            result.Name                 <- this.Name
+            result

@@ -18,6 +18,7 @@
     <Compile Include="CommonContext.fs" />
     <Compile Include="CodeContext.fs" />
     <Compile Include="UserContext.fs" />
+    <Compile Include="UserRoleContext.fs" />
   </ItemGroup>
 
   <ItemGroup>

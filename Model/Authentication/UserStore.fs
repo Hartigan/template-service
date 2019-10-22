@@ -1,6 +1,7 @@
 namespace Models.Authentication
 
 open Models.Authentication.Converters
+open Models.Authentication.ExceptionExtensions
 open Microsoft.AspNetCore.Identity
 open Microsoft.Extensions.Logging
 open System.Threading.Tasks
@@ -45,10 +46,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     match error with
                     | RemoveFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not deleted" user.Name)
-                        let identityError = IdentityError()
-                        identityError.Code <- ex.HResult.ToString()
-                        identityError.Description <- ex.Message
-                        return IdentityResult.Failed(identityError)
+                        return ex.ToIdentityResult()
             }
 
         member this.Dispose(): unit = 
@@ -134,10 +132,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     match fail with
                         | UpdateFail.Error(ex) ->
                             logger.LogError(sprintf "User %s not updated" user.Name, ex)
-                            let identityError = IdentityError()
-                            identityError.Code <- ex.HResult.ToString()
-                            identityError.Description <- ex.Message
-                            return IdentityResult.Failed(identityError)
+                            return ex.ToIdentityResult()
             }
 
         member this.CreateAsync(user, cancellationToken) =
@@ -153,8 +148,5 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     match error with
                     | InsertFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not added" user.Name)
-                        let identityError = IdentityError()
-                        identityError.Code <- ex.HResult.ToString()
-                        identityError.Description <- ex.Message
-                        return IdentityResult.Failed(identityError)
+                        return ex.ToIdentityResult()
             }

@@ -11,10 +11,12 @@
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <ProjectReference Include="../Domain/Domain.csproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
+    <Compile Include="Authentication/Utils.fs" />
     <Compile Include="Authentication/UserIdentity.fs" />
     <Compile Include="Authentication/RoleIdentity.fs" />
-    <Compile Include="Authentication/UserConverter.fs" />
+    <Compile Include="Authentication/Converters.fs" />
     <Compile Include="Authentication/UserStore.fs" />
+    <Compile Include="Authentication/RoleStore.fs" />
   </ItemGroup>
 
 </Project>
