@@ -1,3 +1,4 @@
 {
+    "omnisharp.loggingLevel": "trace",
     "omnisharp.path": "latest"
 }

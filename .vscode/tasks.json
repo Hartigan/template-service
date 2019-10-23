@@ -8,9 +8,6 @@
             "command": "dotnet build /property:GenerateFullPaths=true",
             "type": "shell",
             "group": "build",
-            "presentation": {
-                "reveal": "silent"
-            },
             "problemMatcher": "$msCompile"
         },
         {
@@ -18,9 +15,6 @@
             "command": "docker-compose up --build",
             "type": "shell",
             "group": "build",
-            "presentation": {
-                "reveal": "silent"
-            },
             "problemMatcher": "$msCompile"
         }
     ]
