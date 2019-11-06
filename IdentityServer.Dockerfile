@@ -4,9 +4,7 @@ WORKDIR /build
 # Copy everything else and build
 COPY ./ ./
 RUN dotnet restore
-RUN dotnet publish ./WebApi/WebApi.fsproj -c Debug -o out /property:GenerateFullPaths=true
-RUN pwd
-RUN ls out/
+RUN dotnet publish ./IdentityServer/IdentityServer.csproj -c Debug -o out /property:GenerateFullPaths=true
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.0 as runtime
@@ -18,4 +16,4 @@ RUN apt update && \
 
 COPY --from=build-env /build/out .
 
-ENTRYPOINT ["dotnet", "WebApi.dll"]
+ENTRYPOINT ["dotnet", "IdentityServer.dll"]

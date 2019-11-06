@@ -22,7 +22,7 @@
             "processId": "${command:pickProcess}",
         },
         {
-            "name": "Attach to Docker",
+            "name": "Attach to Docker(WebApi)",
             "type": "coreclr",
             "request": "attach",
             "sourceFileMap": {
@@ -36,6 +36,24 @@
                 "quoteArgs": false,
                 "pipeArgs": [
                     "exec -i template-service"
+                ]
+            }
+        },
+        {
+            "name": "Attach to Docker(IdentityServer)",
+            "type": "coreclr",
+            "request": "attach",
+            "sourceFileMap": {
+                "/build": "${workspaceFolder}"
+            },
+            "processId" : "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeProgram": "docker",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false,
+                "pipeArgs": [
+                    "exec -i auth-service"
                 ]
             }
         }

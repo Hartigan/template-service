@@ -13,8 +13,11 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.AspNetCore.Identity
 open Microsoft.Extensions.Configuration
+open Microsoft.AspNetCore.Authentication
 open Models.Authentication
 open Storage
+open Contexts
+open System.IdentityModel.Tokens.Jwt
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -26,37 +29,43 @@ type Startup private () =
         // Add framework services.
         services.AddControllers() |> ignore
 
-        services.AddIdentity<UserIdentity, RoleIdentity>()
-        |> fun x -> x.AddDefaultTokenProviders()
-        |> ignore
+        JwtSecurityTokenHandler.DefaultMapInboundClaims <- false
 
-        services.AddTransient<IUserStore<UserIdentity>, UserStore>()
-        |> ignore
-        
-        services.AddTransient<IRoleStore<RoleIdentity>, RoleStore>()
+        services.AddAuthentication(fun options ->
+                options.DefaultScheme <- "Cookies"
+                options.DefaultChallengeScheme <- "oidc"
+            )
+        |> fun x -> x.AddCookie("Cookies")
+        |> fun x -> x.AddOpenIdConnect("oidc", fun options ->
+                options.Authority <- "http://identity"
+                options.RequireHttpsMetadata <- false;
+                options.ClientId <- "WebApi";
+                options.ClientSecret <- "secret";
+                options.ResponseType <- "code";
+                options.SaveTokens <- true;
+            )
         |> ignore
 
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
-        |> ignore
-
-        services.AddSingleton<CouchbaseCluster>()
-        |> ignore
-
-        services.AddSingleton<CouchbaseBuckets>()
+        |> fun x -> x.AddSingleton<CouchbaseCluster>()
+        |> fun x -> x.AddSingleton<CouchbaseBuckets>()
+        |> fun x -> x.AddSingleton<UserContext>()
+        |> fun x -> x.AddSingleton<UserRoleContext>()
         |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
-        if (env.IsDevelopment()) then
-            app.UseDeveloperExceptionPage() |> ignore
-
         app.UseHttpsRedirection() |> ignore
         app.UseRouting() |> ignore
 
+        app.UseAuthentication() |> ignore
         app.UseAuthorization() |> ignore
 
         app.UseEndpoints(fun endpoints ->
-            endpoints.MapControllers() |> ignore
-            ) |> ignore
+            endpoints.MapControllers()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            )
+        |> ignore
 
     member val Configuration : IConfiguration = null with get, set

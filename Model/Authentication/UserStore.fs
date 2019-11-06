@@ -66,9 +66,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     match fail with
                     | GetFail.Error(ex) ->
                         logger.LogError(sprintf "User %s not found by id" userId, ex)
-                        let userIdentity = UserIdentity()
-                        userIdentity.Id <- Guid.Empty
-                        return userIdentity;
+                        return null
             }
 
         member this.FindByNameAsync(normalizedUserName, cancellationToken) = 
@@ -83,9 +81,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     match fail with
                     | GetFail.Error(ex) ->
                         logger.LogError(sprintf "User %s not found by normalized name" normalizedUserName, ex)
-                        let userIdentity = UserIdentity()
-                        userIdentity.Id <- Guid.Empty
-                        return userIdentity;
+                        return null
             }
 
         member this.GetNormalizedUserNameAsync(user, cancellationToken) = 

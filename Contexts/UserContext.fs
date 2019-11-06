@@ -8,6 +8,7 @@ open System.Linq
 open Couchbase.Query
 open Utils.AsyncHelper
 open Utils
+open System.Collections.Generic
 
 type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     inherit CommonContext<User>(couchbaseBuckets)
@@ -23,16 +24,11 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                 let queryOptions = 
                     QueryOptions()
                     |> fun x -> x.AddNamedParameter("type", dummyUser.Type)
-                    |> fun x -> x.AddNamedParameter("bucket", bucket.Name)
-                    |> fun x -> x.AddNamedParameter("normalized_name_property", normalizedName)
                     |> fun x -> x.AddNamedParameter("normalized_name", name)
                 let! result = cluster.QueryAsync<User>
-                                  ("SELECT * as user FROM $bucket WHERE type = $type and $normalized_name_property = $normalized_name LIMIT 1",
+                                  (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type and `%s` = $normalized_name LIMIT 1" bucket.Name bucket.Name normalizedName,
                                    queryOptions)
-                let rows = (result : IQueryResult<User>).Rows
-                if rows.Count > 0 then
-                    return Result.Ok(rows.First())
-                else
-                    return Result.Error(GetFail.Error(Exception("TODO")))
+                let (users : IQueryResult<User>) = result
+                return Result.Ok(users.First())
             with ex -> return Result.Error(GetFail.Error(ex))
         }

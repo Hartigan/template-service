@@ -24,7 +24,7 @@ namespace Domain
         public string Email { get; set; }
 
         [DataMember(Name = "email_confirmed")]
-        public string EmailConfirmed { get; set; }
+        public bool EmailConfirmed { get; set; }
 
         [DataMember(Name = "password_hash")]
         public string PasswordHash { get; set; }

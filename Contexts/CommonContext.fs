@@ -8,10 +8,11 @@ open Utils.AsyncHelper
 open System.Threading.Tasks
 open System
 open Couchbase.KeyValue
+open Newtonsoft.Json.Linq
 
 type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) = 
 
-    let updateAttempts = 10
+    let updateAttempts = 10  
 
     member internal this.GetCollection(): Async<ICollection> = 
         async {
@@ -110,8 +111,12 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
             async {
                 try
                     let! collection = this.GetCollection()
-                    let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
-                    return Result.Ok(getResult.ContentAs<'T>())
+                    let! (getResult: IGetResult) = collection.GetAsync(key.Key)
+                    // workaround for beta-1, fixed in beta-2
+                    let jobject = getResult.ContentAs<JObject>()
+                    let myObj = jobject.GetValue("").ToObject<'T>()
+                    return Result.Ok(myObj)
+                    //return Result.Ok(getResult.ContentAs<'T>())
 
                 with ex -> return Result.Error(GetFail.Error(ex))
             }

@@ -3,13 +3,14 @@ namespace Models.Authentication
 open System.Security.Principal
 open System
 
+[<AllowNullLiteral>]
 type UserIdentity() =
 
     member val Id                   = Guid.Empty with get, set
     member val FirstName            = String.Empty with get, set
     member val LastName             = String.Empty with get, set
     member val Email                = String.Empty with get, set
-    member val EmailConfirmed       = String.Empty with get, set
+    member val EmailConfirmed       = false with get, set
     member val PasswordHash         = String.Empty with get, set
     member val Name                 = String.Empty with get, set
     member val NormalizedName       = String.Empty with get, set

@@ -5,6 +5,6 @@ namespace Storage
 {
     internal interface IBucketInitializer
     {
-        Task<IBucket> GetOrCreate();
+        Task<IBucket> Get();
     }
 }

@@ -18,6 +18,6 @@ namespace Storage
             _mainBucket = new DefaultBucketInitializer(cluster, "main");
         }
 
-        public Task<IBucket> GetMainBucketAsync() => _mainBucket.GetOrCreate();
+        public Task<IBucket> GetMainBucketAsync() => _mainBucket.Get();
     }
 }
