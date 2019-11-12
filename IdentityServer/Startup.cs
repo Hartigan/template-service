@@ -29,6 +29,7 @@ namespace IdentityServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddMvc();
 
             services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
                     .AddSingleton<CouchbaseCluster>()
@@ -75,7 +76,7 @@ namespace IdentityServer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }
