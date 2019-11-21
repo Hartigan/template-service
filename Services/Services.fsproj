@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+    <ProjectReference Include="../Utils/Utils.fsproj" />
+    <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
+    <ProjectReference Include="../Contexts/Contexts.fsproj" />
+    <ProjectReference Include="../Model/Model.fsproj" />
+    <Compile Include="Permissions/IPermissionsService.fs" />
+    <Compile Include="Permissions/PermissionsService.fs" />
+    <Compile Include="Folders/FolderServiceResults.fs" />
+    <Compile Include="Folders/IFolderService.fs" />
+    <Compile Include="Folders/FolderService.fs" />
+  </ItemGroup>
+
+</Project>

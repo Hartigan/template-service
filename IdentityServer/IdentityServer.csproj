@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Storage/Storage.csproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Model/Model.fsproj" />

@@ -7,8 +7,7 @@ open Microsoft.Extensions.Logging
 open System.Threading.Tasks
 open Utils.TaskHelper
 open Contexts
-open Contexts.Results
-open Domain
+open DatabaseTypes
 open System
 
 
@@ -26,7 +25,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
                     return IdentityResult.Success
                 | Result.Error(error) ->
                     match error with
-                    | InsertFail.Error(ex) ->
+                    | InsertDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "Role %s not added" role.Name)
                         return ex.ToIdentityResult()
             }
@@ -42,7 +41,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
                     return IdentityResult.Success
                 | Result.Error(error) ->
                     match error with
-                    | RemoveFail.Error(ex) ->
+                    | RemoveDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "Role %s not deleted" role.Name)
                         return ex.ToIdentityResult()
             }
@@ -53,16 +52,15 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
         member this.FindByIdAsync(roleId, cancellationToken) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
-                let entity = UserRole()
-                entity.Id <- roleId
-                let! result = (context :> IContext<UserRole>).Get(entity)
+                let docId = UserRole.CreateDocumentKey(roleId)
+                let! result = (context :> IContext<UserRole>).Get(docId)
                 match result with
                 | Result.Ok(role) ->
                     logger.LogInformation(sprintf "Role %s successfuly found by id" roleId)
                     return role.ToModel()
                 | Result.Error(error) ->
                     match error with
-                    | GetFail.Error(ex) ->
+                    | GetDocumentFail.Error(ex) ->
                         logger.LogError(sprintf "Role %s not found by id" roleId, ex)
                         let roleIdentity = RoleIdentity()
                         roleIdentity.Id <- Guid.Empty
@@ -79,7 +77,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
                     return role.ToModel()
                 | Result.Error(error) ->
                     match error with
-                    | GetFail.Error(ex) ->
+                    | GetDocumentFail.Error(ex) ->
                         logger.LogError(sprintf "Role %s not found by name" normalizedRoleName, ex)
                         let roleIdentity = RoleIdentity()
                         roleIdentity.Id <- Guid.Empty
@@ -120,13 +118,15 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = role.ToEntity()
-                let! result = (context :> IContext<UserRole>).Update(entity, fun _ -> entity)
+                let! result = (context :> IContext<UserRole>).Update(entity, fun _ -> Result.Ok(entity))
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success
                 | Result.Error(fail) ->
                     match fail with
-                        | UpdateFail.Error(ex) ->
+                        | UpdateDocumentFail.Error(ex) ->
                             logger.LogError(sprintf "Role %s not updated" role.Name, ex)
                             return ex.ToIdentityResult()
+                        | UpdateDocumentFail.CustomFail(fail) ->
+                            return UnknownFailResult()
             }

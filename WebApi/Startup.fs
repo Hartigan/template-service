@@ -18,6 +18,9 @@ open Models.Authentication
 open Storage
 open Contexts
 open System.IdentityModel.Tokens.Jwt
+open Microsoft.AspNetCore.Authentication.JwtBearer
+open Services.Folders
+open Services.Permissions
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -29,28 +32,25 @@ type Startup private () =
         // Add framework services.
         services.AddControllers() |> ignore
 
-        JwtSecurityTokenHandler.DefaultMapInboundClaims <- false
+        let authConfig = this.Configuration.GetSection("Authentication").Get<AuthenticationSettings>()
 
-        services.AddAuthentication(fun options ->
-                options.DefaultScheme <- "Cookies"
-                options.DefaultChallengeScheme <- "oidc"
-            )
-        |> fun x -> x.AddCookie("Cookies")
-        |> fun x -> x.AddOpenIdConnect("oidc", fun options ->
-                options.Authority <- "http://identity"
-                options.RequireHttpsMetadata <- false;
-                options.ClientId <- "WebApi";
-                options.ClientSecret <- "secret";
-                options.ResponseType <- "code";
-                options.SaveTokens <- true;
-            )
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        |> fun x -> x.AddJwtBearer(fun options ->
+            options.Authority <- authConfig.Authority
+            options.Audience <- authConfig.Audience
+            options.RequireHttpsMetadata <- false
+        )
         |> ignore
 
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()
+        |> fun x -> x.AddSingleton<FolderContext>()
+        |> fun x -> x.AddSingleton<HeadContext>()
         |> fun x -> x.AddSingleton<UserContext>()
         |> fun x -> x.AddSingleton<UserRoleContext>()
+        |> fun x -> x.AddSingleton<IFoldersService, FoldersService>()
+        |> fun x -> x.AddSingleton<IPermissionsService, PermissionsService>()
         |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

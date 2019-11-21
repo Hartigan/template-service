@@ -1,23 +1,23 @@
 namespace Models.Authentication
 
-open Domain
+open DatabaseTypes
 open System
 
 module Converters =
     type UserIdentity with
         member this.ToEntity() =
-            let result = User()
-            result.Id                   <- this.Id.ToString()
-            result.FirstName            <- this.FirstName
-            result.LastName             <- this.LastName
-            result.Email                <- this.Email
-            result.EmailConfirmed       <- this.EmailConfirmed
-            result.PasswordHash         <- this.PasswordHash
-            result.Name                 <- this.Name
-            result.NormalizedName       <- this.NormalizedName
-            result.IsAuthenticated      <- this.IsAuthenticated
-            result.AuthenticationType   <- this.AuthenticationType
-            result
+            {
+                User.Id              = this.Id.ToString()
+                FirstName            = this.FirstName
+                LastName             = this.LastName
+                Email                = this.Email
+                EmailConfirmed       = this.EmailConfirmed
+                PasswordHash         = this.PasswordHash
+                Name                 = this.Name
+                NormalizedName       = this.NormalizedName
+                IsAuthenticated      = this.IsAuthenticated
+                AuthenticationType   = this.AuthenticationType
+            }
 
     type User with
         member this.ToModel() =
@@ -36,10 +36,10 @@ module Converters =
 
     type RoleIdentity with
         member this.ToEntity() =
-            let result = UserRole()
-            result.Id                   <- this.Id.ToString()
-            result.Name                 <- this.Name
-            result
+            {
+                UserRole.Id             = this.Id.ToString()
+                Name                    = this.Name
+            }
 
     type UserRole with
         member this.ToModel() =

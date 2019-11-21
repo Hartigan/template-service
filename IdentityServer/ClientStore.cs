@@ -15,19 +15,15 @@ namespace IdentityServer
             {
                 ClientId = "WebApi",
                 ClientName = "Web Api",
-                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
 
-                // where to redirect to after login
-                RedirectUris = { "http://localhost:5002/signin-oidc" },
-
-                // where to redirect to after logout
-                PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
-
+                ClientSecrets = { new Secret("secret".Sha256()) },
                 AccessTokenLifetime = 60 * 60 * 24,
                 AllowedScopes = 
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
-                    IdentityServerConstants.StandardScopes.Profile
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "web_api"
                 },
             }
         };

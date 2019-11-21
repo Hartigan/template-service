@@ -6,17 +6,23 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
     <PackageReference Include="System.Security.Principal" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
-    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
+    <Compile Include="Converters.fs" />
+    <Compile Include="Identificators.fs" />
     <Compile Include="Authentication/Utils.fs" />
     <Compile Include="Authentication/UserIdentity.fs" />
     <Compile Include="Authentication/RoleIdentity.fs" />
     <Compile Include="Authentication/Converters.fs" />
     <Compile Include="Authentication/UserStore.fs" />
     <Compile Include="Authentication/RoleStore.fs" />
+    <Compile Include="Permissions/PermissionsModel.fs" />
+    <Compile Include="Heads/HeadModel.fs" />
+    <Compile Include="Folders/FolderModel.fs" />
   </ItemGroup>
 
 </Project>

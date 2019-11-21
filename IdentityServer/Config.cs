@@ -6,13 +6,19 @@ namespace IdentityServer
 {
     public static class Config
     {
-        public static IEnumerable<ApiResource> ApiResources => new[]
+        public static IEnumerable<ApiResource> ApiResources { get; } = new[]
             {
                 new ApiResource(
-                    "myAPIs",
+                    "web_api",
                     "My API Set #1",
-                    new[] { JwtClaimTypes.Name, JwtClaimTypes.Role }
+                    new[] { JwtClaimTypes.Subject }
                 )
+            };
+
+        public static IEnumerable<IdentityResource> IdentityResources { get; } = new List<IdentityResource>
+            {
+                new IdentityResources.OpenId(),
+                new IdentityResources.Profile()
             };
     }
 }

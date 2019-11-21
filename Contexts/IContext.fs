@@ -1,11 +1,10 @@
 namespace Contexts
 
-open Contexts.Results
-open System.Threading.Tasks
+open DatabaseTypes
 
 type IContext<'T> =
-    abstract member Get : IDocumentKey -> Async<Result<'T, GetFail>>
-    abstract member Insert : IDocumentKey * 'T -> Async<Result<unit, InsertFail>>
-    abstract member Update : IDocumentKey * ('T -> 'T) -> Async<Result<unit, UpdateFail>>
-    abstract member Upsert : IDocumentKey * ('T -> 'T) * (unit -> 'T) -> Async<Result<unit, UpsertFail>>
-    abstract member Remove : IDocumentKey -> Async<Result<unit, RemoveFail>>
+    abstract member Get : IDocumentKey -> Async<Result<'T, GetDocumentFail>>
+    abstract member Insert : IDocumentKey * 'T -> Async<Result<unit, InsertDocumentFail>>
+    abstract member Update<'TFail> : IDocumentKey * ('T -> Result<'T, 'TFail>) -> Async<Result<unit, UpdateDocumentFail<'TFail>>>
+    abstract member Upsert<'TFail> : IDocumentKey * ('T -> Result<'T, 'TFail>) * (unit -> 'T) -> Async<Result<unit, UpsertDocumentFail<'TFail>>>
+    abstract member Remove : IDocumentKey -> Async<Result<unit, RemoveDocumentFail>>

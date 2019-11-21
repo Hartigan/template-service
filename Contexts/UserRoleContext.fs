@@ -1,8 +1,7 @@
 namespace Contexts
 
-open Domain
+open DatabaseTypes
 open Storage
-open Contexts.Results
 open System
 open System.Linq
 open Couchbase.Query
@@ -12,17 +11,16 @@ open Utils
 type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     inherit CommonContext<UserRole>(couchbaseBuckets)
 
-    let dummyUserRole = UserRole()
-    let nameProperty = ReflectionHelper.GetDataMemberName(<@ dummyUserRole.Name @>)
+    let nameProperty = "name"
 
-    member this.GetByName(name: string): Async<Result<UserRole, GetFail>> =
+    member this.GetByName(name: string): Async<Result<UserRole, GetDocumentFail>> =
         async {
             try
                 let cluster = couchbaseCluster.Cluster
                 let! bucket = this.GetBucket()
                 let queryOptions = 
                     QueryOptions()
-                    |> fun x -> x.AddNamedParameter("type", dummyUserRole.Type)
+                    |> fun x -> x.AddNamedParameter("type", UserRole.TypeName)
                     |> fun x -> x.AddNamedParameter("bucket", bucket.Name)
                     |> fun x -> x.AddNamedParameter("name_property", nameProperty)
                     |> fun x -> x.AddNamedParameter("name", name)
@@ -33,6 +31,6 @@ type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couch
                 if rows.Count > 0 then
                     return Result.Ok(rows.First())
                 else
-                    return Result.Error(GetFail.Error(Exception("TODO")))
-            with ex -> return Result.Error(GetFail.Error(ex))
+                    return Result.Error(GetDocumentFail.Error(InvalidOperationException(sprintf "User role %s not found" name)))
+            with ex -> return Result.Error(GetDocumentFail.Error(ex))
         }

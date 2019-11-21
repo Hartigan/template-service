@@ -3,18 +3,20 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Storage/Storage.csproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Model/Model.fsproj" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
+    <ProjectReference Include="../Services/Services.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers/IdentityController.fs" />
+    <Compile Include="AuthenticationSettings.fs" />
+    <Compile Include="Controllers/FoldersController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0" />
   </ItemGroup>
 </Project>

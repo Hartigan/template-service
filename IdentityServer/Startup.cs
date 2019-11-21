@@ -43,9 +43,12 @@ namespace IdentityServer
 
             services.AddSingleton<IClientStore, ClientStore>();
 
-            services.AddIdentityServer()
+            services.AddIdentityServer(options => { 
+                        options.IssuerUri = "https://issuer";
+                    })
                     .AddDeveloperSigningCredential()
                     .AddInMemoryApiResources(Config.ApiResources)
+                    .AddInMemoryIdentityResources(Config.IdentityResources)
                     .AddAspNetIdentity<UserIdentity>();
             services.AddAuthentication()
                     .AddIdentityServerJwt();

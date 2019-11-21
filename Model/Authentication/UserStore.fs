@@ -7,8 +7,7 @@ open Microsoft.Extensions.Logging
 open System.Threading.Tasks
 open Utils.TaskHelper
 open Contexts
-open Contexts.Results
-open Domain
+open DatabaseTypes
 open System
 
 
@@ -44,7 +43,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     return IdentityResult.Success
                 | Result.Error(error) ->
                     match error with
-                    | RemoveFail.Error(ex) ->
+                    | RemoveDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not deleted" user.Name)
                         return ex.ToIdentityResult()
             }
@@ -55,16 +54,15 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
         member this.FindByIdAsync(userId, cancellationToken) = 
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
-                let entity = User()
-                entity.Id <- userId
-                let! result = (context :> IContext<User>).Get(entity)
+                let docKey = User.CreateDocumentKey(userId)
+                let! result = (context :> IContext<User>).Get(docKey)
                 match result with
                 | Result.Ok(user) ->
                     logger.LogInformation(sprintf "User %s successfuly found by id" userId)
                     return user.ToModel()
                 | Result.Error(fail) ->
                     match fail with
-                    | GetFail.Error(ex) ->
+                    | GetDocumentFail.Error(ex) ->
                         logger.LogError(sprintf "User %s not found by id" userId, ex)
                         return null
             }
@@ -79,7 +77,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     return user.ToModel()
                 | Result.Error(fail) ->
                     match fail with
-                    | GetFail.Error(ex) ->
+                    | GetDocumentFail.Error(ex) ->
                         logger.LogError(sprintf "User %s not found by normalized name" normalizedUserName, ex)
                         return null
             }
@@ -120,15 +118,17 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = (context :> IContext<User>).Update(entity, fun _ -> entity)
+                let! result = (context :> IContext<User>).Update(entity, fun _ -> Result.Ok(entity))
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success
                 | Result.Error(fail) ->
                     match fail with
-                        | UpdateFail.Error(ex) ->
+                        | UpdateDocumentFail.Error(ex) ->
                             logger.LogError(sprintf "User %s not updated" user.Name, ex)
                             return ex.ToIdentityResult()
+                        | UpdateDocumentFail.CustomFail(fail) ->
+                            return UnknownFailResult()
             }
 
         member this.CreateAsync(user, cancellationToken) =
@@ -142,7 +142,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                     return IdentityResult.Success
                 | Result.Error(error) ->
                     match error with
-                    | InsertFail.Error(ex) ->
+                    | InsertDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not added" user.Name)
                         return ex.ToIdentityResult()
             }

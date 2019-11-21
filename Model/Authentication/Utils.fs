@@ -10,3 +10,8 @@ module ExceptionExtensions =
             identityError.Code <- this.HResult.ToString()
             identityError.Description <- this.Message
             IdentityResult.Failed(identityError)
+
+    let UnknownFailResult() =
+        let identityError = IdentityError()
+        identityError.Description <- "Unknown fail"
+        IdentityResult.Failed(identityError)

@@ -7,18 +7,16 @@
 
   <ItemGroup>
     <ProjectReference Include="../Utils/Utils.fsproj" />
-    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Storage/Storage.csproj" />
-    <Compile Include="Results/GetFail.fs" />
-    <Compile Include="Results/InsertFail.fs" />
-    <Compile Include="Results/UpdateFail.fs" />
-    <Compile Include="Results/UpsertFail.fs" />
-    <Compile Include="Results/RemoveFail.fs" />
+    <Compile Include="ContextResults.fs" />
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
     <Compile Include="CodeContext.fs" />
     <Compile Include="UserContext.fs" />
     <Compile Include="UserRoleContext.fs" />
+    <Compile Include="HeadContext.fs" />
+    <Compile Include="FolderContext.fs" />
   </ItemGroup>
 
   <ItemGroup>
