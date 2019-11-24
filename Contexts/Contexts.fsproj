@@ -12,7 +12,7 @@
     <Compile Include="ContextResults.fs" />
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
-    <Compile Include="CodeContext.fs" />
+    <Compile Include="ProblemContext.fs" />
     <Compile Include="UserContext.fs" />
     <Compile Include="UserRoleContext.fs" />
     <Compile Include="HeadContext.fs" />

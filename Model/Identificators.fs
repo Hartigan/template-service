@@ -56,3 +56,21 @@ type UserId(id: string) =
 
 type UserIdConverter() =
     inherit StringConverter<UserId>((fun m -> m.Value), (fun s -> UserId(s)))
+
+type ProblemId(id: string) =
+    member val Value = id with get
+
+    override this.GetHashCode() = id.GetHashCode()
+    override this.Equals(b) =
+        match b with
+        | :? ProblemId as problemId -> (this.Value) = (problemId.Value)
+        | _ -> false
+
+    static member (==) (l : ProblemId, r : ProblemId) =
+        l.Equals(r)
+
+    static member (!=) (l : ProblemId, r : ProblemId) =
+        not (l.Equals(r))
+
+type ProblemIdConverter() =
+    inherit StringConverter<ProblemId>((fun m -> m.Value), (fun s -> ProblemId(s)))

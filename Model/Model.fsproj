@@ -21,6 +21,11 @@
     <Compile Include="Authentication/UserStore.fs" />
     <Compile Include="Authentication/RoleStore.fs" />
     <Compile Include="Permissions/PermissionsModel.fs" />
+    <Compile Include="Code/CodeModel.fs" />
+    <Compile Include="Problem/ValidatorModel.fs" />
+    <Compile Include="Problem/ControllerModel.fs" />
+    <Compile Include="Problem/ViewModel.fs" />
+    <Compile Include="Problem/ProblemModel.fs" />
     <Compile Include="Heads/HeadModel.fs" />
     <Compile Include="Folders/FolderModel.fs" />
   </ItemGroup>

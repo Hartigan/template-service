@@ -15,6 +15,10 @@
     <Compile Include="Folders/FolderServiceResults.fs" />
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="Folders/FolderService.fs" />
+    <Compile Include="Problems/ProblemsServiceResults.fs" />
+    <Compile Include="Problems/IProblemsService.fs" />
+    <Compile Include="Problems/ProblemsService.fs" />
+
   </ItemGroup>
 
 </Project>

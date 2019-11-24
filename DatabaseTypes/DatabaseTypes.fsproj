@@ -10,10 +10,10 @@
     <Compile Include="Permissions.fs" />
     <Compile Include="VersionItem.fs" />
     <Compile Include="Code.fs" />
+    <Compile Include="Problem.fs" />
     <Compile Include="Folder.fs" />
     <Compile Include="Head.fs" />
     <Compile Include="Member.fs" />
-    <Compile Include="Template.fs" />
     <Compile Include="User.fs" />
     <Compile Include="UserGroup.fs" />
     <Compile Include="UserRole.fs" />
