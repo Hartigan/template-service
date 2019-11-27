@@ -14,7 +14,7 @@ type ProblemsService(problemsContext: ProblemContext) =
             async {
                 let problem = {
                     Problem.Id = Guid.NewGuid().ToString()
-                    Title = model.Title.Title
+                    Title = model.Title.Value
                     View = {
                         Code.Language = model.View.Language.Name
                         Content = model.View.Content.Value

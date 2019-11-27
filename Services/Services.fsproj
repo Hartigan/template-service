@@ -5,20 +5,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.3.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Model/Model.fsproj" />
+    <ProjectReference Include="../CodeGeneratorContext/CodeGeneratorContext.fsproj" />
     <Compile Include="Permissions/IPermissionsService.fs" />
     <Compile Include="Permissions/PermissionsService.fs" />
     <Compile Include="Folders/FolderServiceResults.fs" />
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="Folders/FolderService.fs" />
-    <Compile Include="Problems/ProblemsServiceResults.fs" />
+    <Compile Include="Problems/Results.fs" />
+    <Compile Include="Problems/IControllerDelegateGenerator.fs" />
+    <Compile Include="Problems/CSharpControllerDelegateGenerator.fs" />
+    <Compile Include="Problems/IViewFormatter.fs" />
+    <Compile Include="Problems/IGeneratorService.fs" />
     <Compile Include="Problems/IProblemsService.fs" />
+    <Compile Include="Problems/ViewFormatter.fs" />
+    <Compile Include="Problems/GeneratorService.fs" />
     <Compile Include="Problems/ProblemsService.fs" />
-
   </ItemGroup>
 
 </Project>

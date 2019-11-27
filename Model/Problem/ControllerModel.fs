@@ -6,7 +6,7 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type ControllerLanguage =
-    | CSharp8 = 0
+    | CSharp
 
 type ControllerLanguageModel private (controllerLanguage: ControllerLanguage, model: LanguageModel) =
 
@@ -15,7 +15,7 @@ type ControllerLanguageModel private (controllerLanguage: ControllerLanguage, mo
 
     static member Create(model: LanguageModel) : Result<ControllerLanguageModel, unit> =
         match model.Language with
-        | Language.CSharp8 -> Result.Ok(ControllerLanguageModel(ControllerLanguage.CSharp8, model))
+        | Language.CSharp -> Result.Ok(ControllerLanguageModel(ControllerLanguage.CSharp, model))
         | _ -> Result.Error()
 
 type ControllerLanguageModelConverter() =

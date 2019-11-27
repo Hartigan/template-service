@@ -25,7 +25,9 @@
     <Compile Include="Problem/ValidatorModel.fs" />
     <Compile Include="Problem/ControllerModel.fs" />
     <Compile Include="Problem/ViewModel.fs" />
+    <Compile Include="Problem/GeneratedViewModel.fs" />
     <Compile Include="Problem/ProblemModel.fs" />
+    <Compile Include="Problem/GeneratedProblemModel.fs" />
     <Compile Include="Heads/HeadModel.fs" />
     <Compile Include="Folders/FolderModel.fs" />
   </ItemGroup>

@@ -19,6 +19,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Services", "Services\Servic
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DatabaseTypes", "DatabaseTypes\DatabaseTypes.fsproj", "{61D87F55-179A-45A1-A61B-2F31B5BB2D35}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CodeGeneratorContext", "CodeGeneratorContext\CodeGeneratorContext.fsproj", "{1EF35C1A-F007-4A08-A6CF-F0217BB06015}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,5 +142,17 @@ Global
 		{61D87F55-179A-45A1-A61B-2F31B5BB2D35}.Release|x64.Build.0 = Release|Any CPU
 		{61D87F55-179A-45A1-A61B-2F31B5BB2D35}.Release|x86.ActiveCfg = Release|Any CPU
 		{61D87F55-179A-45A1-A61B-2F31B5BB2D35}.Release|x86.Build.0 = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|x64.Build.0 = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Debug|x86.Build.0 = Debug|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x64.ActiveCfg = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x64.Build.0 = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x86.ActiveCfg = Release|Any CPU
+		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

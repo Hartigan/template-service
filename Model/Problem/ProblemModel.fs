@@ -8,11 +8,11 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type ProblemTitle(title: string) =
-    member val Title = title with get
+    member val Value = title with get
 
 type ProblemTitleConverter() =
-    inherit StringConverter<ProblemTitle>((fun m -> m.Title),
-                                           (fun s -> ProblemTitle(s)))
+    inherit StringConverter<ProblemTitle>((fun m -> m.Value),
+                                          (fun s -> ProblemTitle(s)))
 
 type ProblemModel private (id: ProblemId,
                            title: ProblemTitle,

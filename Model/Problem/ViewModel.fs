@@ -6,8 +6,8 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type ViewLanguage =
-    | Markdown = 0
-    | PlainText = 1
+    | Markdown
+    | PlainText
 
 type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel) =
 

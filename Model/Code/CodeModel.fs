@@ -8,9 +8,9 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type Language =
-    | Markdown = 0
-    | CSharp8 = 1
-    | PlainText = 2
+    | Markdown
+    | CSharp
+    | PlainText
 
 type LanguageModel private (name: string,  language: Language) =
 
@@ -19,7 +19,7 @@ type LanguageModel private (name: string,  language: Language) =
 
     static member Create(language: string) : Result<LanguageModel, unit> =
         match language with
-        | "csharp8" -> Result.Ok(LanguageModel(language, Language.CSharp8))
+        | "csharp" -> Result.Ok(LanguageModel(language, Language.CSharp))
         | "markdown" -> Result.Ok(LanguageModel(language, Language.Markdown))
         | "plain_text" -> Result.Ok(LanguageModel(language, Language.PlainText))
         | _ -> Result.Error()

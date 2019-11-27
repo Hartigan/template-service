@@ -7,3 +7,6 @@ type GetFail =
 
 type CreateFail =
     | Error of Exception
+
+type GenerateFail =
+    | Error of Exception

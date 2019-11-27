@@ -6,7 +6,7 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type ValidatorLanguage =
-    | CSharp8 = 0
+    | CSharp
 
 type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model: LanguageModel) =
 
@@ -15,7 +15,7 @@ type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model
 
     static member Create(model: LanguageModel) : Result<ValidatorLanguageModel, unit> =
         match model.Language with
-        | Language.CSharp8 -> Result.Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp8, model))
+        | Language.CSharp -> Result.Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp, model))
         | _ -> Result.Error()
 
 type ValidatorLanguageModelConverter() =

@@ -74,3 +74,21 @@ type ProblemId(id: string) =
 
 type ProblemIdConverter() =
     inherit StringConverter<ProblemId>((fun m -> m.Value), (fun s -> ProblemId(s)))
+
+type GeneratedProblemId(id: string) =
+    member val Value = id with get
+
+    override this.GetHashCode() = id.GetHashCode()
+    override this.Equals(b) =
+        match b with
+        | :? GeneratedProblemId as generatedProblemId -> (this.Value) = (generatedProblemId.Value)
+        | _ -> false
+
+    static member (==) (l : GeneratedProblemId, r : GeneratedProblemId) =
+        l.Equals(r)
+
+    static member (!=) (l : GeneratedProblemId, r : GeneratedProblemId) =
+        not (l.Equals(r))
+
+type GeneratedProblemIdConverter() =
+    inherit StringConverter<GeneratedProblemId>((fun m -> m.Value), (fun s -> GeneratedProblemId(s)))
