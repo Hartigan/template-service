@@ -37,7 +37,12 @@ type GeneratorService(viewFormatter: IViewFormatter, generatedProblemContext: Ge
                                 }
                                 Answer = controllerResult.Answer
                             }
-                            match GeneratedProblemModel.Create(generatedProblem) with
-                            | Result.Ok(generatedProblemModel) -> return Result.Ok(generatedProblemModel)
-                            | Result.Error() -> return Result.Error(GenerateFail.Error(InvalidOperationException("Cannot create GeneratedProblemModel")))
+                            match! generatedProblemContext.Insert(generatedProblem, generatedProblem) with
+                            | Result.Error(fail) ->
+                                match fail with
+                                | InsertDocumentFail.Error(error) -> return Result.Error(GenerateFail.Error(error))
+                            | Result.Ok() ->
+                                match GeneratedProblemModel.Create(generatedProblem) with
+                                | Result.Ok(generatedProblemModel) -> return Result.Ok(generatedProblemModel)
+                                | Result.Error() -> return Result.Error(GenerateFail.Error(InvalidOperationException("Cannot create GeneratedProblemModel")))
             }
