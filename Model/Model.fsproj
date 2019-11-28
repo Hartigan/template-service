@@ -29,6 +29,7 @@
     <Compile Include="Problem/ProblemModel.fs" />
     <Compile Include="Problem/GeneratedProblemModel.fs" />
     <Compile Include="Heads/HeadModel.fs" />
+    <Compile Include="Heads/CommitModel.fs" />
     <Compile Include="Folders/FolderModel.fs" />
   </ItemGroup>
 

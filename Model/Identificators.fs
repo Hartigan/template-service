@@ -92,3 +92,39 @@ type GeneratedProblemId(id: string) =
 
 type GeneratedProblemIdConverter() =
     inherit StringConverter<GeneratedProblemId>((fun m -> m.Value), (fun s -> GeneratedProblemId(s)))
+
+type TargetId(id: string) =
+    member val Value = id with get
+
+    override this.GetHashCode() = id.GetHashCode()
+    override this.Equals(b) =
+        match b with
+        | :? TargetId as targetId -> (this.Value) = (targetId.Value)
+        | _ -> false
+
+    static member (==) (l : TargetId, r : TargetId) =
+        l.Equals(r)
+
+    static member (!=) (l : TargetId, r : TargetId) =
+        not (l.Equals(r))
+
+type TargetIdConverter() =
+    inherit StringConverter<TargetId>((fun m -> m.Value), (fun s -> TargetId(s)))
+
+type CommitId(id: string) =
+    member val Value = id with get
+
+    override this.GetHashCode() = id.GetHashCode()
+    override this.Equals(b) =
+        match b with
+        | :? CommitId as commitId -> (this.Value) = (commitId.Value)
+        | _ -> false
+
+    static member (==) (l : CommitId, r : CommitId) =
+        l.Equals(r)
+
+    static member (!=) (l : CommitId, r : CommitId) =
+        not (l.Equals(r))
+
+type CommitIdConverter() =
+    inherit StringConverter<CommitId>((fun m -> m.Value), (fun s -> CommitId(s)))

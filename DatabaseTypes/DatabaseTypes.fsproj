@@ -8,7 +8,7 @@
     <Compile Include="IDocumentKey.fs" />
     <Compile Include="DocumentKey.fs" />
     <Compile Include="Permissions.fs" />
-    <Compile Include="VersionItem.fs" />
+    <Compile Include="Commit.fs" />
     <Compile Include="Code.fs" />
     <Compile Include="Problem.fs" />
     <Compile Include="GeneratedProblem.fs" />

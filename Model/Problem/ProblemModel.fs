@@ -21,7 +21,7 @@ type ProblemModel private (id: ProblemId,
                            validator: ValidatorModel) =
     [<DataMember(Name = "id")>]
     [<JsonConverter(typeof<ProblemIdConverter>)>]
-    member val Id           = id with get                       
+    member val Id           = id with get
     [<DataMember(Name = "title")>]
     [<JsonConverter(typeof<ProblemTitleConverter>)>]
     member val Title        = title with get

@@ -9,8 +9,8 @@ type Head =
         Id : string
         [<field: DataMember(Name = "name")>]
         Name : string
-        [<field: DataMember(Name = "version_item")>]
-        VersionItem : VersionItem
+        [<field: DataMember(Name = "commit")>]
+        Commit : Commit
         [<field: DataMember(Name = "permissions")>]
         Permissions : Permissions
     }
