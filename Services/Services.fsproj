@@ -26,6 +26,9 @@
     <Compile Include="Problems/ViewFormatter.fs" />
     <Compile Include="Problems/GeneratorService.fs" />
     <Compile Include="Problems/ProblemsService.fs" />
+    <Compile Include="VersionControl/Results.fs" />
+    <Compile Include="VersionControl/IVersionControlService.fs" />
+    <Compile Include="VersionControl/VersionControlService.fs" />
   </ItemGroup>
 
 </Project>
