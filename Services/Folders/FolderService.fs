@@ -141,7 +141,7 @@ type FoldersService(folderContext: FolderContext,
                             Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Head link %s not found" headLinkId.Value)))
                         else
                             let oldLink = folder.Heads.[index]
-                            folder.Heads.[index] <- { oldLink with Name = headName.Name }
+                            folder.Heads.[index] <- { oldLink with Name = headName.Value }
                             Result.Ok(folder))
 
                 match result with

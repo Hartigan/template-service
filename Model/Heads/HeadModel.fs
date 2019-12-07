@@ -8,10 +8,10 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type HeadName(name: string) =
-    member val Name = name with get
+    member val Value = name with get
 
 type HeadNameConverter() =
-    inherit StringConverter<HeadName>((fun m -> m.Name), (fun s -> HeadName(s)))
+    inherit StringConverter<HeadName>((fun m -> m.Value), (fun s -> HeadName(s)))
 
 type HeadModel private (id: HeadId, name: HeadName, permissions: PermissionsModel, commit: CommitModel) =
     [<DataMember(Name = "id")>]

@@ -11,6 +11,28 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
     let headContext = (headContext :> IContext<Head>)
 
     interface IVersionControlService with
+        member this.Create(name, userId, commitId) = 
+            async {
+                match! commitContext.Get(Commit.CreateDocumentKey(commitId.Value)) with
+                | Result.Error(fail) ->
+                    match fail with
+                    | GetDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                | Result.Ok(commit) ->
+                    let head = {
+                        Head.Id = Guid.NewGuid().ToString()
+                        Permissions = {
+                            OwnerId = userId.Value
+                        }
+                        Commit = commit
+                        Name = name.Value
+                    }
+                    match! headContext.Insert(head, head) with
+                    | Result.Error(fail) ->
+                        match fail with
+                        | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                    | Result.Ok() -> return Result.Ok(HeadId(head.Id))
+            }
+
 
         member this.Create(id, description, parentId, userId) =
             async {
