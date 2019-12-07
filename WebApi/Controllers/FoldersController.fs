@@ -3,6 +3,7 @@ namespace WebApi
 open Microsoft.AspNetCore.Mvc
 open Microsoft.AspNetCore.Authorization
 open Services.Folders
+open Services.Permissions
 open Models.Identificators
 open System
 open Models.Folders
@@ -12,7 +13,7 @@ open System.Security.Claims
 
 [<Authorize>]
 [<Route("folders")>]
-type FoldersController(foldersService: IFoldersService) =
+type FoldersController(foldersService: IFoldersService, permissionsService: IPermissionsService) =
     inherit ControllerBase()
 
     member private this.GetUserId() =
@@ -24,13 +25,14 @@ type FoldersController(foldersService: IFoldersService) =
         async {
             let userId = this.GetUserId()
             let folderId = FolderId(folderId)
-            let! result = foldersService.Get(folderId, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | GetFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            match! permissionsService.CheckPermissions(folderId, userId) with
+            | Ok() ->
+                match! foldersService.Get(folderId) with
+                | Result.Error(fail) ->
+                    match fail with
+                    | GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -57,13 +59,18 @@ type FoldersController(foldersService: IFoldersService) =
             let userId = this.GetUserId()
             let targetFolderId = FolderId(targetId)
             let destinationFolderId = FolderId(destinationId)
-            let! result = foldersService.AddFolder(targetFolderId, destinationFolderId, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | AddFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            let! targetCheck = permissionsService.CheckPermissions(targetFolderId, userId)
+            let! destinationCheck = permissionsService.CheckPermissions(destinationFolderId, userId)
+
+            match (targetCheck, destinationCheck) with
+            | (Ok(), Ok()) ->
+                let! result = foldersService.AddFolder(targetFolderId, destinationFolderId)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | _ ->  return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -75,13 +82,18 @@ type FoldersController(foldersService: IFoldersService) =
             let userId = this.GetUserId()
             let targetHeadId = HeadId(targetId)
             let destinationFolderId = FolderId(destinationId)
-            let! result = foldersService.AddHead(targetHeadId, destinationFolderId, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | AddFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            let! targetCheck = permissionsService.CheckPermissions(targetHeadId, userId)
+            let! destinationCheck = permissionsService.CheckPermissions(destinationFolderId, userId)
+
+            match (targetCheck, destinationCheck) with
+            | (Ok(), Ok()) ->
+                let! result = foldersService.AddHead(targetHeadId, destinationFolderId)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -95,7 +107,6 @@ type FoldersController(foldersService: IFoldersService) =
             | Result.Error(fail) ->
                 match fail with
                 | GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | GetFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
             | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask
@@ -106,13 +117,15 @@ type FoldersController(foldersService: IFoldersService) =
         async {
             let userId = this.GetUserId()
             let headId = HeadId(id)
-            let! result = foldersService.MoveHeadToTrash(headId, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | MoveTrashFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok() -> return (OkResult() :> IActionResult)
+            match! permissionsService.CheckPermissions(headId, userId) with
+            | Ok() ->
+                let! result = foldersService.MoveHeadToTrash(headId, userId)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok() -> return (OkResult() :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -122,13 +135,15 @@ type FoldersController(foldersService: IFoldersService) =
         async {
             let userId = this.GetUserId()
             let folderId = FolderId(id)
-            let! result = foldersService.MoveFolderToTrash(folderId, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | MoveTrashFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            match! permissionsService.CheckPermissions(folderId, userId) with
+            | Ok() ->
+                let! result = foldersService.MoveFolderToTrash(folderId, userId)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -139,13 +154,15 @@ type FoldersController(foldersService: IFoldersService) =
             let userId = this.GetUserId()
             let folderId = FolderId(id)
             let folderName = FolderName(name)
-            let! result = foldersService.RenameFolder(folderId, folderName, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | RenameFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            match! permissionsService.CheckPermissions(folderId, userId) with
+            | Ok() ->
+                let! result = foldersService.RenameFolder(folderId, folderName)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -159,13 +176,15 @@ type FoldersController(foldersService: IFoldersService) =
             let folderId = FolderId(folderId)
             let linkId = FolderId(linkId)
             let folderName = FolderName(name)
-            let! result = foldersService.RenameFolderLink(folderId, linkId, folderName, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | RenameFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult)
-            | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            match! permissionsService.CheckPermissions(folderId, userId) with
+            | Ok() ->
+                let! result = foldersService.RenameFolderLink(folderId, linkId, folderName)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -178,13 +197,14 @@ type FoldersController(foldersService: IFoldersService) =
             let folderId = FolderId(folderId)
             let linkId = HeadId(linkId)
             let headName = HeadName(name)
-            let! result = foldersService.RenameHeadLink(folderId, linkId, headName, userId)
-            match result with
-            | Result.Error(fail) ->
-                match fail with
-                | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | RenameFail.Unauthorized(_) -> return (UnauthorizedResult() :> IActionResult
-                )
-            | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            match! permissionsService.CheckPermissions(folderId, userId) with
+            | Ok() ->
+                let! result = foldersService.RenameHeadLink(folderId, linkId, headName)
+                match result with
+                | Result.Error(fail) ->
+                    match fail with
+                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Result.Ok(model) -> return (OkResult() :> IActionResult)
+            | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask

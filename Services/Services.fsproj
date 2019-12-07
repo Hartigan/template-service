@@ -12,8 +12,6 @@
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Model/Model.fsproj" />
     <ProjectReference Include="../CodeGeneratorContext/CodeGeneratorContext.fsproj" />
-    <Compile Include="Permissions/IPermissionsService.fs" />
-    <Compile Include="Permissions/PermissionsService.fs" />
     <Compile Include="Folders/FolderServiceResults.fs" />
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="Folders/FolderService.fs" />
@@ -29,6 +27,8 @@
     <Compile Include="VersionControl/Results.fs" />
     <Compile Include="VersionControl/IVersionControlService.fs" />
     <Compile Include="VersionControl/VersionControlService.fs" />
+    <Compile Include="Permissions/IPermissionsService.fs" />
+    <Compile Include="Permissions/PermissionsService.fs" />
   </ItemGroup>
 
 </Project>

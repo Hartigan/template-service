@@ -8,17 +8,15 @@ open Models.Identificators
 open DatabaseTypes
 open Contexts
 open System.Collections.Generic
-open Services.Permissions
 
 type FoldersService(folderContext: FolderContext,
-                    headContext: HeadContext,
-                    permissionsService: IPermissionsService) =
+                    headContext: HeadContext) =
 
     let folderContext = (folderContext :> IContext<Folder>)
     let headContext = (headContext :> IContext<Head>)
 
     interface IFoldersService with
-        member this.AddFolder(folderId, parentId, userId) =
+        member this.AddFolder(folderId, parentId) =
             async {
                 let folderDocId = Folder.CreateDocumentKey(folderId.Value)
                 let! getFolderResult = folderContext.Get(folderDocId)
@@ -27,27 +25,24 @@ type FoldersService(folderContext: FolderContext,
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
                 | Result.Ok(folder) ->
-                    if not (permissionsService.CheckPermissions(PermissionsModel(folder.Permissions), userId)) then
-                        return Result.Error(AddFail.Unauthorized())
-                    else
-                        let docId = Folder.CreateDocumentKey(parentId.Value)
-                        let! result = folderContext.Update(docId, fun parent ->
-                            let index = parent.Folders.FindIndex(fun link -> FolderId(link.Id) == folderId)
-                            if index < 0 then
-                                parent.Folders.Add({ FolderLink.Id = folderId.Value; Name = folder.Name })
-                                Result.Ok(parent)
-                            else
-                                Result.Error(AddFail.Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value))))
+                    let docId = Folder.CreateDocumentKey(parentId.Value)
+                    let! result = folderContext.Update(docId, fun parent ->
+                        let index = parent.Folders.FindIndex(fun link -> FolderId(link.Id) == folderId)
+                        if index < 0 then
+                            parent.Folders.Add({ FolderLink.Id = folderId.Value; Name = folder.Name })
+                            Result.Ok(parent)
+                        else
+                            Result.Error(AddFail.Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value))))
 
-                        match result with
-                        | Result.Ok(ok) -> return Result.Ok()
-                        | Result.Error(fail) ->
-                            match fail with
-                            | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                            | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                    match result with
+                    | Result.Ok(ok) -> return Result.Ok()
+                    | Result.Error(fail) ->
+                        match fail with
+                        | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
+                        | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
-        member this.AddHead(headId, parentId, userId) =
+        member this.AddHead(headId, parentId) =
             async {
                 let headDocId = Head.CreateDocumentKey(headId.Value)
                 let! getHeadResult = headContext.Get(headDocId)
@@ -56,24 +51,21 @@ type FoldersService(folderContext: FolderContext,
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
                 | Result.Ok(head) ->
-                    if not (permissionsService.CheckPermissions(PermissionsModel(head.Permissions), userId)) then
-                        return Result.Error(AddFail.Unauthorized())
-                    else
-                        let docId = Folder.CreateDocumentKey(parentId.Value)
-                        let! result = folderContext.Update(docId, fun parent ->
-                            let index = parent.Heads.FindIndex(fun link -> HeadId(link.Id) == headId)
-                            if index < 0 then
-                                parent.Heads.Add({ HeadLink.Id = headId.Value; Name = head.Name })
-                                Result.Ok(parent)
-                            else
-                                Result.Error(AddFail.Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value))))
+                    let docId = Folder.CreateDocumentKey(parentId.Value)
+                    let! result = folderContext.Update(docId, fun parent ->
+                        let index = parent.Heads.FindIndex(fun link -> HeadId(link.Id) == headId)
+                        if index < 0 then
+                            parent.Heads.Add({ HeadLink.Id = headId.Value; Name = head.Name })
+                            Result.Ok(parent)
+                        else
+                            Result.Error(AddFail.Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value))))
 
-                        match result with
-                        | Result.Ok(ok) -> return Result.Ok()
-                        | Result.Error(fail) ->
-                            match fail with
-                            | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                            | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                    match result with
+                    | Result.Ok(ok) -> return Result.Ok()
+                    | Result.Error(fail) ->
+                        match fail with
+                        | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
+                        | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.CreateFolder(name, userId) = 
@@ -98,27 +90,24 @@ type FoldersService(folderContext: FolderContext,
             }
 
         member this.GetRoot(userId) = 
-            (this :> IFoldersService).Get(FolderId(userId.Value), userId)
+            (this :> IFoldersService).Get(FolderId(userId.Value))
 
         member this.MoveFolderToTrash(folderId, userId) = 
             failwith "Not Implemented"
         member this.MoveHeadToTrash(headId, userId) = 
             failwith "Not Implemented"
 
-        member this.RenameFolderLink(folderId, folderLinkId, folderName, userId): Async<Result<unit,RenameFail>> = 
+        member this.RenameFolderLink(folderId, folderLinkId, folderName): Async<Result<unit,RenameFail>> = 
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                    if not (permissionsService.CheckPermissions(PermissionsModel(folder.Permissions), userId)) then
-                        Result.Error(RenameFail.Unauthorized())
+                    let index = folder.Folders.FindIndex(fun link -> FolderId(link.Id) == folderLinkId)
+                    if index < 0 then
+                        Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Folder link %s not found" folderLinkId.Value)))
                     else
-                        let index = folder.Folders.FindIndex(fun link -> FolderId(link.Id) == folderLinkId)
-                        if index < 0 then
-                            Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Folder link %s not found" folderLinkId.Value)))
-                        else
-                            let oldLink = folder.Folders.[index]
-                            folder.Folders.[index] <- { oldLink with Name = folderName.Name }
-                            Result.Ok(folder)
+                        let oldLink = folder.Folders.[index]
+                        folder.Folders.[index] <- { oldLink with Name = folderName.Name }
+                        Result.Ok(folder)
                 )
 
                 match result with
@@ -129,20 +118,17 @@ type FoldersService(folderContext: FolderContext,
                     | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
-        member this.RenameHeadLink(folderId, headLinkId, headName, userId) = 
+        member this.RenameHeadLink(folderId, headLinkId, headName) = 
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                    if not (permissionsService.CheckPermissions(PermissionsModel(folder.Permissions), userId)) then
-                        Result.Error(RenameFail.Unauthorized())
+                    let index = folder.Heads.FindIndex(fun link -> HeadId(link.Id) == headLinkId)
+                    if index < 0 then
+                        Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Head link %s not found" headLinkId.Value)))
                     else
-                        let index = folder.Heads.FindIndex(fun link -> HeadId(link.Id) == headLinkId)
-                        if index < 0 then
-                            Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Head link %s not found" headLinkId.Value)))
-                        else
-                            let oldLink = folder.Heads.[index]
-                            folder.Heads.[index] <- { oldLink with Name = headName.Value }
-                            Result.Ok(folder))
+                        let oldLink = folder.Heads.[index]
+                        folder.Heads.[index] <- { oldLink with Name = headName.Value }
+                        Result.Ok(folder))
 
                 match result with
                 | Result.Ok(ok) -> return Result.Ok()
@@ -152,14 +138,11 @@ type FoldersService(folderContext: FolderContext,
                     | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
-        member this.RenameFolder(folderId, folderName, userId) =
+        member this.RenameFolder(folderId, folderName) =
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder -> 
-                    if not (permissionsService.CheckPermissions(PermissionsModel(folder.Permissions), userId)) then
-                        Result.Error(RenameFail.Unauthorized())
-                    else
-                        Result.Ok({ folder with Name = folderName.Name })
+                    Result.Ok({ folder with Name = folderName.Name })
                 )
 
                 match result with
@@ -170,17 +153,14 @@ type FoldersService(folderContext: FolderContext,
                     | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
-        member this.Get(folderId, userId) =
+        member this.Get(folderId) =
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Get(docId)
 
                 match result with
                 | Result.Ok(folder) ->
-                    if not (permissionsService.CheckPermissions(PermissionsModel(folder.Permissions), userId)) then
-                        return Result.Error(GetFail.Unauthorized())
-                    else
-                        return Result.Ok(FolderModel(folder))
+                    return Result.Ok(FolderModel(folder))
                 | Result.Error(fail) ->
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
