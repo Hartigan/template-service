@@ -129,3 +129,13 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
 
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
+
+        member this.Exists(key) =
+            async {
+                try
+                    let! collection = this.GetCollection()
+                    let! (existsResult: IExistsResult) = collection.ExistsAsync(key.Key)
+                    return Result.Ok(existsResult.Exists)
+                with ex -> return Result.Error(ExistsDocumentFail.Error(ex))
+            }
+

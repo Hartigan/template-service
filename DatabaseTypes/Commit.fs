@@ -17,6 +17,8 @@ type Commit =
     {
         [<field: DataMember(Name = "id")>]
         Id : string
+        [<field: DataMember(Name = "head_id")>]
+        HeadId : string
         [<field: DataMember(Name = "author_id")>]
         AuthorId : string
         [<field: DataMember(Name = "target")>]

@@ -11,13 +11,29 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
     let headContext = (headContext :> IContext<Head>)
 
     interface IVersionControlService with
-        member this.Create(name, userId, commitId) = 
+        member this.Create(name: HeadName, concreteId: ConcreteId, description: CommitDescription, userId: UserId) = 
             async {
-                match! commitContext.Get(Commit.CreateDocumentKey(commitId.Value)) with
+                let target =
+                    match concreteId with
+                    | ConcreteId.Problem(problemId) ->
+                        { Target.Id = problemId.Value
+                          Type = Problem.TypeName }
+                let headId = Guid.NewGuid().ToString()
+
+                let commit =
+                    { Commit.Id = Guid.NewGuid().ToString()
+                      AuthorId = userId.Value
+                      HeadId = headId
+                      Target = target
+                      Timestamp = DateTimeOffset.UtcNow
+                      ParentId = Guid.Empty.ToString()
+                      Description = description.Value }
+
+                match! commitContext.Insert(commit, commit) with
                 | Result.Error(fail) ->
                     match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                | Result.Ok(commit) ->
+                    | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                | Result.Ok() ->
                     let head = {
                         Head.Id = Guid.NewGuid().ToString()
                         Permissions = {
@@ -34,27 +50,33 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
             }
 
 
-        member this.Create(id, description, parentId, userId) =
+        member this.Create(id: ConcreteId, description: CommitDescription, userId: UserId, headId: HeadId) =
             async {
-                let target =
-                    match id with
-                    | ConcreteId.Problem(problemId) ->
-                        { Target.Id = problemId.Value
-                          Type = Problem.TypeName }
-
-                let commit =
-                    { Commit.Id = Guid.NewGuid().ToString()
-                      AuthorId = userId.Value
-                      Target = target
-                      Timestamp = DateTimeOffset.UtcNow
-                      ParentId = parentId.Value
-                      Description = description.Value }
-
-                match! commitContext.Insert(commit, commit) with
+                match! headContext.Get(Head.CreateDocumentKey(headId.Value)) with
                 | Result.Error(fail) ->
                     match fail with
-                    | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                | Result.Ok() -> return Result.Ok(CommitId(commit.Id))
+                    | GetDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                | Result.Ok(head) ->
+                    let target =
+                        match id with
+                        | ConcreteId.Problem(problemId) ->
+                            { Target.Id = problemId.Value
+                              Type = Problem.TypeName }
+
+                    let commit =
+                        { Commit.Id = Guid.NewGuid().ToString()
+                          AuthorId = userId.Value
+                          HeadId = headId.Value
+                          Target = target
+                          Timestamp = DateTimeOffset.UtcNow
+                          ParentId = head.Commit.Id
+                          Description = description.Value }
+
+                    match! commitContext.Insert(commit, commit) with
+                    | Result.Error(fail) ->
+                        match fail with
+                        | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                    | Result.Ok() -> return Result.Ok(CommitId(commit.Id))
             }
 
 
