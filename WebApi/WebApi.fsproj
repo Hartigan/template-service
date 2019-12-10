@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="AuthenticationSettings.fs" />
     <Compile Include="Controllers/FoldersController.fs" />
+    <Compile Include="Controllers/ProblemsController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

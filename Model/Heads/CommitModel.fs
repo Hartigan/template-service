@@ -40,7 +40,7 @@ type CommitDescription(description: string) =
 type CommitDescriptionConverter() =
     inherit StringConverter<CommitDescription>((fun m -> m.Value), (fun s -> CommitDescription(s)))
 
-type CommitModel private (id: CommitId, authorId: UserId, target: TargetModel, timestamp: DateTimeOffset, parentId: CommitId, description: CommitDescription) =
+type CommitModel private (id: CommitId, authorId: UserId, headId: HeadId, target: TargetModel, timestamp: DateTimeOffset, parentId: CommitId, description: CommitDescription) =
 
 
     [<DataMember(Name = "id")>]
@@ -50,6 +50,10 @@ type CommitModel private (id: CommitId, authorId: UserId, target: TargetModel, t
     [<DataMember(Name = "author_id")>]
     [<JsonConverter(typeof<UserIdConverter>)>]
     member val AuthorId = authorId
+
+    [<DataMember(Name = "head_id")>]
+    [<JsonConverter(typeof<HeadIdConverter>)>]
+    member val HeadId = headId
 
     [<DataMember(Name = "target")>]
     member val Target = target
@@ -71,5 +75,5 @@ type CommitModel private (id: CommitId, authorId: UserId, target: TargetModel, t
         | Result.Ok(target) ->
             Result.Ok
                 (CommitModel
-                    (CommitId(commit.Id), UserId(commit.AuthorId), target, commit.Timestamp, CommitId(commit.ParentId),
+                    (CommitId(commit.Id), UserId(commit.AuthorId), HeadId(commit.HeadId), target, commit.Timestamp, CommitId(commit.ParentId),
                      CommitDescription(commit.Description)))

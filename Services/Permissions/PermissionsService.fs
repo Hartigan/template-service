@@ -26,6 +26,20 @@ type PermissionsService(foldersService: IFoldersService, versionControlService: 
                 | Result.Ok(head) -> return! (this :> IPermissionsService).CheckPermissions(head.Permissions, userId)
             }
 
+        member this.CheckPermissions(commitId: CommitId, userId: UserId) =
+            async {
+                match! versionControlService.Get(commitId) with
+                | Result.Error(fail) ->
+                    match fail with
+                    | Services.VersionControl.GetFail.Error(error) -> return Result.Error(CheckPermissionsFail.Error(error))
+                | Result.Ok(commit) -> 
+                    match! versionControlService.Get(commit.HeadId) with
+                    | Result.Error(fail) ->
+                        match fail with
+                        | Services.VersionControl.GetFail.Error(error) -> return Result.Error(CheckPermissionsFail.Error(error))
+                    | Result.Ok(head) -> return! (this :> IPermissionsService).CheckPermissions(head.Permissions, userId)
+            }
+
         member this.CheckPermissions(permissions: PermissionsModel, userId: UserId): Async<Result<unit, CheckPermissionsFail>> = 
             async {
                 if permissions.OwnerId = userId then
