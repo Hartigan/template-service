@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="IDocumentKey.fs" />
     <Compile Include="DocumentKey.fs" />
@@ -11,6 +9,7 @@
     <Compile Include="Commit.fs" />
     <Compile Include="Code.fs" />
     <Compile Include="Problem.fs" />
+    <Compile Include="ProblemSet.fs" />
     <Compile Include="GeneratedProblem.fs" />
     <Compile Include="Folder.fs" />
     <Compile Include="Head.fs" />
@@ -19,5 +18,4 @@
     <Compile Include="UserGroup.fs" />
     <Compile Include="UserRole.fs" />
   </ItemGroup>
-
 </Project>

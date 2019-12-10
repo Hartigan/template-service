@@ -13,8 +13,8 @@ open Models.Problems
 open Microsoft.AspNetCore.Http
 
 [<Authorize>]
-[<Route("problems")>]
-type ProblemsController(foldersService: IFoldersService, permissionsService: IPermissionsService, versionControlService: IVersionControlService, problemsService: IProblemsService) =
+[<Route("problem_set")>]
+type ProblemSetController(foldersService: IFoldersService, permissionsService: IPermissionsService, versionControlService: IVersionControlService, problemsService: IProblemsService) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -33,8 +33,8 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
                     | Services.VersionControl.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
                 | Result.Ok(commit) ->
                     match commit.Target.ConcreteId with
-                    | Problem(problemId) ->
-                        match! problemsService.Get(problemId) with
+                    | ProblemSet(problemSetId) ->
+                        match! problemsService.Get(problemSetId) with
                         | Ok(model) -> return (JsonResult(model) :> IActionResult)
                         | _ -> return (StatusCodeResult(StatusCodes.Status500InternalServerError) :> IActionResult)
                     | _ -> return (StatusCodeResult(StatusCodes.Status500InternalServerError) :> IActionResult)
@@ -46,7 +46,7 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
     [<Route("create")>]
     member this.CreateProblem([<FromQuery(Name = "folder_id")>] folderIdString: string,
                               [<FromQuery(Name = "name")>] name: string,
-                              [<FromBody>] model: ProblemModel) =
+                              [<FromBody>] model: ProblemSetModel) =
         async {
             let userId = this.GetUserId()
             let folderId = FolderId(folderIdString)
@@ -57,7 +57,7 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
                     match fail with
                     | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
                 | Ok(problemId) ->
-                    match! versionControlService.Create(HeadName(name), ConcreteId.Problem(model.Id), CommitDescription("Initial commit"), userId) with
+                    match! versionControlService.Create(HeadName(name), ConcreteId.ProblemSet(model.Id), CommitDescription("Initial commit"), userId) with
                     | Result.Error(fail) ->
                         match fail with
                         | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
@@ -75,7 +75,7 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
     [<Route("update")>]
     member this.UpdateProblem([<FromQuery(Name = "head_id")>] headIdString: string,
                               [<FromQuery(Name = "description")>] description: string,
-                              [<FromBody>] model: ProblemModel) =
+                              [<FromBody>] model: ProblemSetModel) =
         async {
             let userId = this.GetUserId()
             let headId = HeadId(headIdString)
@@ -86,7 +86,7 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
                     match fail with
                     | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
                 | Ok(problemId) ->
-                    match! versionControlService.Create(ConcreteId.Problem(model.Id), CommitDescription(description), userId, headId) with
+                    match! versionControlService.Create(ConcreteId.ProblemSet(model.Id), CommitDescription(description), userId, headId) with
                     | Result.Error(fail) ->
                         match fail with
                         | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)

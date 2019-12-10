@@ -18,6 +18,9 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                     | ConcreteId.Problem(problemId) ->
                         { Target.Id = problemId.Value
                           Type = Problem.TypeName }
+                    | ConcreteId.ProblemSet(problemSetId) ->
+                        { Target.Id = problemSetId.Value
+                          Type = ProblemSet.TypeName }
                 let headId = Guid.NewGuid().ToString()
 
                 let commit =
@@ -62,6 +65,9 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                         | ConcreteId.Problem(problemId) ->
                             { Target.Id = problemId.Value
                               Type = Problem.TypeName }
+                        | ConcreteId.ProblemSet(problemSetId) ->
+                            { Target.Id = problemSetId.Value
+                              Type = ProblemSet.TypeName }
 
                     let commit =
                         { Commit.Id = Guid.NewGuid().ToString()
@@ -72,11 +78,21 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                           ParentId = head.Commit.Id
                           Description = description.Value }
 
-                    match! commitContext.Insert(commit, commit) with
+                    match! headContext.Update(Head.CreateDocumentKey(headId.Value), fun head ->
+                        if head.Commit.Target.Type = commit.Target.Type then
+                            Result.Ok({ head with Commit = commit })
+                        else
+                            Result.Error(CreateFail.Error(InvalidOperationException("Wrong commit target type")))) with
                     | Result.Error(fail) ->
                         match fail with
-                        | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                    | Result.Ok() -> return Result.Ok(CommitId(commit.Id))
+                        | UpdateDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                        | UpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
+                    | Result.Ok() ->
+                        match! commitContext.Insert(commit, commit) with
+                        | Result.Error(fail) ->
+                            match fail with
+                            | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                        | Result.Ok() -> return Result.Ok(CommitId(commit.Id))
             }
 
 
@@ -91,21 +107,6 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                     | Result.Error() ->
                         return Result.Error(GetFail.Error(InvalidOperationException("Cannot create HeadModel")))
                     | Result.Ok(model) -> return Result.Ok(model)
-            }
-
-        member this.MoveHead(headId, commitId) =
-            async {
-                match! commitContext.Get(Commit.CreateDocumentKey(commitId.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(MoveHeadFail.Error(error))
-                | Result.Ok(commit) ->
-                    match! headContext.Update(Head.CreateDocumentKey(headId.Value), fun head -> Result.Ok({ head with Commit = commit })) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdateDocumentFail.Error(error) -> return Result.Error(MoveHeadFail.Error(error))
-                        | UpdateDocumentFail.CustomFail() -> return Result.Error(MoveHeadFail.Error(InvalidOperationException("Unexpected custom fail during MoveHead")))
-                    | Result.Ok() -> return Result.Ok()
             }
 
         member this.Get(commitId: CommitId) =

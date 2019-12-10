@@ -7,6 +7,3 @@ type GetFail =
 
 type CreateFail =
     | Error of Exception
-
-type MoveHeadFail =
-    | Error of Exception

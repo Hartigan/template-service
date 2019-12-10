@@ -1,14 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Storage/Storage.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="ContextResults.fs" />
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
@@ -19,10 +18,9 @@
     <Compile Include="HeadContext.fs" />
     <Compile Include="FolderContext.fs" />
     <Compile Include="CommitContext.fs" />
+    <Compile Include="ProblemSetContext.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="CouchbaseNetClient" Version="3.0.0-beta1" />
   </ItemGroup>
-
 </Project>

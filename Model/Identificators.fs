@@ -128,3 +128,21 @@ type CommitId(id: string) =
 
 type CommitIdConverter() =
     inherit StringConverter<CommitId>((fun m -> m.Value), (fun s -> CommitId(s)))
+
+type ProblemSetId(id: string) =
+    member val Value = id with get
+
+    override this.GetHashCode() = id.GetHashCode()
+    override this.Equals(b) =
+        match b with
+        | :? ProblemSetId as problemSetId -> (this.Value) = (problemSetId.Value)
+        | _ -> false
+
+    static member (==) (l : ProblemSetId, r : ProblemSetId) =
+        l.Equals(r)
+
+    static member (!=) (l : ProblemSetId, r : ProblemSetId) =
+        not (l.Equals(r))
+
+type ProblemSetIdConverter() =
+    inherit StringConverter<ProblemSetId>((fun m -> m.Value), (fun s -> ProblemSetId(s)))

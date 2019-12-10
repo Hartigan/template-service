@@ -8,4 +8,3 @@ type IVersionControlService =
     abstract member Get : HeadId -> Async<Result<HeadModel, GetFail>>
     abstract member Create : ConcreteId * CommitDescription * UserId * HeadId -> Async<Result<CommitId, CreateFail>>
     abstract member Create : HeadName * ConcreteId * CommitDescription * UserId -> Async<Result<HeadId, CreateFail>>
-    abstract member MoveHead : HeadId * CommitId -> Async<Result<unit, MoveHeadFail>>

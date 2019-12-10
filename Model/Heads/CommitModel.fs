@@ -7,14 +7,18 @@ open System.Text.Json.Serialization
 open Models.Converters
 open System
 
-type ConcreteId = Problem of ProblemId
+type ConcreteId = 
+| Problem of ProblemId
+| ProblemSet of ProblemSetId
 
 type ConcreteIdConverter() =
     inherit StringConverter<ConcreteId>((fun m ->
                                         match m with
-                                        | ConcreteId.Problem(id) -> Problem.TypeName),
+                                        | ConcreteId.Problem(id) -> Problem.TypeName
+                                        | ConcreteId.ProblemSet(id) -> ProblemSet.TypeName),
                                         (fun s ->
                                         if s = Problem.TypeName then ConcreteId.Problem(ProblemId(s))
+                                        elif s = ProblemSet.TypeName then ConcreteId.ProblemSet(ProblemSetId(s))
                                         else failwith (sprintf "Incorrect type '%s'" s)))
 
 type TargetModel private (targetId: TargetId, typeName: string, concreteId: ConcreteId) =
