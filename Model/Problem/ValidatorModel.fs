@@ -8,6 +8,7 @@ open System.Text.Json.Serialization
 type ValidatorLanguage =
     | CSharp
 
+[<JsonConverter(typeof<ValidatorLanguageModelConverter>)>]
 type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model: LanguageModel) =
 
     member val Name = model.Name with get
@@ -18,7 +19,7 @@ type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model
         | Language.CSharp -> Result.Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp, model))
         | _ -> Result.Error()
 
-type ValidatorLanguageModelConverter() =
+and ValidatorLanguageModelConverter() =
     inherit StringConverter<ValidatorLanguageModel>((fun m -> m.Name),
                                                (fun s ->
                                                     match LanguageModel.Create(s) with
@@ -30,10 +31,8 @@ type ValidatorLanguageModelConverter() =
 
 type ValidatorModel private (language: ValidatorLanguageModel, content: ContentModel) =
     [<DataMember(Name = "language")>]
-    [<JsonConverter(typeof<ValidatorLanguageModelConverter>)>]
     member val Language    = language with get
     [<DataMember(Name = "content")>]
-    [<JsonConverter(typeof<ContentModelConverter>)>]
     member val Content     = content with get
 
     static member Create(model: CodeModel) : Result<ValidatorModel, unit> =

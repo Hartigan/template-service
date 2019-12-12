@@ -7,18 +7,17 @@ open Models.Permissions
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
+[<JsonConverter(typeof<HeadNameConverter>)>]
 type HeadName(name: string) =
     member val Value = name with get
 
-type HeadNameConverter() =
+and HeadNameConverter() =
     inherit StringConverter<HeadName>((fun m -> m.Value), (fun s -> HeadName(s)))
 
 type HeadModel private (id: HeadId, name: HeadName, permissions: PermissionsModel, commit: CommitModel) =
     [<DataMember(Name = "id")>]
-    [<JsonConverter(typeof<HeadIdConverter>)>]
     member val Id       = id with get
     [<DataMember(Name = "name")>]
-    [<JsonConverter(typeof<HeadNameConverter>)>]
     member val Name     = name with get
     [<DataMember(Name = "permissions")>]
     member val Permissions  = permissions with get

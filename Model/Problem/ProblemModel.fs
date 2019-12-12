@@ -7,10 +7,11 @@ open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
+[<JsonConverter(typeof<ProblemTitleConverter>)>]
 type ProblemTitle(title: string) =
     member val Value = title with get
 
-type ProblemTitleConverter() =
+and ProblemTitleConverter() =
     inherit StringConverter<ProblemTitle>((fun m -> m.Value),
                                           (fun s -> ProblemTitle(s)))
 
@@ -20,10 +21,8 @@ type ProblemModel private (id: ProblemId,
                            controller: ControllerModel,
                            validator: ValidatorModel) =
     [<DataMember(Name = "id")>]
-    [<JsonConverter(typeof<ProblemIdConverter>)>]
     member val Id           = id with get
     [<DataMember(Name = "title")>]
-    [<JsonConverter(typeof<ProblemTitleConverter>)>]
     member val Title        = title with get
     [<DataMember(Name = "view")>]
     member val View         = view with get

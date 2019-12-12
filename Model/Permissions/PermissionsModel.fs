@@ -8,5 +8,4 @@ open System.Text.Json.Serialization
 
 type PermissionsModel(permissions: Permissions) =
     [<DataMember(Name = "owner_id")>]
-    [<JsonConverter(typeof<UserIdConverter>)>]
     member val OwnerId  = UserId(permissions.OwnerId) with get

@@ -9,6 +9,7 @@ type ViewLanguage =
     | Markdown
     | PlainText
 
+[<JsonConverter(typeof<ViewLanguageModelConverter>)>]
 type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel) =
 
     member val Name = model.Name with get
@@ -20,7 +21,7 @@ type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel
         | Language.PlainText -> Result.Ok(ViewLanguageModel(ViewLanguage.PlainText, model))
         | _ -> Result.Error()
 
-type ViewLanguageModelConverter() =
+and ViewLanguageModelConverter() =
     inherit StringConverter<ViewLanguageModel>((fun m -> m.Name),
                                                (fun s ->
                                                     match LanguageModel.Create(s) with
@@ -32,10 +33,8 @@ type ViewLanguageModelConverter() =
 
 type ViewModel private (language: ViewLanguageModel, content: ContentModel) =
     [<DataMember(Name = "language")>]
-    [<JsonConverter(typeof<ViewLanguageModelConverter>)>]
     member val Language    = language with get
     [<DataMember(Name = "content")>]
-    [<JsonConverter(typeof<ContentModelConverter>)>]
     member val Content     = content with get
 
     static member Create(model: CodeModel) : Result<ViewModel, unit> =

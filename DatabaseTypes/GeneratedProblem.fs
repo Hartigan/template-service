@@ -21,8 +21,8 @@ type GeneratedProblem =
 
     static member TypeName = "generated_problem"
     static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, Problem.TypeName)
-    member private this.DocKey = Problem.CreateDocumentKey(this.Id)
+        DocumentKey.Create(id, GeneratedProblem.TypeName)
+    member private this.DocKey = GeneratedProblem.CreateDocumentKey(this.Id)
 
     interface IDocumentKey with
         [<DataMember(Name = "type")>]

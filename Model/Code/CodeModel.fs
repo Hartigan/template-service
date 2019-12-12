@@ -12,6 +12,7 @@ type Language =
     | CSharp
     | PlainText
 
+[<JsonConverter(typeof<LanguageModelConverter>)>]
 type LanguageModel private (name: string,  language: Language) =
 
     member val Name = name with get
@@ -24,27 +25,25 @@ type LanguageModel private (name: string,  language: Language) =
         | "plain_text" -> Result.Ok(LanguageModel(language, Language.PlainText))
         | _ -> Result.Error()
 
-
-type LanguageModelConverter() =
+and LanguageModelConverter() =
     inherit StringConverter<LanguageModel>((fun m -> m.Name),
                                            (fun s ->
                                                 match LanguageModel.Create(s) with
                                                 | Result.Ok(languageModel) -> languageModel
                                                 | Result.Error() -> failwith "Invalid language"))
 
+[<JsonConverter(typeof<ContentModelConverter>)>]
 type ContentModel(content: string) =
     member val Value = content with get
 
-type ContentModelConverter() =
+and ContentModelConverter() =
     inherit StringConverter<ContentModel>((fun m -> m.Value),
                                           (fun s -> ContentModel(s)))
 
 type CodeModel private (language: LanguageModel, content: ContentModel) =
     [<DataMember(Name = "language")>]
-    [<JsonConverter(typeof<LanguageModelConverter>)>]
     member val Language    = language with get
     [<DataMember(Name = "content")>]
-    [<JsonConverter(typeof<ContentModelConverter>)>]
     member val Content     = content with get
 
     static member Create(code: Code) : Result<CodeModel, unit> =
