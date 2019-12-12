@@ -15,6 +15,9 @@
     <Compile Include="Folders/FolderServiceResults.fs" />
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="Folders/FolderService.fs" />
+    <Compile Include="VersionControl/Results.fs" />
+    <Compile Include="VersionControl/IVersionControlService.fs" />
+    <Compile Include="VersionControl/VersionControlService.fs" />
     <Compile Include="Problems/Results.fs" />
     <Compile Include="Problems/IControllerDelegateGenerator.fs" />
     <Compile Include="Problems/CSharpControllerDelegateGenerator.fs" />
@@ -24,9 +27,6 @@
     <Compile Include="Problems/ViewFormatter.fs" />
     <Compile Include="Problems/GeneratorService.fs" />
     <Compile Include="Problems/ProblemsService.fs" />
-    <Compile Include="VersionControl/Results.fs" />
-    <Compile Include="VersionControl/IVersionControlService.fs" />
-    <Compile Include="VersionControl/VersionControlService.fs" />
     <Compile Include="Permissions/IPermissionsService.fs" />
     <Compile Include="Permissions/PermissionsService.fs" />
   </ItemGroup>

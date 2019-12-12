@@ -17,5 +17,6 @@
     <Compile Include="User.fs" />
     <Compile Include="UserGroup.fs" />
     <Compile Include="UserRole.fs" />
+    <Compile Include="GeneratedProblemSet.fs" />
   </ItemGroup>
 </Project>

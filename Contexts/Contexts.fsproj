@@ -11,14 +11,7 @@
     <Compile Include="ContextResults.fs" />
     <Compile Include="IContext.fs" />
     <Compile Include="CommonContext.fs" />
-    <Compile Include="ProblemContext.fs" />
-    <Compile Include="GeneratedProblemContext.fs" />
-    <Compile Include="UserContext.fs" />
-    <Compile Include="UserRoleContext.fs" />
-    <Compile Include="HeadContext.fs" />
-    <Compile Include="FolderContext.fs" />
-    <Compile Include="CommitContext.fs" />
-    <Compile Include="ProblemSetContext.fs" />
+    <Compile Include="Contexts.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CouchbaseNetClient" Version="3.0.0-beta1" />

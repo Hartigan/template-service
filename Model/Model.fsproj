@@ -28,6 +28,7 @@
     <Compile Include="Problem/ProblemModel.fs" />
     <Compile Include="Problem/GeneratedProblemModel.fs" />
     <Compile Include="Problem/ProblemSetModel.fs" />
+    <Compile Include="Problem/GeneratedProblemSetModel.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
