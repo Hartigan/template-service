@@ -19,8 +19,8 @@
     <Compile Include="VersionControl/IVersionControlService.fs" />
     <Compile Include="VersionControl/VersionControlService.fs" />
     <Compile Include="Problems/Results.fs" />
-    <Compile Include="Problems/IControllerDelegateGenerator.fs" />
-    <Compile Include="Problems/CSharpControllerDelegateGenerator.fs" />
+    <Compile Include="Problems/IDelegateGenerator.fs" />
+    <Compile Include="Problems/CSharpDelegateGenerator.fs" />
     <Compile Include="Problems/IViewFormatter.fs" />
     <Compile Include="Problems/IGeneratorService.fs" />
     <Compile Include="Problems/IProblemsService.fs" />
@@ -29,6 +29,8 @@
     <Compile Include="Problems/ProblemsService.fs" />
     <Compile Include="Permissions/IPermissionsService.fs" />
     <Compile Include="Permissions/PermissionsService.fs" />
+    <Compile Include="Examination/IExaminationService.fs" />
+    <Compile Include="Examination/ExaminationService.fs" />
   </ItemGroup>
 
 </Project>

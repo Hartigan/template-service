@@ -29,7 +29,7 @@ type ProblemModel private (id: ProblemId,
     [<DataMember(Name = "controller")>]
     member val Controller   = controller with get
     [<DataMember(Name = "validator")>]
-    member val Validator    = view with get
+    member val Validator    = validator with get
 
     static member Create(problem: Problem) : Result<ProblemModel, unit> =
         let codes = (CodeModel.Create(problem.View), CodeModel.Create(problem.Controller), CodeModel.Create(problem.Validator))

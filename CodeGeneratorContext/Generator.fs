@@ -21,3 +21,6 @@ type Generator(seed: int32) =
 
     member this.GetInt(minInclusive: int32, maxExclusive: int32) =
         random.Next(minInclusive, maxExclusive)
+
+type Answer(ans: string) =
+    member val Value = ans with get

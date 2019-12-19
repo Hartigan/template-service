@@ -27,7 +27,7 @@ type FoldersService(folderContext: FolderContext,
                 | Result.Ok(folder) ->
                     let docId = Folder.CreateDocumentKey(parentId.Value)
                     let! result = folderContext.Update(docId, fun parent ->
-                        let index = parent.Folders.FindIndex(fun link -> FolderId(link.Id) == folderId)
+                        let index = parent.Folders.FindIndex(fun link -> FolderId(link.Id) = folderId)
                         if index < 0 then
                             parent.Folders.Add({ FolderLink.Id = folderId.Value; Name = folder.Name })
                             Result.Ok(parent)
@@ -53,7 +53,7 @@ type FoldersService(folderContext: FolderContext,
                 | Result.Ok(head) ->
                     let docId = Folder.CreateDocumentKey(parentId.Value)
                     let! result = folderContext.Update(docId, fun parent ->
-                        let index = parent.Heads.FindIndex(fun link -> HeadId(link.Id) == headId)
+                        let index = parent.Heads.FindIndex(fun link -> HeadId(link.Id) = headId)
                         if index < 0 then
                             parent.Heads.Add({ HeadLink.Id = headId.Value; Name = head.Name })
                             Result.Ok(parent)
@@ -101,7 +101,7 @@ type FoldersService(folderContext: FolderContext,
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                    let index = folder.Folders.FindIndex(fun link -> FolderId(link.Id) == folderLinkId)
+                    let index = folder.Folders.FindIndex(fun link -> FolderId(link.Id) = folderLinkId)
                     if index < 0 then
                         Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Folder link %s not found" folderLinkId.Value)))
                     else
@@ -122,7 +122,7 @@ type FoldersService(folderContext: FolderContext,
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                    let index = folder.Heads.FindIndex(fun link -> HeadId(link.Id) == headLinkId)
+                    let index = folder.Heads.FindIndex(fun link -> HeadId(link.Id) = headLinkId)
                     if index < 0 then
                         Result.Error(RenameFail.Error(InvalidOperationException(sprintf "Head link %s not found" headLinkId.Value)))
                     else
