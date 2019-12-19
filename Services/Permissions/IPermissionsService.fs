@@ -13,4 +13,5 @@ type IPermissionsService =
     abstract member CheckPermissions : FolderId * UserId -> Async<Result<unit, CheckPermissionsFail>>
     abstract member CheckPermissions : HeadId * UserId -> Async<Result<unit, CheckPermissionsFail>>
     abstract member CheckPermissions : CommitId * UserId -> Async<Result<unit, CheckPermissionsFail>>
- 
+    abstract member CheckPermissions : SubmissionId * UserId -> Async<Result<unit, CheckPermissionsFail>>
+    abstract member CheckPermissions : ReportId * UserId -> Async<Result<unit, CheckPermissionsFail>>

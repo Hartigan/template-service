@@ -16,6 +16,7 @@
     <Compile Include="Controllers/ProblemsController.fs" />
     <Compile Include="Controllers/ProblemSetController.fs" />
     <Compile Include="Controllers/VersionController.fs" />
+    <Compile Include="Controllers/ExaminationController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
