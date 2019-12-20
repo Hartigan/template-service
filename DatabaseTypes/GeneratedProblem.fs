@@ -24,8 +24,12 @@ type GeneratedProblem =
         DocumentKey.Create(id, GeneratedProblem.TypeName)
     member private this.DocKey = GeneratedProblem.CreateDocumentKey(this.Id)
 
+    [<DataMember(Name = "type")>]
+    member private this.Type
+        with get() = this.DocKey.Type
+        and set(value: string) = ()
+    
     interface IDocumentKey with
-        [<DataMember(Name = "type")>]
         member this.Type
             with get() = this.DocKey.Type
         member this.Key
