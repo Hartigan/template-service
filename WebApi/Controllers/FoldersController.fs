@@ -10,6 +10,61 @@ open Models.Folders
 open System.Threading.Tasks
 open Models.Heads
 open System.Security.Claims
+open System.Runtime.Serialization
+
+type CreateFolderRequest = {
+    [<field: DataMember(Name = "name")>]
+    Name: FolderName
+}
+
+type AddFolderRequest = {
+    [<field: DataMember(Name = "target_id")>]
+    TargetId: FolderId
+    [<field: DataMember(Name = "destination_id")>]
+    DestinationId: FolderId
+}
+
+type AddHeadRequest = {
+    [<field: DataMember(Name = "target_id")>]
+    TargetId: HeadId
+    [<field: DataMember(Name = "destination_id")>]
+    DestinationId: FolderId
+}
+
+type MoveHeadToTrashRequest = {
+    [<field: DataMember(Name = "target_id")>]
+    TargetId: HeadId
+}
+
+type MoveFolderToTrashRequest = {
+    [<field: DataMember(Name = "target_id")>]
+    TargetId: FolderId
+}
+
+type RenameFolderRequest = {
+    [<field: DataMember(Name = "target_id")>]
+    TargetId: FolderId
+    [<field: DataMember(Name = "name")>]
+    Name: FolderName
+}
+
+type RenameFolderLinkRequest = {
+    [<field: DataMember(Name = "parent_id")>]
+    ParentId: FolderId
+    [<field: DataMember(Name = "link_id")>]
+    LinkId: FolderId
+    [<field: DataMember(Name = "name")>]
+    Name: FolderName
+}
+
+type RenameHeadLinkRequest = {
+    [<field: DataMember(Name = "parent_id")>]
+    ParentId: FolderId
+    [<field: DataMember(Name = "link_id")>]
+    LinkId: HeadId
+    [<field: DataMember(Name = "name")>]
+    Name: HeadName
+}
 
 [<Authorize>]
 [<Route("folders")>]
@@ -38,11 +93,10 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("create_folder")>]
-    member this.CreateFolder([<FromQuery(Name = "folder_name")>] name: string) =
+    member this.CreateFolder([<FromBody>] req: CreateFolderRequest) =
         async {
             let userId = this.GetUserId()
-            let folderName = FolderName(name)
-            let! result = foldersService.CreateFolder(folderName, userId)
+            let! result = foldersService.CreateFolder(req.Name, userId)
             match result with
             | Result.Error(fail) ->
                 match fail with
@@ -53,18 +107,15 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("add_folder")>]
-    member this.AddFolder([<FromQuery(Name = "target_id")>] targetId: string,
-                          [<FromQuery(Name = "destination_id")>] destinationId: string) =
+    member this.AddFolder([<FromBody>] req: AddFolderRequest) =
         async {
             let userId = this.GetUserId()
-            let targetFolderId = FolderId(targetId)
-            let destinationFolderId = FolderId(destinationId)
-            let! targetCheck = permissionsService.CheckPermissions(targetFolderId, userId)
-            let! destinationCheck = permissionsService.CheckPermissions(destinationFolderId, userId)
+            let! targetCheck = permissionsService.CheckPermissions(req.TargetId, userId)
+            let! destinationCheck = permissionsService.CheckPermissions(req.DestinationId, userId)
 
             match (targetCheck, destinationCheck) with
             | (Ok(), Ok()) ->
-                let! result = foldersService.AddFolder(targetFolderId, destinationFolderId)
+                let! result = foldersService.AddFolder(req.TargetId, req.DestinationId)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -76,18 +127,15 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("add_head")>]
-    member this.AddHead([<FromQuery(Name = "target_id")>] targetId: string,
-                        [<FromQuery(Name = "destination_id")>] destinationId: string) =
+    member this.AddHead([<FromBody>] req: AddHeadRequest) =
         async {
             let userId = this.GetUserId()
-            let targetHeadId = HeadId(targetId)
-            let destinationFolderId = FolderId(destinationId)
-            let! targetCheck = permissionsService.CheckPermissions(targetHeadId, userId)
-            let! destinationCheck = permissionsService.CheckPermissions(destinationFolderId, userId)
+            let! targetCheck = permissionsService.CheckPermissions(req.TargetId, userId)
+            let! destinationCheck = permissionsService.CheckPermissions(req.DestinationId, userId)
 
             match (targetCheck, destinationCheck) with
             | (Ok(), Ok()) ->
-                let! result = foldersService.AddHead(targetHeadId, destinationFolderId)
+                let! result = foldersService.AddHead(req.TargetId, req.DestinationId)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -113,13 +161,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("move_head_to_trash")>]
-    member this.MoveHeadToTrash([<FromQuery(Name = "id")>] id: string) =
+    member this.MoveHeadToTrash([<FromBody>] req: MoveHeadToTrashRequest) =
         async {
             let userId = this.GetUserId()
-            let headId = HeadId(id)
-            match! permissionsService.CheckPermissions(headId, userId) with
+            match! permissionsService.CheckPermissions(req.TargetId, userId) with
             | Ok() ->
-                let! result = foldersService.MoveHeadToTrash(headId, userId)
+                let! result = foldersService.MoveHeadToTrash(req.TargetId, userId)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -131,13 +178,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("move_folder_to_trash")>]
-    member this.MoveFolderToTrash([<FromQuery(Name = "id")>] id: string) =
+    member this.MoveFolderToTrash([<FromBody>] req: MoveFolderToTrashRequest) =
         async {
             let userId = this.GetUserId()
-            let folderId = FolderId(id)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(req.TargetId, userId) with
             | Ok() ->
-                let! result = foldersService.MoveFolderToTrash(folderId, userId)
+                let! result = foldersService.MoveFolderToTrash(req.TargetId, userId)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -149,14 +195,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("rename_folder")>]
-    member this.RenameFolder([<FromQuery(Name = "id")>] id: string, [<FromQuery(Name = "name")>] name: string) =
+    member this.RenameFolder([<FromBody>] req: RenameFolderRequest) =
         async {
             let userId = this.GetUserId()
-            let folderId = FolderId(id)
-            let folderName = FolderName(name)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(req.TargetId, userId) with
             | Ok() ->
-                let! result = foldersService.RenameFolder(folderId, folderName)
+                let! result = foldersService.RenameFolder(req.TargetId, req.Name)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -168,17 +212,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("rename_folder_link")>]
-    member this.RenameFolderLink([<FromQuery(Name = "folder_id")>] folderId: string,
-                                 [<FromQuery(Name = "link_id")>] linkId: string,
-                                 [<FromQuery(Name = "name")>] name: string) =
+    member this.RenameFolderLink([<FromBody>] req: RenameFolderLinkRequest) =
         async {
             let userId = this.GetUserId()
-            let folderId = FolderId(folderId)
-            let linkId = FolderId(linkId)
-            let folderName = FolderName(name)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(req.ParentId, userId) with
             | Ok() ->
-                let! result = foldersService.RenameFolderLink(folderId, linkId, folderName)
+                let! result = foldersService.RenameFolderLink(req.ParentId, req.LinkId, req.Name)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
@@ -190,16 +229,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
 
     [<HttpPost>]
     [<Route("rename_head_link")>]
-    member this.RenameHeadLink([<FromQuery(Name = "folder_id")>] folderId: string,
-                               [<FromQuery(Name = "link_id")>] linkId: string, [<FromQuery(Name = "name")>] name: string) =
+    member this.RenameHeadLink([<FromBody>] req: RenameHeadLinkRequest) =
         async {
             let userId = this.GetUserId()
-            let folderId = FolderId(folderId)
-            let linkId = HeadId(linkId)
-            let headName = HeadName(name)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(req.ParentId, userId) with
             | Ok() ->
-                let! result = foldersService.RenameHeadLink(folderId, linkId, headName)
+                let! result = foldersService.RenameHeadLink(req.ParentId, req.LinkId, req.Name)
                 match result with
                 | Result.Error(fail) ->
                     match fail with
