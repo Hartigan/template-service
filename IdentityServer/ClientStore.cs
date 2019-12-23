@@ -13,11 +13,10 @@ namespace IdentityServer
         {
             new Client
             {
-                ClientId = "WebApi",
-                ClientName = "Web Api",
-                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-
-                ClientSecrets = { new Secret("secret".Sha256()) },
+                ClientId = "react-ui",
+                ClientName = "React UI",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                RedirectUris = { "http://localhost:3001/signin-callback.html" },
                 AccessTokenLifetime = 60 * 60 * 24,
                 AllowedScopes = 
                 {
@@ -25,6 +24,8 @@ namespace IdentityServer
                     IdentityServerConstants.StandardScopes.Profile,
                     "web_api"
                 },
+                AllowAccessTokensViaBrowser = true,
+                AllowedCorsOrigins = { "http://localhost:3001"},
             }
         };
 

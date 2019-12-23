@@ -37,6 +37,8 @@ namespace IdentityServer
                     .AddSingleton<UserContext>()
                     .AddSingleton<UserRoleContext>();
 
+            services.AddOidcStateDataFormatterCache();
+
             services.AddIdentity<UserIdentity, RoleIdentity>()
                 .AddRoleStore<RoleStore>()
                 .AddUserStore<UserStore>();
@@ -52,6 +54,15 @@ namespace IdentityServer
                     .AddAspNetIdentity<UserIdentity>();
             services.AddAuthentication()
                     .AddIdentityServerJwt();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("_myAllowSpecificOrigins",
+                builder =>
+                {
+                    builder.WithOrigins("*");
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +71,7 @@ namespace IdentityServer
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseCors("_myAllowSpecificOrigins");
             }
             else
             {
