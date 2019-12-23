@@ -18,9 +18,10 @@ type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Cou
                 let! bucket = this.GetBucket()
                 let queryOptions = 
                     QueryOptions()
+                    |> fun x -> x.AddNamedParameter("type", Submission.TypeName)
                     |> fun x -> x.AddNamedParameter("owner_id", userId)
                 let! result = cluster.QueryAsync<Submission>
-                                  (sprintf "SELECT `%s`.* FROM `%s` USE INDEX (submission_by_user USING GSI) and `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
+                                  (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
                                    queryOptions)
                 let (submissions : IQueryResult<Submission>) = result
                 return Result.Ok(submissions |> Seq.toList)
@@ -37,9 +38,10 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
                 let! bucket = this.GetBucket()
                 let queryOptions = 
                     QueryOptions()
+                    |> fun x -> x.AddNamedParameter("type", Report.TypeName)
                     |> fun x -> x.AddNamedParameter("owner_id", userId)
                 let! result = cluster.QueryAsync<Report>
-                                  (sprintf "SELECT `%s`.* FROM `%s` USE INDEX (report_by_user USING GSI) and `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
+                                  (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
                                    queryOptions)
                 let (reports : IQueryResult<Report>) = result
                 return Result.Ok(reports |> Seq.toList)
@@ -72,9 +74,10 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                 let! bucket = this.GetBucket()
                 let queryOptions = 
                     QueryOptions()
+                    |> fun x -> x.AddNamedParameter("type", User.TypeName)
                     |> fun x -> x.AddNamedParameter("normalized_name", name)
                 let! result = cluster.QueryAsync<User>
-                                  (sprintf "SELECT `%s`.* FROM `%s` USE INDEX (user_by_normalized_name USING GSI) and `%s` = $normalized_name LIMIT 1" bucket.Name bucket.Name normalizedName,
+                                  (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `%s` = $normalized_name LIMIT 1" bucket.Name bucket.Name normalizedName,
                                    queryOptions)
                 let (users : IQueryResult<User>) = result
                 return Result.Ok(users.First())
