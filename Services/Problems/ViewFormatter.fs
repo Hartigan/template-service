@@ -7,7 +7,7 @@ open Models.Problems
 open Models.Code
 
 type ViewFormatter() =
-    let validateName = Regex("[A-Za-z0-9\\-\\_]+")
+    let validateName = Regex("[A-Za-z0-9\\-_]+")
 
     interface IViewFormatter with
         member this.Format(controllerResult, modelView) =
