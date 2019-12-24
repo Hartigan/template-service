@@ -86,7 +86,7 @@ type FoldersService(folderContext: FolderContext,
                     | InsertDocumentFail.Error(error) ->
                         return Result.Error(CreateFolderFail.Error(error))
                 | Result.Ok(ok) ->
-                    return Result.Ok(FolderModel(folder))
+                    return Result.Ok(FolderId(folder.Id))
             }
 
         member this.GetRoot(userId) = 

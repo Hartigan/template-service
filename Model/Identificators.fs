@@ -3,6 +3,7 @@ namespace Models.Identificators
 open System
 open Models.Converters
 open System.Text.Json.Serialization
+open System.Runtime.Serialization
 
 [<JsonConverter(typeof<FolderIdConverter>)>]
 type FolderId = 
@@ -113,3 +114,7 @@ type ReportId =
 
 and ReportIdConverter() =
     inherit StringConverter<ReportId>((fun m -> m.Value), (fun s -> ReportId(s)))
+
+type Id<'T>(id: 'T) =
+    [<JsonPropertyName("id")>]
+    member val Value = id

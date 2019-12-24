@@ -29,17 +29,17 @@ type GeneratedProblemModel private (id: GeneratedProblemId,
                                     title: ProblemTitle,
                                     view: GeneratedViewModel,
                                     answer: ProblemAnswer) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id           = id with get
-    [<DataMember(Name = "problem_id")>]
+    [<JsonPropertyName("problem_id")>]
     member val ProblemId    = problemId with get
-    [<DataMember(Name = "seed")>]
+    [<JsonPropertyName("seed")>]
     member val Seed         = seed with get
-    [<DataMember(Name = "title")>]
+    [<JsonPropertyName("title")>]
     member val Title        = title with get
-    [<DataMember(Name = "view")>]
+    [<JsonPropertyName("view")>]
     member val View         = view with get
-    [<DataMember(Name = "answer")>]
+    [<JsonPropertyName("answer")>]
     member val Answer       = answer with get
 
     static member Create(generatedProblem: GeneratedProblem) : Result<GeneratedProblemModel, unit> =

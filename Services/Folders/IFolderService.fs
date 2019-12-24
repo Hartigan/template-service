@@ -8,7 +8,7 @@ open Models.Identificators
 type IFoldersService =
     abstract member Get : FolderId -> Async<Result<FolderModel, GetFail>>
     abstract member GetRoot : UserId -> Async<Result<FolderModel, GetFail>>
-    abstract member CreateFolder : FolderName * UserId -> Async<Result<FolderModel, CreateFolderFail>>
+    abstract member CreateFolder : FolderName * UserId -> Async<Result<FolderId, CreateFolderFail>>
     abstract member AddFolder : target:FolderId * destination:FolderId -> Async<Result<unit, AddFail>>
     abstract member AddHead : target:HeadId * destination:FolderId-> Async<Result<unit, AddFail>>
     abstract member MoveHeadToTrash : HeadId * UserId-> Async<Result<unit, MoveTrashFail>>

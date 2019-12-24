@@ -101,7 +101,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Result.Error(fail) ->
                 match fail with
                 | CreateFolderFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
         }
         |> Async.StartAsTask
 

@@ -20,15 +20,15 @@ type ProblemModel private (id: ProblemId,
                            view: ViewModel,
                            controller: ControllerModel,
                            validator: ValidatorModel) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id           = id with get
-    [<DataMember(Name = "title")>]
+    [<JsonPropertyName("title")>]
     member val Title        = title with get
-    [<DataMember(Name = "view")>]
+    [<JsonPropertyName("view")>]
     member val View         = view with get
-    [<DataMember(Name = "controller")>]
+    [<JsonPropertyName("controller")>]
     member val Controller   = controller with get
-    [<DataMember(Name = "validator")>]
+    [<JsonPropertyName("validator")>]
     member val Validator    = validator with get
 
     static member Create(problem: Problem) : Result<ProblemModel, unit> =

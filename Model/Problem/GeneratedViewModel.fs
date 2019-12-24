@@ -6,9 +6,9 @@ open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
 type GeneratedViewModel private (language: ViewLanguageModel, content: ContentModel) =
-    [<DataMember(Name = "language")>]
+    [<JsonPropertyName("language")>]
     member val Language    = language with get
-    [<DataMember(Name = "content")>]
+    [<JsonPropertyName("content")>]
     member val Content     = content with get
 
     static member Create(model: CodeModel) : Result<GeneratedViewModel, unit> =

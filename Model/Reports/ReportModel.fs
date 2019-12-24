@@ -10,30 +10,30 @@ open System.Text.Json.Serialization
 
 
 type ProblemReportModel(entity: ProblemReport) =
-    [<DataMember(Name = "generated_problem_id")>]
+    [<JsonPropertyName("generated_problem_id")>]
     member val GeneratedProblemId = GeneratedProblemId(entity.GeneratedProblemId) with get
-    [<DataMember(Name = "answer")>]
+    [<JsonPropertyName("answer")>]
     member val Answer = entity.Answer |> Option.map(ProblemAnswer) with get
-    [<DataMember(Name = "expected_answer")>]
+    [<JsonPropertyName("expected_answer")>]
     member val ExpectedAnswer = ProblemAnswer(entity.ExpectedAnswer) with get
-    [<DataMember(Name = "is_correct")>]
+    [<JsonPropertyName("is_correct")>]
     member val IsCorrect = entity.IsCorrect with get
-    [<DataMember(Name = "timestamp")>]
+    [<JsonPropertyName("timestamp")>]
     member val Timestamp = entity.Timestamp with get
 
 
 type ReportModel(entity: Report) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id = ReportId(entity.Id) with get
-    [<DataMember(Name = "generated_problem_set_id")>]
+    [<JsonPropertyName("generated_problem_set_id")>]
     member val GeneratedProblemSetId = GeneratedProblemSetId(entity.GeneratedProblemSetId) with get
-    [<DataMember(Name = "submission_id")>]
+    [<JsonPropertyName("submission_id")>]
     member val SubmissionId = SubmissionId(entity.SubmissionId) with get
-    [<DataMember(Name = "permissions")>]
+    [<JsonPropertyName("permissions")>]
     member val Permissions = PermissionsModel(entity.Permissions) with get
-    [<DataMember(Name = "started_at")>]
+    [<JsonPropertyName("started_at")>]
     member val StartedAt = entity.StartedAt with get
-    [<DataMember(Name = "finished_at")>]
+    [<JsonPropertyName("finished_at")>]
     member val FinishedAt = entity.FinishedAt with get
-    [<DataMember(Name = "answers")>]
+    [<JsonPropertyName("answers")>]
     member val Answers = entity.Answers |> Seq.map(fun x -> ProblemReportModel(x)) |> Seq.toList with get

@@ -21,13 +21,13 @@ type ProblemSetModel private (id: ProblemSetId,
                               title: ProblemSetTitle,
                               headIds: List<HeadId>,
                               duration: TimeSpan) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id           = id with get
-    [<DataMember(Name = "title")>]
+    [<JsonPropertyName("title")>]
     member val Title        = title with get
-    [<DataMember(Name = "head_ids")>]
+    [<JsonPropertyName("head_ids")>]
     member val Heads        = headIds with get
-    [<DataMember(Name = "duration")>]
+    [<JsonPropertyName("duration")>]
     member val Duration     = duration with get
 
     static member Create(problemSet: ProblemSet) : Result<ProblemSetModel, unit> =

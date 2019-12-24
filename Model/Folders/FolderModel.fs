@@ -18,28 +18,27 @@ type FolderName(name: string) =
 and FolderNameConverter() =
     inherit StringConverter<FolderName>((fun m -> m.Name), (fun s -> FolderName(s)))
 
-[<DataContract>]
 type FolderLinkModel(link: FolderLink) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id       = FolderId(link.Id) with get
-    [<DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     member val Name     = FolderName(link.Name) with get
 
 type HeadLinkModel(link: HeadLink) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id       = HeadId(link.Id) with get
 
-    [<DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     member val Name     = HeadName(link.Name) with get
 
 type FolderModel(folder: Folder) =
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id           = FolderId(folder.Id) with get
-    [<DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     member val Name         = FolderName(folder.Name) with get
-    [<DataMember(Name = "folders")>]
+    [<JsonPropertyName("folders")>]
     member val Folders      = folder.Folders.Select(fun x -> FolderLinkModel(x)).ToList() :> IReadOnlyList<FolderLinkModel> with get
-    [<DataMember(Name = "heads")>]
+    [<JsonPropertyName("heads")>]
     member val Heads        = folder.Heads.Select(fun x -> HeadLinkModel(x)).ToList() :> IReadOnlyList<HeadLinkModel> with get
-    [<DataMember(Name = "permissions")>]
+    [<JsonPropertyName("permissions")>]
     member val Permissions  = PermissionsModel(folder.Permissions) with get

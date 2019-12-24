@@ -25,10 +25,10 @@ and ConcreteIdConverter() =
 type TargetModel private (targetId: TargetId, typeName: string, concreteId: ConcreteId) =
 
 
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id = targetId
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member val ConcreteId = concreteId
 
     static member Create(target: Target): Result<TargetModel, unit> =
@@ -46,25 +46,25 @@ and CommitDescriptionConverter() =
 type CommitModel private (id: CommitId, authorId: UserId, headId: HeadId, target: TargetModel, timestamp: DateTimeOffset, parentId: CommitId, description: CommitDescription) =
 
 
-    [<DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     member val Id = id
 
-    [<DataMember(Name = "author_id")>]
+    [<JsonPropertyName("author_id")>]
     member val AuthorId = authorId
 
-    [<DataMember(Name = "head_id")>]
+    [<JsonPropertyName("head_id")>]
     member val HeadId = headId
 
-    [<DataMember(Name = "target")>]
+    [<JsonPropertyName("target")>]
     member val Target = target
 
-    [<DataMember(Name = "timestamp")>]
+    [<JsonPropertyName("timestamp")>]
     member val Timestamp = timestamp
 
-    [<DataMember(Name = "parent_id")>]
+    [<JsonPropertyName("parent_id")>]
     member val ParentId = parentId
 
-    [<DataMember(Name = "description")>]
+    [<JsonPropertyName("description")>]
     member val Description = description
 
     static member Create(commit: Commit): Result<CommitModel, unit> =
