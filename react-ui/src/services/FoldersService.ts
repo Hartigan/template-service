@@ -1,7 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { Folder } from '../models/Folder';
-import { FolderId, Id } from '../models/Identificators';
+import { FolderId, Id, HeadId } from '../models/Identificators';
 
 export class FoldersService {
     private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/folders`);
@@ -9,7 +9,7 @@ export class FoldersService {
     constructor() {
     }
 
-    getFolder(folderId: string) {
+    getFolder(folderId: FolderId) {
         return this.http.get<Folder>(`get?folder_id=${folderId}`);
     }
 
@@ -17,11 +17,11 @@ export class FoldersService {
         return this.http.post<Id<FolderId>>(`create_folder`, { name: name });
     }
 
-    addFolder(targetId: string, destinationId: string) {
+    addFolder(targetId: FolderId, destinationId: FolderId) {
         return this.http.post<void>(`add_folder`, { target_id: targetId, destination_id: destinationId });
     }
 
-    addHead(targetId: string, destinationId: string) {
+    addHead(targetId: HeadId, destinationId: FolderId) {
         return this.http.post<void>(`add_head`, { target_id: targetId, destination_id: destinationId })
     }
 
@@ -29,23 +29,23 @@ export class FoldersService {
         return this.http.get<Folder>(`get_root`);
     }
 
-    moveHeadToTrash(id: string) {
+    moveHeadToTrash(id: HeadId) {
         return this.http.post<void>(`move_head_to_trash`, { target_id: id });
     }
 
-    moveFolderToTrash(id: string) {
+    moveFolderToTrash(id: FolderId) {
         return this.http.post<void>(`move_folder_to_trash`, { target_id: id });
     }
 
-    renameFolder(id: string, name: string) {
+    renameFolder(id: FolderId, name: string) {
         return this.http.post<void>(`rename_folder`, { target_id: id, name: name });
     }
 
-    renameFolderLink(parentId: string, linkId: string, name: string) {
+    renameFolderLink(parentId: FolderId, linkId: FolderId, name: string) {
         return this.http.post<void>(`rename_folder_link`, { parent_id: parentId, link_id: linkId, name: name });
     }
 
-    renameHeadLink(parentId: string, linkId: string, name: string) {
+    renameHeadLink(parentId: FolderId, linkId: HeadId, name: string) {
         return this.http.post<void>(`rename_head_link`, { parent_id: parentId, link_id: linkId, name: name });
     }
 }
