@@ -1,6 +1,8 @@
+import { ProblemSetId, HeadId } from "./Identificators";
+
 export interface ProblemSet {
-    id: string;
+    id: ProblemSetId;
     title: string;
-    head_ids: Array<string>;
+    head_ids: Array<HeadId>;
     duration: number;
 }

@@ -1,5 +1,7 @@
+import { GeneratedProblemSetId } from "./Identificators";
+
 export interface GeneratedProblemSet {
-    id: string;
+    id: GeneratedProblemSetId;
     title: string;
     problems: Array<string>;
     duration: number;

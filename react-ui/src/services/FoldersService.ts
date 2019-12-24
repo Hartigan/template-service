@@ -1,6 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { Folder } from '../models/Folder';
+import { FolderId, Id } from '../models/Identificators';
 
 export class FoldersService {
     private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/folders`);
@@ -13,7 +14,7 @@ export class FoldersService {
     }
 
     createFolder(name: string) {
-        return this.http.post<Folder>(`create_folder`, { name: name });
+        return this.http.post<Id<FolderId>>(`create_folder`, { name: name });
     }
 
     addFolder(targetId: string, destinationId: string) {

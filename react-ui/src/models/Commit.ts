@@ -1,14 +1,16 @@
+import { CommitId, TargetId, UserId, HeadId } from "./Identificators";
+
 export interface Target {
-    id: string;
+    id: TargetId;
     type: string;
 }
 
 export interface Commit {
-    id: string;
-    author_id: string;
-    head_id: string;
+    id: CommitId;
+    author_id: UserId;
+    head_id: HeadId;
     target: Target;
     timestamp: Date;
-    parent_id: string;
+    parent_id: CommitId;
     description: string;
 }

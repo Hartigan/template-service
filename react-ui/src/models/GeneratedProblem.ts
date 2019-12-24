@@ -1,8 +1,9 @@
 import { GeneratedView } from "./GeneratedView";
+import { GeneratedProblemId, ProblemId } from "./Identificators";
 
 export interface GeneratedProblem {
-    id: string;
-    problem_id: string;
+    id: GeneratedProblemId;
+    problem_id: ProblemId;
     seed: number;
     title: string;
     view: GeneratedView;
