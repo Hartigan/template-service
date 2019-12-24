@@ -11,6 +11,27 @@ open Services.VersionControl
 open Services.Problems
 open Models.Problems
 open Microsoft.AspNetCore.Http
+open System.Runtime.Serialization
+
+[<DataContract>]
+type CreateProblemSetRequest = {
+    [<field: DataMember(Name = "folder_id")>]
+    Folder: FolderId
+    [<field: DataMember(Name = "name")>]
+    Name: HeadName
+    [<field: DataMember(Name = "problem_set")>]
+    ProblemSet : ProblemSetModel
+}
+
+[<DataContract>]
+type UpdateProblemSetRequest = {
+    [<field: DataMember(Name = "head_id")>]
+    Head: HeadId
+    [<field: DataMember(Name = "description")>]
+    Description: CommitDescription
+    [<field: DataMember(Name = "problem_set")>]
+    ProblemSet : ProblemSetModel
+}
 
 [<Authorize>]
 [<Route("problem_set")>]
@@ -44,53 +65,47 @@ type ProblemSetController(foldersService: IFoldersService, permissionsService: I
 
     [<HttpPost>]
     [<Route("create")>]
-    member this.CreateProblem([<FromQuery(Name = "folder_id")>] folderIdString: string,
-                              [<FromQuery(Name = "name")>] name: string,
-                              [<FromBody>] model: ProblemSetModel) =
+    member this.CreateProblem([<FromBody>] req: CreateProblemSetRequest) =
         async {
             let userId = this.GetUserId()
-            let folderId = FolderId(folderIdString)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(req.Folder, userId) with
             | Ok() ->
-                match! problemsService.Create(model) with
+                match! problemsService.Create(req.ProblemSet) with
                 | Result.Error(fail) ->
                     match fail with
                     | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Ok(problemId) ->
-                    match! versionControlService.Create(HeadName(name), ConcreteId.ProblemSet(model.Id), CommitDescription("Initial commit"), userId) with
+                | Ok(problemSetId) ->
+                    match! versionControlService.Create(req.Name, ConcreteId.ProblemSet(problemSetId), CommitDescription("Initial commit"), userId) with
                     | Result.Error(fail) ->
                         match fail with
                         | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
                     | Result.Ok(headId) ->
-                        match! foldersService.AddHead(headId, folderId) with
+                        match! foldersService.AddHead(headId, req.Folder) with
                         | Result.Error(fail) ->
                             match fail with
                             | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                        | Ok() -> return (JsonResult(headId) :> IActionResult)
+                        | Ok() -> return (JsonResult(Id(headId)) :> IActionResult)
             | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
     [<HttpPost>]
     [<Route("update")>]
-    member this.UpdateProblem([<FromQuery(Name = "head_id")>] headIdString: string,
-                              [<FromQuery(Name = "description")>] description: string,
-                              [<FromBody>] model: ProblemSetModel) =
+    member this.UpdateProblem([<FromBody>] req: UpdateProblemSetRequest) =
         async {
             let userId = this.GetUserId()
-            let headId = HeadId(headIdString)
-            match! permissionsService.CheckPermissions(headId, userId) with
+            match! permissionsService.CheckPermissions(req.Head, userId) with
             | Ok() ->
-                match! problemsService.Create(model) with
+                match! problemsService.Create(req.ProblemSet) with
                 | Result.Error(fail) ->
                     match fail with
                     | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Ok(problemId) ->
-                    match! versionControlService.Create(ConcreteId.ProblemSet(model.Id), CommitDescription(description), userId, headId) with
+                | Ok(problemSetId) ->
+                    match! versionControlService.Create(ConcreteId.ProblemSet(problemSetId), req.Description, userId, req.Head) with
                     | Result.Error(fail) ->
                         match fail with
                         | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                    | Result.Ok(commitId) -> return (JsonResult(commitId) :> IActionResult)
+                    | Result.Ok(commitId) -> return (JsonResult(Id(commitId)) :> IActionResult)
             | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
