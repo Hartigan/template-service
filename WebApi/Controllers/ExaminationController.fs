@@ -11,6 +11,14 @@ open Services.VersionControl
 open Models.Heads
 open Models.Identificators
 open Models.Reports
+open System.Runtime.Serialization
+
+type ApplyAnswerRequest = {
+    [<field: DataMember(Name = "id")>]
+    Id: SubmissionId
+    [<field: DataMember(Name = "problem_answer")>]
+    ProblemAnswer: ProblemAnswerModel
+}
 
 [<Authorize>]
 [<Route("examination")>]
@@ -41,13 +49,12 @@ type ExaminationController(permissionsService: IPermissionsService,
 
     [<HttpPost>]
     [<Route("answer")>]
-    member this.Complete([<FromQuery(Name = "id")>] id: string, [<FromBody>] answer: ProblemAnswerModel) =
+    member this.ApplyAnswer([<FromBody>] req: ApplyAnswerRequest) =
         async {
             let userId = this.GetUserId()
-            let submissionId = SubmissionId(id)
-            match! permissionsService.CheckPermissions(submissionId, userId) with
+            match! permissionsService.CheckPermissions(req.Id, userId) with
             | Ok() ->
-                match! examinationService.ApplyAnswer(answer, submissionId) with
+                match! examinationService.ApplyAnswer(req.ProblemAnswer, req.Id) with
                 | Result.Error(fail) ->
                     match fail with
                     | ApplyAnswerFail.Error(error) -> return (BadRequestResult() :> IActionResult)
@@ -70,7 +77,7 @@ type ExaminationController(permissionsService: IPermissionsService,
                 | Result.Error(fail) ->
                     match fail with
                     | CompleteSubmissionFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+                | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
             | _ -> return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
@@ -94,7 +101,7 @@ type ExaminationController(permissionsService: IPermissionsService,
                         | Result.Error(fail) ->
                             match fail with
                             | CreateSubmissionFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                        | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+                        | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
                     | _ ->  return (BadRequestResult() :> IActionResult)
             | _ -> return (UnauthorizedResult() :> IActionResult)
         }
