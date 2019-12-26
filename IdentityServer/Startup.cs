@@ -13,6 +13,7 @@ using Contexts;
 using Models.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Stores;
+using IdentityServer4.Services;
 
 namespace IdentityServer
 {
@@ -45,6 +46,8 @@ namespace IdentityServer
 
             services.AddSingleton<IClientStore, ClientStore>();
 
+            services.AddSingleton<ICorsPolicyService, CorsPolicyService>();
+
             services.AddIdentityServer(options => { 
                         options.IssuerUri = "https://issuer";
                     })
@@ -55,14 +58,6 @@ namespace IdentityServer
             services.AddAuthentication()
                     .AddIdentityServerJwt();
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("_myAllowSpecificOrigins",
-                builder =>
-                {
-                    builder.WithOrigins("*");
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,7 +66,6 @@ namespace IdentityServer
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseCors("_myAllowSpecificOrigins");
             }
             else
             {

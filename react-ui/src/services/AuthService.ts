@@ -10,7 +10,7 @@ export class AuthService {
             client_id: AuthSettings.ClientId,
             redirect_uri: `${AuthSettings.ClientRoot}signin-callback.html`,
             post_logout_redirect_uri: `${AuthSettings.ClientRoot}`,
-            response_type: 'token',
+            response_type: 'id_token token',
             scope: AuthSettings.ClientScope,
             stateStore: new WebStorageStateStore({})
         });

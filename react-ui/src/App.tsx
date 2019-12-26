@@ -1,18 +1,30 @@
 import React from 'react';
-import AppContent from './components/AppContent'
-import logo from './logo.svg';
+import AppBar from '@material-ui/core/AppBar';
+import AuthContent from './components/auth/AuthContent'
 import './App.css';
+import { Toolbar, Typography, makeStyles } from '@material-ui/core';
+
+const useStyles = makeStyles(theme => ({
+  offset: theme.mixins.toolbar,
+  title: {
+    flexGrow: 1,
+  }
+}));
 
 const App: React.FC = () => {
+  const classes = useStyles();
   return (
     <div className="App">
-      <div className="container-fluid">
-          <div className="row">
-            <div className="col">
-              <AppContent />
-            </div>
-          </div>
-        </div>
+      <header>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" className={classes.title}>
+              Testing service
+            </Typography>
+            <AuthContent />
+          </Toolbar>
+        </AppBar>
+      </header>
     </div>
   );
 }
