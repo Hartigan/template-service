@@ -11,25 +11,23 @@ open Services.VersionControl
 open Services.Problems
 open Models.Problems
 open Microsoft.AspNetCore.Http
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type CreateProblemSetRequest = {
-    [<field: DataMember(Name = "folder_id")>]
+    [<JsonPropertyName("folder_id")>]
     Folder: FolderId
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name: HeadName
-    [<field: DataMember(Name = "problem_set")>]
+    [<JsonPropertyName("problem_set")>]
     ProblemSet : ProblemSetModel
 }
 
-[<DataContract>]
 type UpdateProblemSetRequest = {
-    [<field: DataMember(Name = "head_id")>]
+    [<JsonPropertyName("head_id")>]
     Head: HeadId
-    [<field: DataMember(Name = "description")>]
+    [<JsonPropertyName("description")>]
     Description: CommitDescription
-    [<field: DataMember(Name = "problem_set")>]
+    [<JsonPropertyName("problem_set")>]
     ProblemSet : ProblemSetModel
 }
 

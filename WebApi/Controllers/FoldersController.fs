@@ -10,59 +10,59 @@ open Models.Folders
 open System.Threading.Tasks
 open Models.Heads
 open System.Security.Claims
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
 type CreateFolderRequest = {
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name: FolderName
 }
 
 type AddFolderRequest = {
-    [<field: DataMember(Name = "target_id")>]
+    [<JsonPropertyName("target_id")>]
     TargetId: FolderId
-    [<field: DataMember(Name = "destination_id")>]
+    [<JsonPropertyName("destination_id")>]
     DestinationId: FolderId
 }
 
 type AddHeadRequest = {
-    [<field: DataMember(Name = "target_id")>]
+    [<JsonPropertyName("target_id")>]
     TargetId: HeadId
-    [<field: DataMember(Name = "destination_id")>]
+    [<JsonPropertyName("destination_id")>]
     DestinationId: FolderId
 }
 
 type MoveHeadToTrashRequest = {
-    [<field: DataMember(Name = "target_id")>]
+    [<JsonPropertyName("target_id")>]
     TargetId: HeadId
 }
 
 type MoveFolderToTrashRequest = {
-    [<field: DataMember(Name = "target_id")>]
+    [<JsonPropertyName("target_id")>]
     TargetId: FolderId
 }
 
 type RenameFolderRequest = {
-    [<field: DataMember(Name = "target_id")>]
+    [<JsonPropertyName("target_id")>]
     TargetId: FolderId
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name: FolderName
 }
 
 type RenameFolderLinkRequest = {
-    [<field: DataMember(Name = "parent_id")>]
+    [<JsonPropertyName("parent_id")>]
     ParentId: FolderId
-    [<field: DataMember(Name = "link_id")>]
+    [<JsonPropertyName("link_id")>]
     LinkId: FolderId
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name: FolderName
 }
 
 type RenameHeadLinkRequest = {
-    [<field: DataMember(Name = "parent_id")>]
+    [<JsonPropertyName("parent_id")>]
     ParentId: FolderId
-    [<field: DataMember(Name = "link_id")>]
+    [<JsonPropertyName("link_id")>]
     LinkId: HeadId
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name: HeadName
 }
 

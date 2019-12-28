@@ -11,12 +11,12 @@ open Services.VersionControl
 open Models.Heads
 open Models.Identificators
 open Models.Reports
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
 type ApplyAnswerRequest = {
-    [<field: DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     Id: SubmissionId
-    [<field: DataMember(Name = "problem_answer")>]
+    [<JsonPropertyName("problem_answer")>]
     ProblemAnswer: ProblemAnswerModel
 }
 
