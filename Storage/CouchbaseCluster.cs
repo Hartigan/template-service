@@ -10,12 +10,12 @@ namespace Storage
     {
         private readonly ICluster _cluster;
 
-        public CouchbaseCluster(IOptions<CouchbaseConfig> config, ILoggerProvider loggerProvider)
+        public CouchbaseCluster(IOptions<CouchbaseConfig> config, ILoggerFactory loggerFactory)
         {
             var options = new ClusterOptions()
                 .WithServers(config.Value.Domain)
                 .WithCredentials(config.Value.Username, config.Value.Password)
-                .WithLogging(loggerProvider)
+                .WithLogging(loggerFactory)
                 .WithBucket("main");
             _cluster = Couchbase.Cluster.Connect(config.Value.Domain, options);
         }

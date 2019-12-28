@@ -121,11 +121,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (getResult: IGetResult) = collection.GetAsync(key.Key)
-                    // workaround for beta-1, fixed in beta-2
-                    let jobject = getResult.ContentAs<JObject>()
-                    let myObj = jobject.GetValue("").ToObject<'T>()
-                    return Result.Ok(myObj)
-                    //return Result.Ok(getResult.ContentAs<'T>())
+                    return Result.Ok(getResult.ContentAs<'T>())
 
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
