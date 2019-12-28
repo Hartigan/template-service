@@ -9,9 +9,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export default function AuthContent() {
+export interface IAuthContentProps {
+    authService: AuthService;
+}
 
-    const authService = new AuthService();
+export default function AuthContent(props: IAuthContentProps) {
+
+    const authService = props.authService;
     const [ user, setUser ] = React.useState<User | null>(null);
     const [ name, setName ] = React.useState<string | null | undefined>(null);
     const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);

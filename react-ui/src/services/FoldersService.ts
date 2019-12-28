@@ -2,11 +2,13 @@ import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { Folder } from '../models/Folder';
 import { FolderId, Id, HeadId } from '../models/Identificators';
+import { HttpServiceFactory } from './HttpServiceFactory';
 
 export class FoldersService {
-    private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/folders`);
+    private http : HttpService;
 
-    constructor() {
+    constructor(httpServiceFactory: HttpServiceFactory) {
+        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/folders`);
     }
 
     getFolder(folderId: FolderId) {

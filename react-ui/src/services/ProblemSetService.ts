@@ -2,11 +2,13 @@ import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { CommitId, HeadId, FolderId, Id } from '../models/Identificators';
 import { ProblemSet } from '../models/ProblemSet';
+import { HttpServiceFactory } from './HttpServiceFactory';
 
 export class ProblemSetService {
-    private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/problem_set`);
+    private http : HttpService;
 
-    constructor() {
+    constructor(httpServiceFactory: HttpServiceFactory) {
+        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/problem_set`);
     }
 
     get(id: CommitId) {

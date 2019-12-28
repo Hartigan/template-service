@@ -89,8 +89,28 @@ type FoldersService(folderContext: FolderContext,
                     return Result.Ok(FolderId(folder.Id))
             }
 
-        member this.GetRoot(userId) = 
-            (this :> IFoldersService).Get(FolderId(userId.Value))
+        member this.GetRoot(userId) =
+            async {
+                match! (this :> IFoldersService).Get(FolderId(userId.Value)) with
+                | Ok(model) -> return Ok(model)
+                | Result.Error(fail) ->
+                    let folder = {
+                        Folder.Id = userId.Value
+                        Name = "root"
+                        Permissions = {
+                            Permissions.OwnerId = userId.Value
+                        }
+                        Folders = List()
+                        Heads = List()
+                    }
+
+                    match! folderContext.Insert(folder, folder) with
+                    | Result.Error(fail) ->
+                        match fail with
+                        | InsertDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
+                    | Ok() -> return Ok(FolderModel(folder))
+            }
+            
 
         member this.MoveFolderToTrash(folderId, userId) = 
             failwith "Not Implemented"

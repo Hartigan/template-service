@@ -3,11 +3,13 @@ import { HttpService } from './HttpService';
 import { HeadId, CommitId } from '../models/Identificators';
 import { Head } from '../models/Head';
 import { Commit } from '../models/Commit';
+import { HttpServiceFactory } from './HttpServiceFactory';
 
-export class FoldersService {
-    private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/version`);
+export class VersionService {
+    private http : HttpService;
 
-    constructor() {
+    constructor(httpServiceFactory: HttpServiceFactory) {
+        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/version`);
     }
 
     getHead(id: HeadId) {

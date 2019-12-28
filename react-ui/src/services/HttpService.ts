@@ -2,9 +2,10 @@ import { AuthService } from "./AuthService";
 
 export class HttpService {
 
-    private authService = new AuthService();
-
-    constructor(private baseUrl: string) {
+    constructor(
+        private baseUrl: string,
+        private authService: AuthService
+    ) {
     }
 
     get<T>(relative: string): Promise<T> {
@@ -48,7 +49,8 @@ export class HttpService {
                         headers: {...authHeaders, ...headers}
                     });
                 } else {
-                    throw new Error("No login");
+                    this.authService.login();
+                    throw new Error('No login');
                 }
             })
     }

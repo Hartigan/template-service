@@ -3,11 +3,13 @@ import { HttpService } from './HttpService';
 import { Submission, ProblemAnswer } from '../models/Submission';
 import { SubmissionId, ReportId, Id, HeadId } from '../models/Identificators';
 import { Report } from '../models/Report';
+import { HttpServiceFactory } from './HttpServiceFactory';
 
 export class ExaminationService {
-    private http = new HttpService(`${GlobalSettings.ApiBaseUrl}/examination`);
+    private http : HttpService;
 
-    constructor() {
+    constructor(httpServiceFactory: HttpServiceFactory) {
+        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/examination`);
     }
 
     getSubmission(id: SubmissionId) {
