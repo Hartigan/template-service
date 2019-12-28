@@ -70,12 +70,20 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IGeneratorService, GeneratorService>()
         |> fun x -> x.AddSingleton<IViewFormatter, ViewFormatter>()
         |> fun x -> x.AddSingleton<IProblemsService, ProblemsService>()
+        |> fun x -> x.AddCors(fun options -> 
+                options.AddPolicy("_allowAll", fun builder ->
+                        builder.WithOrigins("*")
+                        |> fun x -> x.AllowAnyHeader()
+                        |> ignore
+                    )
+            )
         |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         app.UseHttpsRedirection() |> ignore
         app.UseRouting() |> ignore
+        app.UseCors("_allowAll") |> ignore
 
         app.UseAuthentication() |> ignore
         app.UseAuthorization() |> ignore
