@@ -29,13 +29,18 @@ and ValidatorLanguageModelConverter() =
                                                         | Result.Error() -> failwith "Invalid validator language"
                                                     | Result.Error() -> failwith "Invalid language"))
 
-type ValidatorModel private (language: ValidatorLanguageModel, content: ContentModel) =
-    [<JsonPropertyName("language")>]
-    member val Language    = language with get
-    [<JsonPropertyName("content")>]
-    member val Content     = content with get
-
+type ValidatorModel =
+    {
+        [<JsonPropertyName("language")>]
+        Language: ValidatorLanguageModel
+        [<JsonPropertyName("content")>]
+        Content: ContentModel
+    }
     static member Create(model: CodeModel) : Result<ValidatorModel, unit> =
         match ValidatorLanguageModel.Create(model.Language) with
-        | Result.Ok(validatorLanguageModel) -> Result.Ok(ValidatorModel(validatorLanguageModel, model.Content))
+        | Result.Ok(validatorLanguageModel) ->
+            Ok({
+                Language = validatorLanguageModel
+                Content = model.Content
+            })
         | Result.Error() -> Result.Error()

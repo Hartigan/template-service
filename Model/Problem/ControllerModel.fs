@@ -29,13 +29,18 @@ and ControllerLanguageModelConverter() =
                                                               | Result.Error() -> failwith "Invalid controller language"
                                                           | Result.Error() -> failwith "Invalid language"))
 
-type ControllerModel private (language: ControllerLanguageModel, content: ContentModel) =
-    [<JsonPropertyName("language")>]
-    member val Language    = language with get
-    [<JsonPropertyName("content")>]
-    member val Content     = content with get
-
+type ControllerModel =
+    {
+        [<JsonPropertyName("language")>]
+        Language: ControllerLanguageModel
+        [<JsonPropertyName("content")>]
+        Content: ContentModel
+    }
     static member Create(model: CodeModel) : Result<ControllerModel, unit> =
         match ControllerLanguageModel.Create(model.Language) with
-        | Result.Ok(controllerLanguageModel) -> Result.Ok(ControllerModel(controllerLanguageModel, model.Content))
+        | Result.Ok(controllerLanguageModel) ->
+            Ok({
+                Language = controllerLanguageModel
+                Content = model.Content
+            })
         | Result.Error() -> Result.Error()

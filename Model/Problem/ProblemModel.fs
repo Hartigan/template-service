@@ -15,22 +15,19 @@ and ProblemTitleConverter() =
     inherit StringConverter<ProblemTitle>((fun m -> m.Value),
                                           (fun s -> ProblemTitle(s)))
 
-type ProblemModel private (id: ProblemId,
-                           title: ProblemTitle,
-                           view: ViewModel,
-                           controller: ControllerModel,
-                           validator: ValidatorModel) =
-    [<JsonPropertyName("id")>]
-    member val Id           = id with get
-    [<JsonPropertyName("title")>]
-    member val Title        = title with get
-    [<JsonPropertyName("view")>]
-    member val View         = view with get
-    [<JsonPropertyName("controller")>]
-    member val Controller   = controller with get
-    [<JsonPropertyName("validator")>]
-    member val Validator    = validator with get
-
+type ProblemModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id: ProblemId
+        [<JsonPropertyName("title")>]
+        Title: ProblemTitle
+        [<JsonPropertyName("view")>]
+        View: ViewModel
+        [<JsonPropertyName("controller")>]
+        Controller: ControllerModel
+        [<JsonPropertyName("validator")>]
+        Validator: ValidatorModel
+    }
     static member Create(problem: Problem) : Result<ProblemModel, unit> =
         let codes = (CodeModel.Create(problem.View), CodeModel.Create(problem.Controller), CodeModel.Create(problem.Validator))
         match codes with
@@ -38,10 +35,12 @@ type ProblemModel private (id: ProblemId,
             let codeModels = (ViewModel.Create(viewCode), ControllerModel.Create(controllerCode), ValidatorModel.Create(validatorCode))
             match codeModels with
             | (Ok(viewModel), Ok(controllerModel), Ok(validatorModel)) ->
-                Ok(ProblemModel(ProblemId(problem.Id),
-                                ProblemTitle(problem.Title),
-                                viewModel,
-                                controllerModel,
-                                validatorModel))
+                Ok({
+                    ProblemModel.Id = ProblemId(problem.Id)
+                    Title = ProblemTitle(problem.Title)
+                    View = viewModel
+                    Controller = controllerModel
+                    Validator = validatorModel
+                })
             | _ -> Error()
         | _ -> Error()

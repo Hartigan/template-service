@@ -31,11 +31,7 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
             return;
         }
 
-        var curFolderId = props.fileExplorerState.currentFolder();
-        if (!curFolderId) {
-            let root = await props.foldersService.getRoot();
-            curFolderId = root.id;
-        }
+        let curFolderId = await props.fileExplorerState.currentFolderOrRoot();
 
         if (curFolderId) {
             let ans = await props.foldersService.createFolder(name);

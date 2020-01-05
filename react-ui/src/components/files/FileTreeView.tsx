@@ -7,6 +7,8 @@ import { FoldersService } from '../../services/FoldersService';
 import FolderView from './FolderView';
 import { FileExplorerState } from '../../states/FileExplorerState';
 import CreateFolderDialog from './CreateFolderDialog';
+import CreateProblemDialog from '../problems/CreateProblemDialog';
+import { ProblemsService } from '../../services/ProblemsService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -18,6 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface IFileTreeViewProps {
     foldersService: FoldersService;
+    problemsService: ProblemsService;
     state: FileExplorerState;
 }
 
@@ -25,11 +28,13 @@ export default function FileTreeView(props: IFileTreeViewProps) {
 
     const foldersService = props.foldersService;
     const fileExplorerState = props.state;
+    const problemsService = props.problemsService;
 
     const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
     const [ children, setChildren ] = React.useState<Array<React.ReactNode>>([]);
     const [ expanded, setExpanded] = React.useState<Array<string>>([]);
     const [ openCreateFolderDialog, setOpenCreateFolderDialog ] = React.useState(false);
+    const [ openCreateProblemDialog, setOpenCreateProblemDialog ] = React.useState(false);
 
     React.useEffect(() => {
         if (isLoaded) {
@@ -59,22 +64,25 @@ export default function FileTreeView(props: IFileTreeViewProps) {
         setExpanded(nodes);
     };
 
-    const showCreateFolderDialog = () => {
-        setOpenCreateFolderDialog(true);
-    };
-
     const classes = useStyles();
 
     return (
         <Box className={classes.root}>
             <Container>
-                <Button onClick={showCreateFolderDialog}>New folder</Button>
+                <Button onClick={() => setOpenCreateFolderDialog(true)}>New folder</Button>
+                <Button onClick={() => setOpenCreateProblemDialog(true)}>New problem</Button>
             </Container>
             <CreateFolderDialog
                 fileExplorerState={fileExplorerState}
                 foldersService={foldersService}
                 open={openCreateFolderDialog}
                 onClose={() => setOpenCreateFolderDialog(false)} />
+            <CreateProblemDialog
+                fileExplorerState={fileExplorerState}
+                foldersService={foldersService}
+                problemsService={problemsService}
+                open={openCreateProblemDialog}
+                onClose={() => setOpenCreateProblemDialog(false)} />
             <TreeView
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}

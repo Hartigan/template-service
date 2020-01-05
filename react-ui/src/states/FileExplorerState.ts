@@ -1,12 +1,14 @@
 import { FolderId, HeadId } from "../models/Identificators";
 import { BehaviorSubject, Subject } from "rxjs";
+import { FoldersService } from "../services/FoldersService";
 
 export class FileExplorerState {
     private folder = new BehaviorSubject<FolderId | null>(null);
     private head = new BehaviorSubject<HeadId | null>(null);
     private folderChange = new Subject<FolderId>();
+    private root : FolderId | null = null;
 
-    constructor() {
+    constructor(private foldersService: FoldersService) {
     }
 
     folderUpdated() {
@@ -39,5 +41,18 @@ export class FileExplorerState {
 
     currentHeadChanged() {
         return this.head.asObservable();
+    }
+
+    async currentFolderOrRoot() {
+        if (this.currentFolder()) {
+            return this.currentFolder();
+        }
+
+        if (!this.root) {
+            let rootFolder = await this.foldersService.getRoot();
+            this.root = rootFolder.id;
+        }
+
+        return this.root;
     }
 }

@@ -31,13 +31,18 @@ and ViewLanguageModelConverter() =
                                                         | Result.Error() -> failwith "Invalid view language"
                                                     | Result.Error() -> failwith "Invalid language"))
 
-type ViewModel private (language: ViewLanguageModel, content: ContentModel) =
-    [<JsonPropertyName("language")>]
-    member val Language    = language with get
-    [<JsonPropertyName("content")>]
-    member val Content     = content with get
-
+type ViewModel =
+    {
+        [<JsonPropertyName("language")>]
+        Language: ViewLanguageModel
+        [<JsonPropertyName("content")>]
+        Content: ContentModel
+    }
     static member Create(model: CodeModel) : Result<ViewModel, unit> =
         match ViewLanguageModel.Create(model.Language) with
-        | Result.Ok(viewLanguageModel) -> Result.Ok(ViewModel(viewLanguageModel, model.Content))
+        | Result.Ok(viewLanguageModel) ->
+            Ok({
+                Language = viewLanguageModel
+                Content = model.Content
+            })
         | Result.Error() -> Result.Error()

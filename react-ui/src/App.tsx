@@ -8,6 +8,7 @@ import { AuthService } from './services/AuthService';
 import { HttpServiceFactory } from './services/HttpServiceFactory';
 import { FoldersService } from './services/FoldersService';
 import { FileExplorerState } from './states/FileExplorerState';
+import { ProblemsService } from './services/ProblemsService';
 
 const useStyles = makeStyles(theme => ({
   offset: theme.mixins.toolbar,
@@ -18,8 +19,9 @@ const useStyles = makeStyles(theme => ({
 
 const authService = new AuthService();
 const httpServiceFactory = new HttpServiceFactory(authService);
-const foldersService = new FoldersService(httpServiceFactory); 
-const fileExplorerState = new FileExplorerState();
+const foldersService = new FoldersService(httpServiceFactory);
+const problemsService = new ProblemsService(httpServiceFactory);
+const fileExplorerState = new FileExplorerState(foldersService);
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -37,6 +39,7 @@ const App: React.FC = () => {
       </header>
       <FileTreeView
         foldersService={foldersService}
+        problemsService={problemsService}
         state={fileExplorerState} />
     </div>
   );
