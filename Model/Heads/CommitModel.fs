@@ -2,38 +2,35 @@ namespace Models.Heads
 
 open DatabaseTypes
 open Models.Identificators
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
 open Models.Converters
 open System
 
-[<JsonConverter(typeof<ConcreteIdConverter>)>]
 type ConcreteId = 
-| Problem of ProblemId
-| ProblemSet of ProblemSetId
+    | Problem of id:ProblemId
+    | ProblemSet of id:ProblemSetId
+    member this.Type =
+        match this with
+            | ConcreteId.Problem(id) -> Problem.TypeName
+            | ConcreteId.ProblemSet(id) -> ProblemSet.TypeName
 
-and ConcreteIdConverter() =
-    inherit StringConverter<ConcreteId>((fun m ->
-                                        match m with
-                                        | ConcreteId.Problem(id) -> Problem.TypeName
-                                        | ConcreteId.ProblemSet(id) -> ProblemSet.TypeName),
-                                        (fun s ->
-                                        if s = Problem.TypeName then ConcreteId.Problem(ProblemId(s))
-                                        elif s = ProblemSet.TypeName then ConcreteId.ProblemSet(ProblemSetId(s))
-                                        else failwith (sprintf "Incorrect type '%s'" s)))
-
-type TargetModel private (targetId: TargetId, typeName: string, concreteId: ConcreteId) =
+type TargetModel private (targetId: TargetId, concreteId: ConcreteId) =
 
 
     [<JsonPropertyName("id")>]
     member val Id = targetId
 
-    [<JsonPropertyName("type")>]
+    [<JsonIgnore>]
     member val ConcreteId = concreteId
+
+    [<JsonPropertyName("type")>]
+    member val Type = concreteId.Type
 
     static member Create(target: Target): Result<TargetModel, unit> =
         if target.Type = Problem.TypeName then
-            Result.Ok(TargetModel(TargetId(target.Id), Problem.TypeName, ConcreteId.Problem(ProblemId(target.Id))))
+            Result.Ok(TargetModel(TargetId(target.Id), ConcreteId.Problem(ProblemId(target.Id))))
+        elif target.Type = ProblemSet.TypeName then
+            Result.Ok(TargetModel(TargetId(target.Id), ConcreteId.ProblemSet(ProblemSetId(target.Id))))
         else Result.Error()
 
 [<JsonConverter(typeof<CommitDescriptionConverter>)>]

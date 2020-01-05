@@ -38,7 +38,7 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                     | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
                 | Result.Ok() ->
                     let head = {
-                        Head.Id = Guid.NewGuid().ToString()
+                        Head.Id = headId.ToString()
                         Permissions = {
                             OwnerId = userId.Value
                         }

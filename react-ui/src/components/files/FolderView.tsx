@@ -23,14 +23,6 @@ export default function FolderView(props: IFolderViewProperties) {
     const fileExplorerState = props.fileExplorerState;
     const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
     const [ children, setChildren ] = React.useState<Array<React.ReactNode>>([]);
-    
-    props.fileExplorerState
-        .folderUpdated()
-        .subscribe(async (id: FolderId) => {
-            if (folderLink.id === id) {
-                sync();
-            } 
-        });
 
     const onClick = () => {
         fileExplorerState.setCurrentFolder(folderLink.id);
@@ -61,11 +53,23 @@ export default function FolderView(props: IFolderViewProperties) {
     };
 
     React.useEffect(() => {
+        let folderUpdatedSub = props.fileExplorerState
+            .folderUpdated()
+            .subscribe(async (id: FolderId) => {
+                if (folderLink.id === id) {
+                    sync();
+                } 
+            });
+
         if (isLoaded) {
             return;
         }
         setIsLoaded(true);
         sync();
+
+        return () => {
+            folderUpdatedSub.unsubscribe();
+        };
     });
 
     const classes = useStyles();

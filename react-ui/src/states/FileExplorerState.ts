@@ -6,6 +6,7 @@ export class FileExplorerState {
     private folder = new BehaviorSubject<FolderId | null>(null);
     private head = new BehaviorSubject<HeadId | null>(null);
     private folderChange = new Subject<FolderId>();
+    private headChange = new Subject<HeadId>();
     private root : FolderId | null = null;
 
     constructor(private foldersService: FoldersService) {
@@ -17,6 +18,14 @@ export class FileExplorerState {
 
     syncFolder(id: FolderId) {
         this.folderChange.next(id);
+    }
+
+    headUpdated() {
+        return this.headChange.asObservable();
+    }
+
+    syncHead(id: HeadId) {
+        this.headChange.next(id);
     }
 
     setCurrentFolder(folderId: FolderId) {

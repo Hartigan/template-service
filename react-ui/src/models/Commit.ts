@@ -2,7 +2,7 @@ import { CommitId, TargetId, UserId, HeadId } from "./Identificators";
 
 export interface Target {
     id: TargetId;
-    type: string;
+    type: "problem" | "problem_set";
 }
 
 export interface Commit {

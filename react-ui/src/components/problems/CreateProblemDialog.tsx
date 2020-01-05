@@ -1,10 +1,16 @@
-import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, InputLabel, Select, MenuItem, FormControl } from "@material-ui/core";
+import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
 import { FoldersService } from "../../services/FoldersService";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import CloseIcon from '@material-ui/icons/Close';
 import { Problem } from "../../models/Problem";
+import { Controller } from "../../models/Controller";
+import { View } from "../../models/View";
+import { Validator } from "../../models/Validator";
+import ControllerEditor from "./ControllerEditor";
+import ViewEditor from "./ViewEditor";
+import ValidatorEditor from "./ValidatorEditor";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -37,12 +43,18 @@ export interface ICreateProblemDialogProps {
 export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
 
     const [ title, setTitle ] = React.useState<string>(""); 
-    const [ controller, setController ] = React.useState<string>("");
-    const [ controllerLanguage, setControllerLanguage ] = React.useState("csharp");
-    const [ view, setView ] = React.useState<string>("");
-    const [ viewLanguage, setViewLanguage ] = React.useState("plain_text");
-    const [ validator, setValidator ] = React.useState<string>("");
-    const [ validatorLanguage, setValidatorLanguage ] = React.useState("csharp");
+    const [ controller, setController ] = React.useState<Controller>({
+        language: "csharp",
+        content: ""
+    });
+    const [ view, setView ] = React.useState<View>({
+        language: "plain_text",
+        content: ""
+    });
+    const [ validator, setValidator ] = React.useState<Validator>({
+        language: "csharp",
+        content: ""
+    });
 
     const onCancel = () => {
         props.onClose();
@@ -57,18 +69,9 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
         let problem : Problem = {
             id: "",
             title: title,
-            controller: {
-                language: controllerLanguage,
-                content: controller
-            },
-            view: {
-                language: viewLanguage,
-                content: view
-            },
-            validator: {
-                language: validatorLanguage,
-                content: validator
-            }
+            controller: controller,
+            view: view,
+            validator: validator
         };
 
         let ans = await props.problemsService.create(curFolderId, title, problem);
@@ -115,73 +118,22 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
                     </FormControl>
                 </ListItem>
                 <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <InputLabel
-                            id="controller-language-label"
-                            className={classes.inputLabel}>
-                            Language
-                        </InputLabel>
-                        <Select
-                            labelId="controller-language-label"
-                            value={controllerLanguage}
-                            onChange={(e) => setControllerLanguage(e.target.value as string)}>
-                            <MenuItem value={"csharp"}>C#</MenuItem>
-                        </Select>
-                    </FormControl>
+                    <ControllerEditor
+                        value={controller}
+                        onChange={(v) => setController(v)}
+                        disabled={false} />
                 </ListItem>
                 <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <TextField
-                            label="Controller"
-                            multiline
-                            rows="5"
-                            onChange={(e) => setController(e.target.value)} />
-                    </FormControl>
+                    <ViewEditor
+                        value={view}
+                        onChange={(v) => setView(v)}
+                        disabled={false} />
                 </ListItem>
                 <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <InputLabel id="view-language-label">
-                            Language
-                        </InputLabel>
-                        <Select
-                            labelId="view-language-label"
-                            value={viewLanguage}
-                            onChange={(e) => setViewLanguage(e.target.value as string)}>
-                            <MenuItem value={"plain_text"}>Plain</MenuItem>
-                            <MenuItem value={"markdown"}>Markdown</MenuItem>
-                        </Select>
-                    </FormControl>
-                </ListItem>
-                <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <TextField
-                            label="View"
-                            multiline
-                            rows="5"
-                            onChange={(e) => setView(e.target.value)} />
-                    </FormControl>
-                </ListItem>
-                <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <InputLabel id="validator-language-label">
-                            Language
-                        </InputLabel>
-                        <Select
-                            labelId="validator-language-label"
-                            value={validatorLanguage}
-                            onChange={(e) => setValidatorLanguage(e.target.value as string)}>
-                            <MenuItem value={"csharp"}>C#</MenuItem>
-                        </Select>
-                    </FormControl>
-                </ListItem>
-                <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <TextField
-                            label="Validator"
-                            multiline
-                            rows="5"
-                            onChange={(e) => setValidator(e.target.value)} />
-                    </FormControl>
+                    <ValidatorEditor
+                        value={validator}
+                        onChange={(v) => setValidator(v)}
+                        disabled={false} />
                 </ListItem>
             </List>
         </Dialog>
