@@ -53,6 +53,7 @@ const App: React.FC = () => {
         <Grid container>
           <Grid item className={classes.tree}>
             <FileTreeView
+              versionService={versionService}
               foldersService={foldersService}
               problemsService={problemsService}
               state={fileExplorerState} />

@@ -38,7 +38,7 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
 
     const langItems = props.languages
         .map(lang => (
-            <MenuItem value={lang.value}>{lang.title}</MenuItem>
+            <MenuItem key={lang.value} value={lang.value}>{lang.title}</MenuItem>
         ));
 
     const updateLanguage = (value: string) => {

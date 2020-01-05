@@ -9,6 +9,8 @@ import { FileExplorerState } from '../../states/FileExplorerState';
 import CreateFolderDialog from './CreateFolderDialog';
 import CreateProblemDialog from '../problems/CreateProblemDialog';
 import { ProblemsService } from '../../services/ProblemsService';
+import ExplorerView from './ExplorerView';
+import { VersionService } from '../../services/VersionService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,48 +23,14 @@ const useStyles = makeStyles(theme => ({
 export interface IFileTreeViewProps {
     foldersService: FoldersService;
     problemsService: ProblemsService;
+    versionService: VersionService;
     state: FileExplorerState;
 }
 
 export default function FileTreeView(props: IFileTreeViewProps) {
 
-    const foldersService = props.foldersService;
-    const fileExplorerState = props.state;
-    const problemsService = props.problemsService;
-
-    const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
-    const [ children, setChildren ] = React.useState<Array<React.ReactNode>>([]);
-    const [ expanded, setExpanded] = React.useState<Array<string>>([]);
     const [ openCreateFolderDialog, setOpenCreateFolderDialog ] = React.useState(false);
     const [ openCreateProblemDialog, setOpenCreateProblemDialog ] = React.useState(false);
-
-    React.useEffect(() => {
-        if (isLoaded) {
-            return;
-        }
-        setIsLoaded(true);
-
-        foldersService
-            .getRoot()
-            .then(root => {
-                let folderLink = {
-                    id: root.id,
-                    name: root.name,
-                }
-                setChildren([
-                    (
-                        <FolderView
-                            folder={folderLink}
-                            foldersService={foldersService}
-                            fileExplorerState={fileExplorerState} />
-                    )
-                ])
-            });
-    }); 
-
-    const handleChange = (event: {}, nodes: Array<string>) => {
-        setExpanded(nodes);
-    };
 
     const classes = useStyles();
 
@@ -73,22 +41,20 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                 <Button onClick={() => setOpenCreateProblemDialog(true)}>New problem</Button>
             </Container>
             <CreateFolderDialog
-                fileExplorerState={fileExplorerState}
-                foldersService={foldersService}
+                fileExplorerState={props.state}
+                foldersService={props.foldersService}
                 open={openCreateFolderDialog}
                 onClose={() => setOpenCreateFolderDialog(false)} />
             <CreateProblemDialog
-                fileExplorerState={fileExplorerState}
-                foldersService={foldersService}
-                problemsService={problemsService}
+                fileExplorerState={props.state}
+                foldersService={props.foldersService}
+                problemsService={props.problemsService}
                 open={openCreateProblemDialog}
                 onClose={() => setOpenCreateProblemDialog(false)} />
-            <TreeView
-                defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpandIcon={<ChevronRightIcon />}
-                onNodeToggle={handleChange}
-                expanded={expanded}
-                children={children}/>
+            <ExplorerView
+                versionService={props.versionService}
+                foldersService={props.foldersService}
+                state={props.state} />
         </Box>
     );
 }

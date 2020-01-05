@@ -5,7 +5,9 @@ import { FolderLink, Folder } from '../../models/Folder';
 import { FoldersService } from '../../services/FoldersService';
 import HeadView from './HeadView';
 import { FileExplorerState } from '../../states/FileExplorerState';
-import { FolderId } from '../../models/Identificators';
+import { FolderId, HeadId } from '../../models/Identificators';
+import { TargetType } from '../../models/Commit';
+import { VersionService } from '../../services/VersionService';
 
 const useStyles = makeStyles(theme => ({
 }));
@@ -14,49 +16,38 @@ export interface IFolderViewProperties {
     folder: FolderLink;
     foldersService: FoldersService;
     fileExplorerState: FileExplorerState;
+    versionService: VersionService;
+    filter?: Array<TargetType>;
 }
 
 export default function FolderView(props: IFolderViewProperties) {
 
-    const folderLink = props.folder;
-    const foldersService = props.foldersService;
-    const fileExplorerState = props.fileExplorerState;
     const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
-    const [ children, setChildren ] = React.useState<Array<React.ReactNode>>([]);
+    const [ folder, setFolder ] = React.useState<Folder | null>(null);
 
     const onClick = () => {
-        fileExplorerState.setCurrentFolder(folderLink.id);
+        props.fileExplorerState.setCurrentFolder(props.folder.id);
     };
   
-    const sync = () => {
-        foldersService
-            .getFolder(folderLink.id)
-            .then(folder => {
-                let nodes : Array<React.ReactNode> = [];
-                folder.folders.forEach(link => {
-                    nodes.push((
-                        <FolderView
-                            folder={link}
-                            foldersService={foldersService}
-                            fileExplorerState={fileExplorerState} />
-                    ))
-                });
-                folder.heads.forEach(link => {
-                    nodes.push((
-                        <HeadView
-                            head={link}
-                            fileExplorerState={fileExplorerState} />
-                    ))
-                });
-                setChildren(nodes);
-            });
+    const sync = async () => {
+        const f = await props.foldersService
+            .getFolder(props.folder.id);
+
+        if (props.filter) {
+            const filter = props.filter;
+            const heads = await Promise.all(f.heads.map(async link => props.versionService.getHead(link.id)));
+            const allowed = new Set<HeadId>(heads.filter(head => filter.includes(head.commit.target.type)).map(head => head.id));
+            f.heads = f.heads.filter(link => allowed.has(link.id));
+        }
+
+        setFolder(f);
     };
 
     React.useEffect(() => {
         let folderUpdatedSub = props.fileExplorerState
             .folderUpdated()
             .subscribe(async (id: FolderId) => {
-                if (folderLink.id === id) {
+                if (props.folder.id === id) {
                     sync();
                 } 
             });
@@ -74,11 +65,38 @@ export default function FolderView(props: IFolderViewProperties) {
 
     const classes = useStyles();
 
+    var children : Array<React.ReactNode> = [];
+
+    if (folder) {
+        let nodes : Array<React.ReactNode> = [];
+        folder.folders.forEach(link => {
+            nodes.push((
+                <FolderView
+                    key={link.id}
+                    filter={props.filter}
+                    versionService={props.versionService}
+                    folder={link}
+                    foldersService={props.foldersService}
+                    fileExplorerState={props.fileExplorerState} />
+            ))
+        });
+        folder.heads.forEach(link => {
+            nodes.push((
+                <HeadView
+                    key={link.id}
+                    head={link}
+                    fileExplorerState={props.fileExplorerState} />
+            ))
+        });
+        children = nodes;
+    }
+
     return (
         <TreeItem
-            nodeId={folderLink.id}
-            label={folderLink.name}
-            children={children}
-            onClick={onClick} />
+            nodeId={props.folder.id}
+            label={props.folder.name}
+            onClick={onClick}>
+            {children}
+        </TreeItem>
     );
 }

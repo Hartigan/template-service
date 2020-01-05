@@ -1,7 +1,7 @@
 import { makeStyles, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { VersionService } from "../../services/VersionService";
-import { HeadId, ProblemId } from "../../models/Identificators";
+import { HeadId } from "../../models/Identificators";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import ProblemEditor from "../problems/ProblemEditor";
