@@ -19,13 +19,16 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   tab: {
-    width: "100%"
+    width: "100%",
+    minHeight: 400,
   },
   tree: {
     width: "30%",
+    height: "100%",
   },
   content: {
     width: "70%",
+    height: "100%",
   },
 }));
 
@@ -65,6 +68,7 @@ const App: React.FC = () => {
             <FilePreview
               fileExplorerState={fileExplorerState}
               problemsService={problemsService}
+              problemSetService={problemSetService}
               versionService={versionService} />
           </Grid>
         </Grid>

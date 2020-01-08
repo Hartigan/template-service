@@ -1,11 +1,10 @@
 import { makeStyles, List, ListItem, ListItemText } from "@material-ui/core";
 import React from "react";
-import { HeadId } from "../../models/Identificators";
 import { HeadLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
     root: {
-        minWidth: 275,
+        minWidth: 200,
     },
 }));
 

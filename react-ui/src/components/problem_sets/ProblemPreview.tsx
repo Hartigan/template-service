@@ -4,7 +4,8 @@ import { Problem } from "../../models/Problem";
 
 const useStyles = makeStyles(theme => ({
     root: {
-        minWidth: 275,
+        minWidth: 200,
+        textAlign: "left",
     },
     title: {
         fontSize: 14,

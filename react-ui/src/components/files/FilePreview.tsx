@@ -1,4 +1,4 @@
-import { makeStyles, Box } from "@material-ui/core";
+import { makeStyles, Box, Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { VersionService } from "../../services/VersionService";
 import { HeadId } from "../../models/Identificators";
@@ -6,16 +6,19 @@ import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import ProblemEditor from "../problems/ProblemEditor";
 import { Commit } from "../../models/Commit";
+import ProblemSetPreview from "../problem_sets/ProblemSetPreview";
+import { ProblemSetService } from "../../services/ProblemSetService";
 
 const useStyles = makeStyles(theme => ({
     root: {
         width: "100%",
-        height: "100%"
+        height: "100%",
     },
 }));
 
 export interface IFilePreviewProps {
     fileExplorerState: FileExplorerState;
+    problemSetService: ProblemSetService;
     versionService: VersionService;
     problemsService: ProblemsService;
 }
@@ -66,20 +69,29 @@ export default function FilePreview(props: IFilePreviewProps) {
         switch (commit.target.type) {
             case "problem":
                 return (
-                    <Box className={classes.root}>
+                    <Paper className={classes.root}>
                         <ProblemEditor
                             commit={commit}
                             fileExplorerState={props.fileExplorerState}
                             problemsService={props.problemsService} />
-                    </Box>
+                    </Paper>
                 );
             case "problem_set":
-                break;
+                return (
+                    <Paper className={classes.root}>
+                        <ProblemSetPreview
+                            commit={commit}
+                            fileExplorerState={props.fileExplorerState}
+                            versionService={props.versionService}
+                            problemSetService={props.problemSetService}
+                            problemsService={props.problemsService} />
+                    </Paper>
+                );
         }
     }
 
     return (
-        <Box className={classes.root}>
-        </Box>
+        <Paper className={classes.root}>
+        </Paper>
     );
 };

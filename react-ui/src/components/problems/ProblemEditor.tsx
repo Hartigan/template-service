@@ -1,4 +1,4 @@
-import { makeStyles, Box, List, ListItem, FormControl, TextField, Container, Button, IconButton } from "@material-ui/core";
+import { makeStyles, List, ListItem, FormControl, TextField, Container, IconButton, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { ProblemsService } from "../../services/ProblemsService";
 import { Commit } from "../../models/Commit";
@@ -10,7 +10,6 @@ import { View } from "../../models/View";
 import { Validator } from "../../models/Validator";
 import { Problem } from "../../models/Problem";
 import { FileExplorerState } from "../../states/FileExplorerState";
-import { CommitId } from "../../models/Identificators";
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SaveIcon from '@material-ui/icons/Save';
@@ -38,7 +37,7 @@ export interface IProblemEditorProps {
 
 export default function ProblemEditor(props: IProblemEditorProps) {
 
-    const [ commitIsLoaded, setCommitIsLoaded ] = React.useState(props.commit.id);
+    const [ loadedCommitId, setLoadedCommitId ] = React.useState(props.commit.id);
     const [ disabled, setDisabled ] = React.useState(true);
     const [ description, setDescription ] = React.useState(props.commit.description);
     const [ title, setTitle ] = React.useState<string>(""); 
@@ -56,7 +55,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     });
 
     const sync = (commit: Commit) => {
-        setCommitIsLoaded(commit.id);
+        setLoadedCommitId(commit.id);
         props.problemsService
             .get(commit.id)
             .then(problem => {
@@ -69,7 +68,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     };
 
     useEffect(() => {
-        if (commitIsLoaded === props.commit.id) {
+        if (loadedCommitId === props.commit.id) {
             return;
         }
         sync(props.commit);

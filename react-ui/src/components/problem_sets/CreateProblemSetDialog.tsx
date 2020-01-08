@@ -240,6 +240,7 @@ export default function CreateProblemDialog(props: ICreateProblemSetDialogProps)
                             <ExplorerView
                                 foldersService={props.foldersService}
                                 state={explorerState}
+                                filter={["problem"]}
                                 versionService={props.versionService} />
                         </Grid>
                         <Grid item className={classes.sourcePreview}>

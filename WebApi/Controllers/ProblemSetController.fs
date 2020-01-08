@@ -40,7 +40,7 @@ type ProblemSetController(foldersService: IFoldersService, permissionsService: I
 
     [<HttpGet>]
     [<Route("model")>]
-    member this.GetModel([<FromQuery(Name = "commit_id")>] id: string) =
+    member this.GetModel([<FromQuery(Name = "id")>] id: string) =
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
