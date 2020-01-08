@@ -56,7 +56,24 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
         content: ""
     });
 
+    const clean = () => {
+        setTitle("");
+        setController({
+            language: "csharp",
+            content: ""
+        });
+        setView({
+            language: "plain_text",
+            content: ""
+        });
+        setValidator({
+            language: "csharp",
+            content: ""
+        });
+    };
+
     const onCancel = () => {
+        clean();
         props.onClose();
     };
 
@@ -79,6 +96,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
 
         props.fileExplorerState.syncFolder(curFolder.id);
 
+        clean();
         props.onClose();
     };
 

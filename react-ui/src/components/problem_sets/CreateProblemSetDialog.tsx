@@ -85,6 +85,14 @@ export default function CreateProblemDialog(props: ICreateProblemSetDialogProps)
     const [ problemsData, setProblemsData ] = React.useState<IProblemsData>({ problems: [], selected: null });
     const [ listPreview, setListPreivew ] = React.useState<IPreviewData | null>(null);
 
+    const clean = () => {
+        setTitle("");
+        setDuration(0);
+        setSourcePreview(null);
+        setProblemsData({ problems: [], selected: null });
+        setListPreivew(null);
+    };
+
     useEffect(() => {
         const headChangedSub = explorerState
             .currentHeadChanged()
@@ -112,6 +120,7 @@ export default function CreateProblemDialog(props: ICreateProblemSetDialogProps)
                 problems: problemsData.problems.concat([{
                     id: sourcePreview.head.id,
                     name: sourcePreview.head.name,
+                    type: sourcePreview.head.commit.target.type
                 }]),
                 selected: problemsData.selected
             });
@@ -144,6 +153,7 @@ export default function CreateProblemDialog(props: ICreateProblemSetDialogProps)
     };
 
     const onCancel = () => {
+        clean();
         props.onClose();
     };
 
@@ -164,6 +174,7 @@ export default function CreateProblemDialog(props: ICreateProblemSetDialogProps)
 
         props.fileExplorerState.syncFolder(curFolder.id);
 
+        clean();
         props.onClose();
     };
 

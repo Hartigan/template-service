@@ -19,13 +19,22 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
     const [ error, setError ] = React.useState<boolean>(false);
     const [ helperText, setHelperText ] = React.useState<string>("");
 
+    const clean = () => {
+        setName("");
+        setError(false);
+        setHelperText("");
+    };
+
     const updateName = (value: string) => {
         setName(value);
         setError(value.length === 0);
         setHelperText(error ? "Name is empty" : "")
     };
 
-    const onCancel = () => props.onClose();
+    const onCancel = () => {
+        clean();
+        props.onClose();
+    }
     const onCreate = async () => {
         if (!name) {
             return;
@@ -37,6 +46,7 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
             let ans = await props.foldersService.createFolder(name);
             await props.foldersService.addFolder(ans.id, curFolder.id);
             props.fileExplorerState.syncFolder(curFolder.id);
+            clean();
             props.onClose();
         }
     }
