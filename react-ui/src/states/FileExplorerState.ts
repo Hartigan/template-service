@@ -32,6 +32,7 @@ export class FileExplorerState {
     }
 
     setCurrentFolder(link: FolderLink) {
+        this.curFolder = link;
         this.folder.next(link);
     }
 
@@ -44,6 +45,7 @@ export class FileExplorerState {
     }
 
     setCurrentHead(link: HeadLink) {
+        this.curHead = link;
         this.head.next(link);
     }
 
