@@ -1,4 +1,4 @@
-import { makeStyles, Box, List, ListItem, FormControl, TextField, Container, Button } from "@material-ui/core";
+import { makeStyles, Box, List, ListItem, FormControl, TextField, Container, Button, IconButton } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { ProblemsService } from "../../services/ProblemsService";
 import { Commit } from "../../models/Commit";
@@ -11,6 +11,9 @@ import { Validator } from "../../models/Validator";
 import { Problem } from "../../models/Problem";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { CommitId } from "../../models/Identificators";
+import EditIcon from '@material-ui/icons/Edit';
+import CancelIcon from '@material-ui/icons/Cancel';
+import SaveIcon from '@material-ui/icons/Save';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -103,9 +106,27 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     return (
         <Box className={classes.root}>
             <Container>
-                <Button onClick={onEdit}>Edit</Button>
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button onClick={onSave}>Save</Button>
+                <IconButton
+                    onClick={onSave}
+                    disabled={disabled}
+                    color="primary"
+                    aria-label="Save">
+                    <SaveIcon />
+                </IconButton>
+                <IconButton
+                    onClick={onEdit}
+                    color="primary"
+                    disabled={!disabled}
+                    aria-label="Edit">
+                    <EditIcon />
+                </IconButton>
+                <IconButton
+                    onClick={onCancel}
+                    disabled={disabled}
+                    color="primary"
+                    aria-label="Cancel">
+                    <CancelIcon />
+                </IconButton>
             </Container>
             <List
                 className={classes.list}>
