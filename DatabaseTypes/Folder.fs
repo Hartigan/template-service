@@ -1,6 +1,5 @@
 namespace DatabaseTypes
 
-open System.Collections.Generic
 open System.Runtime.Serialization
 
 
@@ -18,6 +17,8 @@ type HeadLink = {
     Id : string
     [<field: DataMember(Name = "name")>]
     Name : string
+    [<field: DataMember(Name = "type")>]
+    Type: string
 }
 
 [<DataContract>]

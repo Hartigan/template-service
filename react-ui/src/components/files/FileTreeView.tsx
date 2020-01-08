@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles, Box, Container, Button } from '@material-ui/core';
+import { makeStyles, Box, Container, Button, IconButton } from '@material-ui/core';
 import { FoldersService } from '../../services/FoldersService';
 import { FileExplorerState } from '../../states/FileExplorerState';
 import CreateFolderDialog from './CreateFolderDialog';
@@ -9,6 +9,9 @@ import { ProblemsService } from '../../services/ProblemsService';
 import ExplorerView from './ExplorerView';
 import { VersionService } from '../../services/VersionService';
 import { ProblemSetService } from '../../services/ProblemSetService';
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
+import NoteIcon from '@material-ui/icons/Note';
+import ListAltIcon from '@material-ui/icons/ListAlt';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -37,9 +40,21 @@ export default function FileTreeView(props: IFileTreeViewProps) {
     return (
         <Box className={classes.root}>
             <Container>
-                <Button onClick={() => setOpenCreateFolderDialog(true)}>New folder</Button>
-                <Button onClick={() => setOpenCreateProblemDialog(true)}>New problem</Button>
-                <Button onClick={() => setOpenCreateProblemSetDialog(true)}>New problem set</Button>
+                <IconButton
+                    color="primary" aria-label="Create folder"
+                    onClick={() => setOpenCreateFolderDialog(true)}>
+                    <CreateNewFolderIcon />
+                </IconButton>
+                <IconButton
+                    color="primary" aria-label="Create problem"
+                    onClick={() => setOpenCreateProblemDialog(true)}>
+                    <NoteIcon />
+                </IconButton>
+                <IconButton
+                    color="primary" aria-label="Create problem set"
+                    onClick={() => setOpenCreateProblemSetDialog(true)}>
+                    <ListAltIcon />
+                </IconButton>
             </Container>
             <CreateFolderDialog
                 fileExplorerState={props.state}

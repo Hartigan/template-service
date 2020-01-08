@@ -1,5 +1,6 @@
 import { Permissions } from "./Permissions";
 import { FolderId, HeadId } from "./Identificators";
+import { TargetType } from "./Commit";
 
 export interface FolderLink {
     id: FolderId;
@@ -9,6 +10,7 @@ export interface FolderLink {
 export interface HeadLink {
     id: HeadId;
     name: string;
+    type: TargetType;
 }
 
 export interface Folder {

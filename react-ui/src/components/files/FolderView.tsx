@@ -35,7 +35,6 @@ export interface IFolderViewProperties {
 
 export default function FolderView(props: IFolderViewProperties) {
 
-    const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
     const [ folder, setFolder ] = React.useState<Folder | null>(null);
 
     const onClick = () => {
@@ -47,17 +46,15 @@ export default function FolderView(props: IFolderViewProperties) {
             .getFolder(props.folder.id);
 
         if (props.filter) {
-            const filter = props.filter;
-            const heads = await Promise.all(f.heads.map(async link => props.versionService.getHead(link.id)));
-            const allowed = new Set<HeadId>(heads.filter(head => filter.includes(head.commit.target.type)).map(head => head.id));
-            f.heads = f.heads.filter(link => allowed.has(link.id));
+            const filter = new Set(props.filter);
+            f.heads = f.heads.filter(link => filter.has(link.type));
         }
 
         setFolder(f);
     };
 
     React.useEffect(() => {
-        let folderUpdatedSub = props.fileExplorerState
+        const folderUpdatedSub = props.fileExplorerState
             .folderUpdated()
             .subscribe(async (id: FolderId) => {
                 if (props.folder.id === id) {
@@ -65,11 +62,9 @@ export default function FolderView(props: IFolderViewProperties) {
                 } 
             });
 
-        if (isLoaded) {
-            return;
+        if (!folder) {
+            sync();
         }
-        setIsLoaded(true);
-        sync();
 
         return () => {
             folderUpdatedSub.unsubscribe();

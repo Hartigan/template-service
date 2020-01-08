@@ -6,13 +6,35 @@ open System.Text.Json.Serialization
 open Models.Converters
 open System
 
-type ConcreteId = 
+[<JsonConverter(typeof<ModelTypeConverter>)>]
+type ModelType =
+    | Problem = 0
+    | ProblemSet = 1
+and ConcreteId = 
     | Problem of id:ProblemId
     | ProblemSet of id:ProblemSetId
     member this.Type =
         match this with
-            | ConcreteId.Problem(id) -> Problem.TypeName
-            | ConcreteId.ProblemSet(id) -> ProblemSet.TypeName
+            | ConcreteId.Problem(id) -> ModelType.Problem
+            | ConcreteId.ProblemSet(id) -> ModelType.ProblemSet
+and ModelTypeConverter() =
+    inherit StringConverter<ModelType>((fun m ->
+                                            match m with
+                                            | ModelType.Problem -> Problem.TypeName
+                                            | ModelType.ProblemSet -> ProblemSet.TypeName
+                                            | _ -> failwith "Invalid model type"),
+                                       (fun s ->
+                                            match ModelTypeConverter.Create(s) with
+                                            | Ok(modelType) -> modelType
+                                            | Result.Error() -> failwith "Invalid model type"
+                                       ))
+    static member Create(typeName: string) : Result<ModelType, unit> =
+        if typeName = Problem.TypeName then
+            Ok(ModelType.Problem)
+        elif typeName = ProblemSet.TypeName then
+            Ok(ModelType.ProblemSet)
+        else
+            Result.Error()
 
 type TargetModel private (targetId: TargetId, concreteId: ConcreteId) =
 
