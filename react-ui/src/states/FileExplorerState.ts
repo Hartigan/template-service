@@ -1,13 +1,16 @@
 import { FolderId, HeadId } from "../models/Identificators";
-import { BehaviorSubject, Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { FoldersService } from "../services/FoldersService";
+import { FolderLink, HeadLink } from "../models/Folder";
 
 export class FileExplorerState {
-    private folder = new BehaviorSubject<FolderId | null>(null);
-    private head = new BehaviorSubject<HeadId | null>(null);
+    private curFolder : FolderLink | null = null;
+    private folder = new Subject<FolderLink | null>();
+    private curHead : HeadLink | null = null;
+    private head = new Subject<HeadLink | null>();
     private folderChange = new Subject<FolderId>();
     private headChange = new Subject<HeadId>();
-    private root : FolderId | null = null;
+    private root : FolderLink | null = null;
 
     constructor(private foldersService: FoldersService) {
     }
@@ -28,24 +31,24 @@ export class FileExplorerState {
         this.headChange.next(id);
     }
 
-    setCurrentFolder(folderId: FolderId) {
-        this.folder.next(folderId);
+    setCurrentFolder(link: FolderLink) {
+        this.folder.next(link);
     }
 
     currentFolder() {
-        return this.folder.getValue();
+        return this.curFolder;
     }
 
     currentFolderChanged() {
         return this.folder.asObservable();
     }
 
-    setCurrentHead(headId: HeadId) {
-        this.head.next(headId);
+    setCurrentHead(link: HeadLink) {
+        this.head.next(link);
     }
 
     currentHead() {
-        return this.head.getValue();
+        return this.curHead;
     }
 
     currentHeadChanged() {
@@ -59,7 +62,7 @@ export class FileExplorerState {
 
         if (!this.root) {
             let rootFolder = await this.foldersService.getRoot();
-            this.root = rootFolder.id;
+            this.root = { id: rootFolder.id, name: rootFolder.name };
         }
 
         return this.root;

@@ -33,7 +33,7 @@ type ProblemsService(problemsContext: ProblemContext, problemSetContext: Problem
                         ProblemSet.Id = Guid.NewGuid().ToString()
                         Title = model.Title.Value
                         Heads = model.Heads.Select(fun id -> id.Value).ToList()
-                        Duration = int32(Math.Round(model.Duration.TotalSeconds))
+                        Duration = Convert.ToInt32(model.Duration.Value.TotalSeconds)
                     }
 
                     match! problemSetContext.Insert(problemSet, problemSet) with

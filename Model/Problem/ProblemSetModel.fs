@@ -3,10 +3,7 @@ namespace Models.Problems
 open DatabaseTypes
 open Models.Identificators
 open Models.Converters
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
-open System.Collections.Generic
-open System.Linq
 open System
 
 [<JsonConverter(typeof<ProblemSetTitleConverter>)>]
@@ -17,21 +14,29 @@ and ProblemSetTitleConverter() =
     inherit StringConverter<ProblemSetTitle>((fun m -> m.Value),
                                              (fun s -> ProblemSetTitle(s)))
 
-type ProblemSetModel private (id: ProblemSetId,
-                              title: ProblemSetTitle,
-                              headIds: List<HeadId>,
-                              duration: TimeSpan) =
-    [<JsonPropertyName("id")>]
-    member val Id           = id with get
-    [<JsonPropertyName("title")>]
-    member val Title        = title with get
-    [<JsonPropertyName("head_ids")>]
-    member val Heads        = headIds with get
-    [<JsonPropertyName("duration")>]
-    member val Duration     = duration with get
+[<JsonConverter(typeof<DurationModelConverter>)>]
+type DurationModel(duration: TimeSpan) =
+    member val Value = duration with get
 
+and DurationModelConverter() =
+    inherit UInt32Converter<DurationModel>((fun m -> Convert.ToUInt32(m.Value.TotalSeconds)),
+                                           (fun u -> DurationModel(TimeSpan.FromSeconds(Convert.ToDouble(u)))))
+
+type ProblemSetModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id          : ProblemSetId
+        [<JsonPropertyName("title")>]
+        Title       : ProblemSetTitle
+        [<JsonPropertyName("head_ids")>]
+        Heads       : List<HeadId>
+        [<JsonPropertyName("duration")>]
+        Duration    : DurationModel
+    }
     static member Create(problemSet: ProblemSet) : Result<ProblemSetModel, unit> =
-        Ok(ProblemSetModel(ProblemSetId(problemSet.Id),
-                           ProblemSetTitle(problemSet.Title),
-                           problemSet.Heads.Select(fun x -> HeadId(x)).ToList(),
-                           TimeSpan(0, 0, problemSet.Duration)))
+        Ok({
+            ProblemSetModel.Id      = ProblemSetId(problemSet.Id)
+            Title                   = ProblemSetTitle(problemSet.Title)
+            Heads                   = problemSet.Heads |> Seq.map(fun x -> HeadId(x)) |> List.ofSeq
+            Duration                = DurationModel(TimeSpan.FromSeconds(Convert.ToDouble(problemSet.Duration)))
+        })

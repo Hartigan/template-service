@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Typography } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
 import { FolderLink, Folder } from '../../models/Folder';
 import { FoldersService } from '../../services/FoldersService';
@@ -8,8 +8,21 @@ import { FileExplorerState } from '../../states/FileExplorerState';
 import { FolderId, HeadId } from '../../models/Identificators';
 import { TargetType } from '../../models/Commit';
 import { VersionService } from '../../services/VersionService';
+import FolderIcon from '@material-ui/icons/Folder';
 
 const useStyles = makeStyles(theme => ({
+    labelIcon: {
+        marginRight: theme.spacing(1),
+    },
+    labelText: {
+        fontWeight: 'inherit',
+        flexGrow: 1,
+    },
+    labelRoot: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: theme.spacing(0.5, 0),
+    },
 }));
 
 export interface IFolderViewProperties {
@@ -26,7 +39,7 @@ export default function FolderView(props: IFolderViewProperties) {
     const [ folder, setFolder ] = React.useState<Folder | null>(null);
 
     const onClick = () => {
-        props.fileExplorerState.setCurrentFolder(props.folder.id);
+        props.fileExplorerState.setCurrentFolder(props.folder);
     };
   
     const sync = async () => {
@@ -94,7 +107,14 @@ export default function FolderView(props: IFolderViewProperties) {
     return (
         <TreeItem
             nodeId={props.folder.id}
-            label={props.folder.name}
+            label={
+                <div className={classes.labelRoot}>
+                    <FolderIcon className={classes.labelIcon} />
+                    <Typography variant="body2" className={classes.labelText}>
+                        {props.folder.name}
+                    </Typography>
+                </div>
+            }
             onClick={onClick}>
             {children}
         </TreeItem>

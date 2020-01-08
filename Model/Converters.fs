@@ -19,3 +19,11 @@ type Int32Converter<'T>(toInt32: 'T -> int32, fromInt32: int32 -> 'T) =
 
         override this.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
             fromInt32(reader.GetInt32())
+
+type UInt32Converter<'T>(toUInt32: 'T -> uint32, fromUInt32: uint32 -> 'T) =
+    inherit JsonConverter<'T>()
+        override this.Write(writer: Utf8JsonWriter, value: 'T, options: JsonSerializerOptions) =
+            writer.WriteNumberValue(toUInt32(value))
+
+        override this.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
+            fromUInt32(reader.GetUInt32())

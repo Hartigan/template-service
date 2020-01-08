@@ -11,6 +11,7 @@ import { FileExplorerState } from './states/FileExplorerState';
 import { ProblemsService } from './services/ProblemsService';
 import FilePreview from './components/files/FilePreview';
 import { VersionService } from './services/VersionService';
+import { ProblemSetService } from './services/ProblemSetService';
 
 const useStyles = makeStyles(theme => ({
   offset: theme.mixins.toolbar,
@@ -33,6 +34,7 @@ const httpServiceFactory = new HttpServiceFactory(authService);
 const versionService = new VersionService(httpServiceFactory);
 const foldersService = new FoldersService(httpServiceFactory);
 const problemsService = new ProblemsService(httpServiceFactory);
+const problemSetService = new ProblemSetService(httpServiceFactory);
 const fileExplorerState = new FileExplorerState(foldersService);
 
 const App: React.FC = () => {
@@ -56,6 +58,7 @@ const App: React.FC = () => {
               versionService={versionService}
               foldersService={foldersService}
               problemsService={problemsService}
+              problemSetService={problemSetService}
               state={fileExplorerState} />
           </Grid>
           <Grid item className={classes.content}>

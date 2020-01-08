@@ -38,11 +38,11 @@ export default function FilePreview(props: IFilePreviewProps) {
     useEffect(() => {
         const onChangedSub = props.fileExplorerState
             .currentHeadChanged()
-            .subscribe(async id => {
-                if (!id || id === headId) {
+            .subscribe(async headLink => {
+                if (!headLink || headLink.id === headId) {
                     return;
                 }
-                await sync(id);
+                await sync(headLink.id);
             });
 
         const onUpdatedSub = props.fileExplorerState

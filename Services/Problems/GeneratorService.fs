@@ -153,7 +153,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                                 |> fun x -> x.ToList()
                             let generatedProblemSet = {
                                 GeneratedProblemSet.Id = Guid.NewGuid().ToString()
-                                Duration = int32(Math.Round(problemSet.Duration.TotalSeconds))
+                                Duration = Convert.ToInt32(problemSet.Duration.Value.TotalSeconds)
                                 Problems = generatedProblemIds
                                 Title = problemSet.Title.Value
                             }

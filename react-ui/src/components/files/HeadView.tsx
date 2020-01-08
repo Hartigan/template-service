@@ -17,7 +17,7 @@ export default function HeadView(props: IHeadViewProperties) {
     const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
 
     const onClick = () => {
-        fileExplorerState.setCurrentHead(props.head.id);
+        fileExplorerState.setCurrentHead(props.head);
     };
 
     React.useEffect(() => {
