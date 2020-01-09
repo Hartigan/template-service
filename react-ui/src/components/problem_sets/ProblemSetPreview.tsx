@@ -7,12 +7,14 @@ import EditIcon from '@material-ui/icons/Edit';
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { ProblemSet } from "../../models/ProblemSet";
 import { CommitId, ProblemSetId } from "../../models/Identificators";
-import { HeadLink } from "../../models/Folder";
+import { HeadLink, fromHead } from "../../models/Folder";
 import { Problem } from "../../models/Problem";
 import { VersionService } from "../../services/VersionService";
 import ProblemsListView from "./ProblemsListView";
 import ProblemPreview from "./ProblemPreview";
+import EditProblemSetDialog from "./EditProblemSetDialog";
 import { Head } from "../../models/Head";
+import { FoldersService } from "../../services/FoldersService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -37,7 +39,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-interface IPreviewData {
+interface IState {
     problemSet: ProblemSet;
     problems: Array<HeadLink>;
     selectedProblem: Problem | null;
@@ -48,12 +50,14 @@ export interface IProblemSetPreviewProps {
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
     versionService: VersionService;
+    foldersService: FoldersService;
     fileExplorerState: FileExplorerState;
 }
 
 export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
 
-    const [ data, setData ] = React.useState<IPreviewData | null>(null);
+    const [ data, setData ] = React.useState<IState | null>(null);
+    const [ editOpened, setEditOpened ] = React.useState(false);
 
     const sync = async (commit: Commit) => {
         const problemId : ProblemSetId = commit.target.id;
@@ -62,13 +66,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
         }
         const problemSet = await props.problemSetService.get(commit.id);
         const heads = await Promise.all(problemSet.head_ids.map(headId => props.versionService.getHead(headId)));
-        const headLinks = heads.map(head => {
-            return {
-                id: head.id,
-                name: head.name,
-                type: head.commit.target.type,
-            } as HeadLink;
-        });
+        const headLinks = heads.map(fromHead);
 
         setData({
             problemSet: problemSet,
@@ -82,7 +80,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
     });
 
     const onEdit = () => { 
-
+        setEditOpened(true);
     };
 
     const onSelectInList = async (index: number) => {
@@ -94,48 +92,18 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
         const head = await props.versionService.getHead(link.id);
         const problem = await props.problemsService.get(head.commit.id);
         setData({
-            problemSet: data.problemSet,
-            problems: data.problems,
+            ...data,
             selectedProblem: problem,
         });
     };
 
     const classes = useStyles();
 
-    const titleView = data ? (
-        <ListItem key="title">
-            <Box>
-                <Typography className={classes.fieldTitle} color="textSecondary" gutterBottom>
-                    Title
-                </Typography>
-                <Typography variant="h5" component="h2">
-                    {data.problemSet.title}
-                </Typography>
-            </Box>
-            
-        </ListItem>
-    ) : null;
+    if (!data) {
+        return (<div />);
+    }
 
-    const durationView = data ? (
-        <ListItem key="duration">
-            <Box>
-                <Typography className={classes.fieldTitle} color="textSecondary" gutterBottom>
-                    Diration
-                </Typography>
-                <Typography variant="h5" component="h2">
-                    {data.problemSet.duration / 60} min
-                </Typography>
-            </Box>
-        </ListItem>
-    ) : null;
-
-    const problemsView = data ? (
-        <ProblemsListView
-            links={data.problems} 
-            onSelect={(index) => onSelectInList(index)} />
-    ) : null;
-
-    const listPreview = (data && data.selectedProblem) ? (
+    const listPreview = (data.selectedProblem) ? (
         <ProblemPreview
             problem={data.selectedProblem} />
     ) : null;
@@ -150,6 +118,16 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                     <EditIcon />
                 </IconButton>
             </Container>
+            <EditProblemSetDialog
+                open={editOpened}
+                commit={props.commit}
+                onClose={() => setEditOpened(false)}
+                versionService={props.versionService}
+                foldersService={props.foldersService}
+                problemsService={props.problemsService}
+                problemSetService={props.problemSetService}
+                fileExplorerState={props.fileExplorerState}
+                />
             <List
                 className={classes.list}>
                 <ListItem key="desc">
@@ -162,11 +140,31 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                         </Typography>
                     </Box>
                 </ListItem>
-                {titleView}
-                {durationView}
+                <ListItem key="title">
+                    <Box>
+                        <Typography className={classes.fieldTitle} color="textSecondary" gutterBottom>
+                            Title
+                        </Typography>
+                        <Typography variant="h5" component="h2">
+                            {data.problemSet.title}
+                        </Typography>
+                    </Box>
+                </ListItem>
+                <ListItem key="duration">
+                    <Box>
+                        <Typography className={classes.fieldTitle} color="textSecondary" gutterBottom>
+                            Diration
+                        </Typography>
+                        <Typography variant="h5" component="h2">
+                            {data.problemSet.duration / 60} min
+                        </Typography>
+                    </Box>
+                </ListItem>
                 <Grid container className={classes.listContainer}>
                     <Grid item className={classes.problemsList}>
-                        {problemsView}
+                    <ProblemsListView
+                        links={data.problems} 
+                        onSelect={(index) => onSelectInList(index)} />
                     </Grid>
                     <Grid item className={classes.listPreview}>
                         {listPreview}

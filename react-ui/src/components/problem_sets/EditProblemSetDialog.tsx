@@ -15,6 +15,7 @@ import DurationInput from "./DurationInput";
 import { ProblemSet } from "../../models/ProblemSet";
 import { Problem } from "../../models/Problem";
 import { Head } from "../../models/Head";
+import { Commit } from "../../models/Commit";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -60,13 +61,23 @@ interface IPreviewData {
     problem: Problem;
 }
 
-interface IProblemsData {
+interface IProblemsList {
     problems: Array<HeadLink>;
     selected: number | null;
 }
 
-export interface ICreateProblemSetDialogProps {
+interface IState {
+    problemSet: ProblemSet;
+    commitDescription: string;
+    treeState: FileExplorerState;
+    treePreview: IPreviewData | null;
+    problemsList: IProblemsList;
+    problemsListPreview: IPreviewData | null;
+}
+
+export interface IEditProblemSetDialogProps {
     open: boolean;
+    commit: Commit;
     onClose: () => void;
     versionService: VersionService;
     foldersService: FoldersService;
@@ -75,25 +86,42 @@ export interface ICreateProblemSetDialogProps {
     fileExplorerState: FileExplorerState;
 }
 
-export default function CreateProblemSetDialog(props: ICreateProblemSetDialogProps) {
-
-    const [ title, setTitle ] = React.useState<string>("");
-    const [ duration, setDuration ] = React.useState<number>(0);
-    const [ explorerState ] = React.useState(new FileExplorerState(props.foldersService));
-    const [ sourcePreview, setSourcePreview ] = React.useState<IPreviewData | null>(null);
-    const [ problemsData, setProblemsData ] = React.useState<IProblemsData>({ problems: [], selected: null });
-    const [ listPreview, setListPreivew ] = React.useState<IPreviewData | null>(null);
+export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) {
+    const [ state, setState ] = React.useState<IState | null>(null);
 
     const clean = () => {
-        setTitle("");
-        setDuration(0);
-        setSourcePreview(null);
-        setProblemsData({ problems: [], selected: null });
-        setListPreivew(null);
+        setState(null);
+    };
+
+    const sync = async (commit: Commit) => {
+        const problemSet = await props.problemSetService.get(commit.id);
+        const heads = await Promise.all(
+                problemSet.head_ids
+                    .map(headId => props.versionService.getHead(headId))
+            );
+        const headLinks = heads.map(fromHead);
+        setState({
+            problemSet: problemSet,
+            commitDescription: "",
+            treeState: new FileExplorerState(props.foldersService),
+            treePreview: null,
+            problemsList: {
+                problems: headLinks,
+                selected: null
+            },
+            problemsListPreview: null
+        });
     };
 
     useEffect(() => {
-        const headChangedSub = explorerState
+        if (!state) {
+            if (props.open) {
+                sync(props.commit);
+            }
+            return;
+        }
+
+        const headChangedSub = state.treeState
             .currentHeadChanged()
             .subscribe(async link => {
                 if (!link) {
@@ -102,10 +130,15 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
 
                 const head = await props.versionService.getHead(link.id);
                 const problem = await props.problemsService.get(head.commit.id);
-                setSourcePreview({
-                    head: head,
-                    problem: problem,
-                });
+                if (state) {
+                    setState({
+                        ...state,
+                        treePreview: {
+                            head: head,
+                            problem: problem,
+                        }
+                    });
+                }
             });
 
         return () => {
@@ -114,37 +147,63 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
     });
 
     const onAdd = () => {
-        if (sourcePreview) {
-            setProblemsData({
-                problems: problemsData.problems.concat([ fromHead(sourcePreview.head) ]),
-                selected: problemsData.selected
+        if (state && state.treePreview) {
+            setState({
+                ...state,
+                problemSet: {
+                    ...state.problemSet,
+                    head_ids: state.problemSet.head_ids.concat([ state.treePreview.head.id ]),
+                },
+                problemsList: {
+                    ...state.problemsList,
+                    problems: state.problemsList.problems.concat([ fromHead(state.treePreview.head) ])
+                }
             });
         }
     };
 
     const onRemove = () => {
-        if (problemsData.selected !== null) {
-            problemsData.problems.splice(problemsData.selected, 1);
-            setProblemsData({
-                problems: problemsData.problems,
-                selected: null
+        if (state && state.problemsList.selected) {
+            setState({
+                ...state,
+                problemSet: {
+                    ...state.problemSet,
+                    head_ids: state.problemSet.head_ids.filter((_, i) => i !== state.problemsList.selected),
+                },
+                problemsList: {
+                    ...state.problemsList,
+                    problems: state.problemsList.problems.filter((_, i) => i !== state.problemsList.selected),
+                    selected: null,
+                },
+                problemsListPreview: null,
             });
-            setListPreivew(null);
         }
     };
 
     const onSelectInList = async (index: number) => {
-        setProblemsData({
-            problems: problemsData.problems,
-            selected: index
-        });
-        const link = problemsData.problems[index];
+        if (!state) {
+            return;
+        }
+
+        const link = state.problemsList.problems[index];
         const head = await props.versionService.getHead(link.id);
         const problem = await props.problemsService.get(head.commit.id);
-        setListPreivew({
-            head: head,
-            problem: problem,
-        })
+
+        if (!state) {
+            return;
+        }
+
+        setState({
+            ...state,
+            problemsList: {
+                ...state.problemsList,
+                selected: index,
+            },
+            problemsListPreview: {
+                head: head,
+                problem: problem,
+            },
+        });
     };
 
     const onCancel = () => {
@@ -153,36 +212,64 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
     };
 
     const onSave = async () => {
-        let curFolder = await props.fileExplorerState.currentFolderOrRoot();
-        if (!curFolder) {
+        if (!state) {
             return;
         }
 
-        let problemSet : ProblemSet = {
-            id: "",
-            title: title,
-            duration: duration * 60,
-            head_ids: problemsData.problems.map(link => link.id)
-        };
-
-        await props.problemSetService.create(curFolder.id, title, problemSet);
-
-        props.fileExplorerState.syncFolder(curFolder.id);
+        await props.problemSetService.update(props.commit.head_id, state.commitDescription, state.problemSet);
 
         clean();
         props.onClose();
+        props.fileExplorerState.syncHead(props.commit.head_id);
+    };
+
+    const setTitle = (title: string) => {
+        if (state) {
+            setState({
+                ...state,
+                problemSet: {
+                    ...state.problemSet,
+                    title: title,
+                },
+            });
+        }
+    };
+
+    const setDuration = (mins: number) => {
+        if (state) {
+            setState({
+                ...state,
+                problemSet: {
+                    ...state.problemSet,
+                    duration: mins * 60,
+                },
+            });
+        }
+    };
+
+    const setCommitDescription = (desc: string) => {
+        if (state) {
+            setState({
+                ...state,
+                commitDescription: desc,
+            });
+        }
     };
 
     const classes = useStyles();
 
-    const sourcePreviewView = sourcePreview ? (
+    if (!state) {
+        return (<div/>);
+    }
+
+    const treePreviewView = state.treePreview ? (
         <ProblemPreview
-            problem={sourcePreview.problem} />
+            problem={state.treePreview.problem} />
     ) : null;
 
-    const listPreviewView = listPreview ? (
+    const listPreviewView = state.problemsListPreview ? (
         <ProblemPreview
-            problem={listPreview.problem} />
+            problem={state.problemsListPreview.problem} />
     ) : null;
 
     return (
@@ -214,15 +301,23 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
                 <ListItem>
                     <FormControl className={classes.form}>
                         <TextField
+                            label="Commit description"
+                            value={state.commitDescription}
+                            onChange={(e) => setCommitDescription(e.target.value)} />
+                    </FormControl>
+                </ListItem>
+                <ListItem>
+                    <FormControl className={classes.form}>
+                        <TextField
                             label="Title"
-                            value={title}
+                            value={state.problemSet.title}
                             onChange={(e) => setTitle(e.target.value)} />
                     </FormControl>
                 </ListItem>
                 <ListItem>
                     <FormControl className={classes.form}>
                         <DurationInput
-                            value={duration}
+                            value={state.problemSet.duration / 60}
                             onChange={(mins) => setDuration(mins)}
                             step={1}
                             max={120} />
@@ -235,17 +330,17 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
                         <Grid item className={classes.source}>
                             <ExplorerView
                                 foldersService={props.foldersService}
-                                state={explorerState}
+                                state={state.treeState}
                                 filter={["problem"]}
                                 versionService={props.versionService} />
                         </Grid>
                         <Grid item className={classes.sourcePreview}>
                             <Button
-                                disabled={isNullOrUndefined(sourcePreview)}
+                                disabled={isNullOrUndefined(state.treePreview)}
                                 onClick={onAdd}>
                                 Add
                             </Button>
-                            {sourcePreviewView}
+                            {treePreviewView}
                         </Grid>
                     </Grid>
                 </Grid>
@@ -253,12 +348,12 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
                     <Grid container className={classes.container}>
                         <Grid item className={classes.list}>
                             <ProblemsListView
-                                links={problemsData.problems}
+                                links={state.problemsList.problems}
                                 onSelect={(index) => onSelectInList(index)} />
                         </Grid>
                         <Grid item className={classes.listPreview}>
                             <Button
-                                disabled={isNullOrUndefined(problemsData.selected)}
+                                disabled={isNullOrUndefined(state.problemsListPreview)}
                                 onClick={onRemove}>
                                 Remove
                             </Button>

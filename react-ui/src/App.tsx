@@ -68,6 +68,7 @@ const App: React.FC = () => {
             <FilePreview
               fileExplorerState={fileExplorerState}
               problemsService={problemsService}
+              foldersService={foldersService}
               problemSetService={problemSetService}
               versionService={versionService} />
           </Grid>
