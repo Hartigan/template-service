@@ -2,33 +2,30 @@ import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import AuthContent from './components/auth/AuthContent'
 import './App.css';
-import { Toolbar, Typography, makeStyles, Container, Grid } from '@material-ui/core';
-import FileTreeView from './components/files/FileTreeView';
+import { Toolbar, Typography, makeStyles, Grid } from '@material-ui/core';
 import { AuthService } from './services/AuthService';
 import { HttpServiceFactory } from './services/HttpServiceFactory';
 import { FoldersService } from './services/FoldersService';
-import { FileExplorerState } from './states/FileExplorerState';
 import { ProblemsService } from './services/ProblemsService';
-import FilePreview from './components/files/FilePreview';
 import { VersionService } from './services/VersionService';
 import { ProblemSetService } from './services/ProblemSetService';
+import NavigationTabs from './components/tabs/NavigationTabs';
 
 const useStyles = makeStyles(theme => ({
   offset: theme.mixins.toolbar,
-  title: {
-    flexGrow: 1,
-  },
-  tab: {
+  main: {
     width: "100%",
-    minHeight: 400,
-  },
-  tree: {
-    width: "30%",
     height: "100%",
   },
-  content: {
-    width: "70%",
+  contentCell: {
+    marginTop: 64,
+    width: "100%",
     height: "100%",
+  },
+  title: {
+    align: "left",
+    minWidth: 200,
+    flexGrow: 1,
   },
 }));
 
@@ -38,43 +35,31 @@ const versionService = new VersionService(httpServiceFactory);
 const foldersService = new FoldersService(httpServiceFactory);
 const problemsService = new ProblemsService(httpServiceFactory);
 const problemSetService = new ProblemSetService(httpServiceFactory);
-const fileExplorerState = new FileExplorerState(foldersService);
 
 const App: React.FC = () => {
   const classes = useStyles();
   return (
     <div className="App">
-      <header>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" className={classes.title}>
-              Testing service
-            </Typography>
-            <AuthContent authService={authService} />
-          </Toolbar>
-        </AppBar>
-      </header>
-      <Container className={classes.tab}>
-        <Grid container>
-          <Grid item className={classes.tree}>
-            <FileTreeView
+      <Grid container className={classes.main}>
+        <Grid item>
+          <AppBar>
+            <Toolbar>
+              <Typography variant="h6" noWrap={true} className={classes.title}>
+                Testing service
+              </Typography>
+              <AuthContent authService={authService} />
+            </Toolbar>
+          </AppBar>
+        </Grid>
+        <Grid item className={classes.contentCell}>
+          <NavigationTabs
               versionService={versionService}
               foldersService={foldersService}
               problemsService={problemsService}
               problemSetService={problemSetService}
-              state={fileExplorerState} />
-          </Grid>
-          <Grid item className={classes.content}>
-            <FilePreview
-              fileExplorerState={fileExplorerState}
-              problemsService={problemsService}
-              foldersService={foldersService}
-              problemSetService={problemSetService}
-              versionService={versionService} />
-          </Grid>
+            />
         </Grid>
-      </Container>
-      
+      </Grid>
     </div>
   );
 }
