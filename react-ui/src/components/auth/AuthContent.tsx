@@ -7,6 +7,8 @@ const useStyles = makeStyles(theme => ({
     root: {
         flexGrow: 1,
     },
+    cell: {
+    }
 }));
 
 export interface IAuthContentProps {
@@ -45,18 +47,18 @@ export default function AuthContent(props: IAuthContentProps) {
     const classes = useStyles();
 
     return (
-        <Grid direction="row-reverse" className={classes.root} container>
-            <Grid item hidden={user !== null}>
-                <Button onClick={login}>
+        <Grid direction="row-reverse" className={classes.root} container spacing={2}>
+            <Grid item hidden={user !== null} className={classes.cell}>
+                <Button onClick={login} variant="contained" color="primary">
                     Login
                 </Button>
             </Grid>
-            <Grid hidden={user === null}>
-                <Button onClick={logout}>
+            <Grid item hidden={user === null} className={classes.cell}>
+                <Button onClick={logout} variant="contained" color="primary">
                     Logout
                 </Button>
             </Grid>
-            <Grid item hidden={user === null}>
+            <Grid item hidden={user === null} className={classes.cell}>
                 <Typography variant="h6">
                     {name}
                 </Typography>
