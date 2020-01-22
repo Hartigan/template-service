@@ -69,8 +69,8 @@ type ExaminationService(reportContext: ReportContext,
                 | Ok() -> return Ok()
                 | Result.Error(fail) ->
                     match fail with
-                    | UpdateDocumentFail.Error(error) -> return Result.Error(ApplyAnswerFail.Error(error))
-                    | UpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
+                    | GenericUpdateDocumentFail.Error(error) -> return Result.Error(ApplyAnswerFail.Error(error))
+                    | GenericUpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
             }
 
         member this.Complete(submissionId) = 
@@ -135,9 +135,7 @@ type ExaminationService(reportContext: ReportContext,
                                 Report.Id = Guid.NewGuid().ToString()
                                 GeneratedProblemSetId = submission.GeneratedProblemSetId.Value
                                 SubmissionId = submissionId.Value
-                                Permissions = {
-                                    Permissions.OwnerId = submission.Permissions.OwnerId.Value
-                                }
+                                Permissions = entity.Permissions
                                 StartedAt = submission.StartedAt
                                 FinishedAt = if now < submission.Deadline then now else submission.Deadline
                                 Answers = reports |> List.ofArray
@@ -149,11 +147,10 @@ type ExaminationService(reportContext: ReportContext,
                                 | InsertDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
                             | Ok() ->
                                 match! (submissionContext :> IContext<Submission>).Update(Submission.CreateDocumentKey(submissionId.Value),
-                                                                                          fun sub -> Ok({ sub with ReportId = Some(report.Id) })) with
+                                                                                          fun sub -> { sub with ReportId = Some(report.Id) }) with
                                 | Result.Error(fail) ->
                                     match fail with
                                     | UpdateDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
-                                    | UpdateDocumentFail.CustomFail() -> return Result.Error(CompleteSubmissionFail.Error(InvalidOperationException("Unexpected exception")))
                                 | Ok() -> return Result.Ok(ReportId(report.Id))
             }
 
@@ -176,6 +173,8 @@ type ExaminationService(reportContext: ReportContext,
                             GeneratedProblemSetId = generatedProblemSetId.Value
                             Permissions = {
                                 Permissions.OwnerId = userId.Value
+                                Groups = []
+                                Members = []
                             }
                             StartedAt = startedAt
                             Deadline = deadline

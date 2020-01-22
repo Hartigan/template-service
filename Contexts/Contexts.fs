@@ -62,6 +62,8 @@ type ProblemContext = CommonContext<Problem>
 
 type ProblemSetContext = CommonContext<ProblemSet>
 
+type GroupContext = CommonContext<UserGroup>
+
 type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     inherit CommonContext<User>(couchbaseBuckets)
 

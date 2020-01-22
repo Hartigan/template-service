@@ -38,8 +38,8 @@ type FoldersService(folderContext: FolderContext,
                     | Result.Ok(ok) -> return Result.Ok()
                     | Result.Error(fail) ->
                         match fail with
-                        | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                        | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
+                        | GenericUpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.AddHead(headId, parentId) =
@@ -73,8 +73,8 @@ type FoldersService(folderContext: FolderContext,
                     | Result.Ok(ok) -> return Result.Ok()
                     | Result.Error(fail) ->
                         match fail with
-                        | UpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                        | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
+                        | GenericUpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.CreateFolder(name, userId) = 
@@ -82,7 +82,11 @@ type FoldersService(folderContext: FolderContext,
                 let folder = { 
                     Folder.Id = Guid.NewGuid().ToString()
                     Name = name.Value
-                    Permissions = { Permissions.OwnerId = userId.Value }
+                    Permissions = {
+                        Permissions.OwnerId = userId.Value
+                        Groups = []
+                        Members = []
+                    }
                     Heads = []
                     Folders = []
                 }
@@ -108,6 +112,8 @@ type FoldersService(folderContext: FolderContext,
                         Name = "root"
                         Permissions = {
                             Permissions.OwnerId = userId.Value
+                            Groups = []
+                            Members = []
                         }
                         Folders = []
                         Heads = []
@@ -133,7 +139,7 @@ type FoldersService(folderContext: FolderContext,
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                    Ok({
+                   {
                         folder with
                             Folders =
                                 folder.Folders
@@ -144,7 +150,7 @@ type FoldersService(folderContext: FolderContext,
                                         x
                                 )
                                 |> List.ofSeq
-                    })
+                    }
                 )
 
                 match result with
@@ -152,14 +158,13 @@ type FoldersService(folderContext: FolderContext,
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-                    | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.RenameHeadLink(folderId, headLinkId, headName) = 
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder ->
-                   Ok({
+                   {
                         folder with
                             Heads =
                                 folder.Heads
@@ -170,7 +175,7 @@ type FoldersService(folderContext: FolderContext,
                                         x
                                 )
                                 |> List.ofSeq
-                    })
+                    }
                 )
 
                 match result with
@@ -178,22 +183,19 @@ type FoldersService(folderContext: FolderContext,
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-                    | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.RenameFolder(folderId, folderName) =
             async {
                 let docId = Folder.CreateDocumentKey(folderId.Value)
                 let! result = folderContext.Update(docId, fun folder -> 
-                    Result.Ok({ folder with Name = folderName.Value })
+                    { folder with Name = folderName.Value }
                 )
-
                 match result with
                 | Result.Ok(ok) -> return Result.Ok()
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-                    | UpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
             }
 
         member this.Get(folderId) =

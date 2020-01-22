@@ -118,7 +118,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = role.ToEntity()
-                let! result = (context :> IContext<UserRole>).Update(entity, fun _ -> Result.Ok(entity))
+                let! result = (context :> IContext<UserRole>).Update(entity, fun _ -> entity)
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success
@@ -127,6 +127,4 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
                         | UpdateDocumentFail.Error(ex) ->
                             logger.LogError(sprintf "Role %s not updated" role.Name, ex)
                             return ex.ToIdentityResult()
-                        | UpdateDocumentFail.CustomFail(fail) ->
-                            return UnknownFailResult()
             }

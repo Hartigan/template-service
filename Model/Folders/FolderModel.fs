@@ -61,8 +61,6 @@ type FolderModel =
         Folders      : List<FolderLinkModel>
         [<JsonPropertyName("heads")>]
         Heads        : List<HeadLinkModel>
-        [<JsonPropertyName("permissions")>]
-        Permissions  : PermissionsModel
     }
 
     static member Create(folder: Folder) : Result<FolderModel, unit> =
@@ -96,7 +94,6 @@ type FolderModel =
             Ok({
                 FolderModel.Id      = FolderId(folder.Id)
                 Name                = FolderName(folder.Name)
-                Permissions         = PermissionsModel(folder.Permissions)
                 Folders             = folders
                 Heads               = heads
             })

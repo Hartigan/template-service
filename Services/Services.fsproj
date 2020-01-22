@@ -29,6 +29,8 @@
     <Compile Include="Problems/ProblemsService.fs" />
     <Compile Include="Examination/IExaminationService.fs" />
     <Compile Include="Examination/ExaminationService.fs" />
+    <Compile Include="Permissions/IUserService.fs" />
+    <Compile Include="Permissions/UserService.fs" />
     <Compile Include="Permissions/IPermissionsService.fs" />
     <Compile Include="Permissions/PermissionsService.fs" />
   </ItemGroup>

@@ -29,8 +29,6 @@ type ReportModel(entity: Report) =
     member val GeneratedProblemSetId = GeneratedProblemSetId(entity.GeneratedProblemSetId) with get
     [<JsonPropertyName("submission_id")>]
     member val SubmissionId = SubmissionId(entity.SubmissionId) with get
-    [<JsonPropertyName("permissions")>]
-    member val Permissions = PermissionsModel(entity.Permissions) with get
     [<JsonPropertyName("started_at")>]
     member val StartedAt = entity.StartedAt with get
     [<JsonPropertyName("finished_at")>]

@@ -2,10 +2,21 @@ namespace Models.Permissions
 
 open DatabaseTypes
 open Models.Identificators
-open Models.Converters
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
 
-type PermissionsModel(permissions: Permissions) =
-    [<JsonPropertyName("owner_id")>]
-    member val OwnerId  = UserId(permissions.OwnerId) with get
+type PermissionsModel =
+    {
+        [<JsonPropertyName("owner_id")>]
+        OwnerId: UserId
+        [<JsonPropertyName("groups")>]
+        Groups: List<GroupAccessModel>
+        [<JsonPropertyName("members")>]
+        Members: List<MemberModel>
+    }
+
+    static member Create(ownerId: UserId) : PermissionsModel =
+        {
+            OwnerId = ownerId
+            Groups = []
+            Members = []
+        }

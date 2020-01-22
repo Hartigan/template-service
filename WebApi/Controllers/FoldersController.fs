@@ -11,6 +11,7 @@ open System.Threading.Tasks
 open Models.Heads
 open System.Security.Claims
 open System.Text.Json.Serialization
+open Models.Permissions
 
 type CreateFolderRequest = {
     [<JsonPropertyName("name")>]
@@ -80,7 +81,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
         async {
             let userId = this.GetUserId()
             let folderId = FolderId(folderId)
-            match! permissionsService.CheckPermissions(folderId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(folderId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! foldersService.Get(folderId) with
                 | Result.Error(fail) ->
@@ -110,8 +111,8 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.AddFolder([<FromBody>] req: AddFolderRequest) =
         async {
             let userId = this.GetUserId()
-            let! targetCheck = permissionsService.CheckPermissions(req.TargetId, userId)
-            let! destinationCheck = permissionsService.CheckPermissions(req.DestinationId, userId)
+            let! targetCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite)
+            let! destinationCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
 
             match (targetCheck, destinationCheck) with
             | (Ok(), Ok()) ->
@@ -130,8 +131,8 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.AddHead([<FromBody>] req: AddHeadRequest) =
         async {
             let userId = this.GetUserId()
-            let! targetCheck = permissionsService.CheckPermissions(req.TargetId, userId)
-            let! destinationCheck = permissionsService.CheckPermissions(req.DestinationId, userId)
+            let! targetCheck = permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite)
+            let! destinationCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
 
             match (targetCheck, destinationCheck) with
             | (Ok(), Ok()) ->
@@ -164,7 +165,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.MoveHeadToTrash([<FromBody>] req: MoveHeadToTrashRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.TargetId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result = foldersService.MoveHeadToTrash(req.TargetId, userId)
                 match result with
@@ -181,7 +182,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.MoveFolderToTrash([<FromBody>] req: MoveFolderToTrashRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.TargetId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result = foldersService.MoveFolderToTrash(req.TargetId, userId)
                 match result with
@@ -198,7 +199,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.RenameFolder([<FromBody>] req: RenameFolderRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.TargetId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result = foldersService.RenameFolder(req.TargetId, req.Name)
                 match result with
@@ -215,7 +216,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.RenameFolderLink([<FromBody>] req: RenameFolderLinkRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.ParentId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.ParentId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result = foldersService.RenameFolderLink(req.ParentId, req.LinkId, req.Name)
                 match result with
@@ -232,7 +233,7 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
     member this.RenameHeadLink([<FromBody>] req: RenameHeadLinkRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.ParentId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.ParentId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result = foldersService.RenameHeadLink(req.ParentId, req.LinkId, req.Name)
                 match result with

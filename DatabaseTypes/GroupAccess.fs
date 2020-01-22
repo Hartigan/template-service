@@ -4,10 +4,10 @@ open System.Runtime.Serialization;
 
 
 [<DataContract>]
-type Member =
+type GroupAccess =
     {
-        [<field: DataMember(Name = "user_id")>]
-        UserId : string
+        [<field: DataMember(Name = "group_id")>]
+        GroupId : string
         [<field: DataMember(Name = "access")>]
         Access : uint64
     }

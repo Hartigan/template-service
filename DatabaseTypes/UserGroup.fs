@@ -1,6 +1,5 @@
 namespace DatabaseTypes
 
-open System.Collections.Generic
 open System.Runtime.Serialization
 
 [<DataContract>]
@@ -14,7 +13,7 @@ type UserGroup =
         Name : string
         [<field: DataMember(Name = "description")>]
         Description : string
-        [<field: DataMember(Name = "members")>]
+        [<field: DataMember(Name = "members")>]                
         Members : List<Member>
     }
 

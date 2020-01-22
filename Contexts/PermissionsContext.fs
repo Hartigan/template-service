@@ -8,11 +8,16 @@ open System.Threading.Tasks
 open System
 open Couchbase.KeyValue
 open Newtonsoft.Json.Linq
+open System.Collections.Generic
 open DatabaseTypes
+open Couchbase.Core.IO.Operations.SubDocument
 
-type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) = 
+type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) = 
 
-    let updateAttempts = 10  
+    let updateAttempts = 10
+    let specs = seq {
+        LookupInSpec.Get("permissions")
+    }
 
     member internal this.GetCollection(): Async<ICollection> = 
         async {
@@ -29,11 +34,12 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
 
     member private this.DoUpdateAttempt<'TFail>(collection: ICollection,
                                                 key: IDocumentKey,
-                                                updater: ('T -> Result<'T, 'TFail>)): Async<Result<unit, GenericUpdateDocumentFail<'TFail>>> =
+                                                updater: (Permissions -> Result<Permissions, 'TFail>)) =
         async {
             try
-                let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
-                let item = getResult.ContentAs<'T>()
+                let! (getResult: ILookupInResult) =
+                    collection.LookupInAsync(key.Key, specs)
+                let item = getResult.ContentAs<Permissions>(0)
                 let replaceOptions = ReplaceOptions()
                 replaceOptions.Cas <- getResult.Cas
                 let updateResult = updater(item)
@@ -46,38 +52,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
             with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
         }
 
-    interface IContext<'T> with
-        member this.Update(docKey: IDocumentKey, updater: 'T -> 'T) = 
-            async {
-                match! (this :> IContext<'T>).Update(docKey, updater >> Ok) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GenericUpdateDocumentFail.Error(error) ->
-                        return Result.Error(UpdateDocumentFail.Error(error))
-                    | GenericUpdateDocumentFail.CustomFail() ->
-                        return Result.Error(UpdateDocumentFail.Error(InvalidOperationException("Unexpected exception on update")))
-                | Ok() ->
-                    return Ok()
-            }
-
-        member this.Insert(key, doc) =
-            async {
-                try
-                    let! collection = this.GetCollection()
-                    let! insertResult = collection.InsertAsync(key.Key, doc, InsertOptions())
-                    return Result.Ok(())
-                with ex -> return Result.Error(InsertDocumentFail.Error(ex))
-            } 
-
-        member this.Remove(key) =
-            async {
-                try
-                    let! collection = this.GetCollection()
-                    do! collection.RemoveAsync(key.Key, RemoveOptions())
-                    return Result.Ok(())
-                with ex -> return Result.Error(RemoveDocumentFail.Error(ex))
-            }
-
+    interface IPermissionsContext with
         member this.Update(key, updater) = 
             async {
                 try
@@ -101,12 +76,25 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
             }
 
+        member this.Update(docKey: IDocumentKey, updater: Permissions -> Permissions) = 
+            async {
+                match! (this :> IPermissionsContext).Update(docKey, updater >> Ok) with
+                | Result.Error(fail) ->
+                    match fail with
+                    | GenericUpdateDocumentFail.Error(error) ->
+                        return Result.Error(UpdateDocumentFail.Error(error))
+                    | GenericUpdateDocumentFail.CustomFail() ->
+                        return Result.Error(UpdateDocumentFail.Error(InvalidOperationException("Unexpected exception on update")))
+                | Ok() ->
+                    return Ok()
+            }
+
         member this.Get(key) =
             async {
                 try
                     let! collection = this.GetCollection()
-                    let! (getResult: IGetResult) = collection.GetAsync(key.Key)
-                    return Result.Ok(getResult.ContentAs<'T>())
+                    let! (getResult: ILookupInResult) = collection.LookupInAsync(key.Key, specs)
+                    return Result.Ok(getResult.ContentAs<Permissions>(0))
 
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }

@@ -14,10 +14,9 @@ type RemoveDocumentFail =
 type ExistsDocumentFail =
     | Error of Exception
 
-type UpdateDocumentFail<'TFail> =
+type GenericUpdateDocumentFail<'TFail> =
     | Error of Exception
     | CustomFail of 'TFail
 
-type UpsertDocumentFail<'TFail> =
+type UpdateDocumentFail =
     | Error of Exception
-    | CustomFail of 'TFail

@@ -14,13 +14,11 @@ type HeadName(name: string) =
 and HeadNameConverter() =
     inherit StringConverter<HeadName>((fun m -> m.Value), (fun s -> HeadName(s)))
 
-type HeadModel private (id: HeadId, name: HeadName, permissions: PermissionsModel, commit: CommitModel) =
+type HeadModel private (id: HeadId, name: HeadName, commit: CommitModel) =
     [<JsonPropertyName("id")>]
     member val Id       = id with get
     [<JsonPropertyName("name")>]
     member val Name     = name with get
-    [<JsonPropertyName("permissions")>]
-    member val Permissions  = permissions with get
     [<JsonPropertyName("commit")>]
     member val Commit   = commit with get
     
@@ -30,6 +28,5 @@ type HeadModel private (id: HeadId, name: HeadName, permissions: PermissionsMode
         | Result.Ok(commitModel) ->
             Result.Ok(HeadModel(HeadId(head.Id),
                                 HeadName(head.Name),
-                                PermissionsModel(head.Permissions),
                                 commitModel))
      

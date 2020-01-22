@@ -7,6 +7,7 @@ open Services.Permissions
 open Models.Identificators
 open System.Security.Claims
 open Services.VersionControl
+open Models.Permissions
 
 [<Authorize>]
 [<Route("version")>]
@@ -21,7 +22,7 @@ type VersionController(foldersService: IFoldersService, permissionsService: IPer
         async {
             let userId = this.GetUserId()
             let headId = HeadId(id)
-            match! permissionsService.CheckPermissions(headId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(headId) with
                 | Result.Error(fail) ->
@@ -38,7 +39,7 @@ type VersionController(foldersService: IFoldersService, permissionsService: IPer
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
-            match! permissionsService.CheckPermissions(commitId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(commitId) with
                 | Result.Error(fail) ->

@@ -12,6 +12,7 @@ open Models.Heads
 open Models.Identificators
 open Models.Reports
 open System.Text.Json.Serialization
+open Models.Permissions
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
@@ -36,7 +37,7 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             let submissionId = SubmissionId(id)
-            match! permissionsService.CheckPermissions(submissionId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! examinationService.Get(submissionId) with
                 | Result.Error(fail) ->
@@ -52,7 +53,7 @@ type ExaminationController(permissionsService: IPermissionsService,
     member this.ApplyAnswer([<FromBody>] req: ApplyAnswerRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.Id, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Submission(req.Id), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! examinationService.ApplyAnswer(req.ProblemAnswer, req.Id) with
                 | Result.Error(fail) ->
@@ -71,7 +72,7 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             let submissionId = SubmissionId(id)
-            match! permissionsService.CheckPermissions(submissionId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! examinationService.Complete(submissionId) with
                 | Result.Error(fail) ->
@@ -88,7 +89,7 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             let headId = HeadId(id)
-            match! permissionsService.CheckPermissions(headId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanGenerate) with
             | Ok() ->
                 match! versionControlService.Get(headId) with
                 | Result.Error(fail) ->
@@ -113,7 +114,7 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             let reportId = ReportId(id)
-            match! permissionsService.CheckPermissions(reportId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Report(reportId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! examinationService.Get(reportId) with
                 | Result.Error(fail) ->

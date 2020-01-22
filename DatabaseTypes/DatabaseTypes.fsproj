@@ -5,6 +5,8 @@
   <ItemGroup>
     <Compile Include="IDocumentKey.fs" />
     <Compile Include="DocumentKey.fs" />
+    <Compile Include="Member.fs" />
+    <Compile Include="GroupAccess.fs" />
     <Compile Include="Permissions.fs" />
     <Compile Include="Commit.fs" />
     <Compile Include="Code.fs" />
@@ -13,7 +15,6 @@
     <Compile Include="GeneratedProblem.fs" />
     <Compile Include="Folder.fs" />
     <Compile Include="Head.fs" />
-    <Compile Include="Member.fs" />
     <Compile Include="User.fs" />
     <Compile Include="UserGroup.fs" />
     <Compile Include="UserRole.fs" />

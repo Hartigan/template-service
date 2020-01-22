@@ -114,6 +114,16 @@ type ReportId =
 and ReportIdConverter() =
     inherit StringConverter<ReportId>((fun m -> m.Value), (fun s -> ReportId(s)))
 
+[<JsonConverter(typeof<GroupIdConverter>)>]
+type GroupId = 
+    | GroupId of id: string
+    member this.Value = 
+        match this with
+        | GroupId(id) -> id
+
+and GroupIdConverter() =
+    inherit StringConverter<GroupId>((fun m -> m.Value), (fun s -> GroupId(s)))
+
 type Id<'T>(id: 'T) =
     [<JsonPropertyName("id")>]
     member val Value = id

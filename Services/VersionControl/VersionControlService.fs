@@ -41,6 +41,8 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                         Head.Id = headId.ToString()
                         Permissions = {
                             OwnerId = userId.Value
+                            Groups = []
+                            Members = []
                         }
                         Commit = commit
                         Name = name.Value
@@ -85,8 +87,8 @@ type VersionControlService(commitContext: CommitContext, headContext: HeadContex
                             Result.Error(CreateFail.Error(InvalidOperationException("Wrong commit target type")))) with
                     | Result.Error(fail) ->
                         match fail with
-                        | UpdateDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                        | UpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
+                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
+                        | GenericUpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
                     | Result.Ok() ->
                         match! commitContext.Insert(commit, commit) with
                         | Result.Error(fail) ->

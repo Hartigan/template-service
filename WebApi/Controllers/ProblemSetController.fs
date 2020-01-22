@@ -12,6 +12,7 @@ open Services.Problems
 open Models.Problems
 open Microsoft.AspNetCore.Http
 open System.Text.Json.Serialization
+open Models.Permissions
 
 type CreateProblemSetRequest = {
     [<JsonPropertyName("folder_id")>]
@@ -44,7 +45,7 @@ type ProblemSetController(foldersService: IFoldersService, permissionsService: I
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
-            match! permissionsService.CheckPermissions(commitId, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(commitId) with
                 | Result.Error(fail) ->
@@ -66,7 +67,7 @@ type ProblemSetController(foldersService: IFoldersService, permissionsService: I
     member this.CreateProblem([<FromBody>] req: CreateProblemSetRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.Folder, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.Folder), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! problemsService.Create(req.ProblemSet) with
                 | Result.Error(fail) ->
@@ -92,7 +93,7 @@ type ProblemSetController(foldersService: IFoldersService, permissionsService: I
     member this.UpdateProblem([<FromBody>] req: UpdateProblemSetRequest) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(req.Head, userId) with
+            match! permissionsService.CheckPermissions(ProtectedId.Head(req.Head), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! problemsService.Create(req.ProblemSet) with
                 | Result.Error(fail) ->

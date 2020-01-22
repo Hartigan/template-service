@@ -118,7 +118,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = (context :> IContext<User>).Update(entity, fun _ -> Result.Ok(entity))
+                let! result = (context :> IContext<User>).Update(entity, fun _ -> entity)
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success
@@ -127,8 +127,6 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
                         | UpdateDocumentFail.Error(ex) ->
                             logger.LogError(sprintf "User %s not updated" user.Name, ex)
                             return ex.ToIdentityResult()
-                        | UpdateDocumentFail.CustomFail(fail) ->
-                            return UnknownFailResult()
             }
 
         member this.CreateAsync(user, cancellationToken) =

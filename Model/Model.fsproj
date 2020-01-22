@@ -16,6 +16,11 @@
     <Compile Include="Authentication/Converters.fs" />
     <Compile Include="Authentication/UserStore.fs" />
     <Compile Include="Authentication/RoleStore.fs" />
+    <Compile Include="Permissions/UserModel.fs" />
+    <Compile Include="Permissions/AccessModel.fs" />
+    <Compile Include="Permissions/MemberModel.fs" />
+    <Compile Include="Permissions/GroupModel.fs" />
+    <Compile Include="Permissions/GroupAccessModel.fs" />
     <Compile Include="Permissions/PermissionsModel.fs" />
     <Compile Include="Code/CodeModel.fs" />
     <Compile Include="Heads/CommitModel.fs" />
