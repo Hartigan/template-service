@@ -1,4 +1,3 @@
-import { Permissions } from "./Permissions";
 import { FolderId, HeadId } from "./Identificators";
 import { TargetType } from "./Commit";
 import { Head } from "./Head";
@@ -27,5 +26,4 @@ export interface Folder {
     name: string;
     folders: Array<FolderLink>;
     heads: Array<HeadLink>;
-    permissions: Permissions;
 }

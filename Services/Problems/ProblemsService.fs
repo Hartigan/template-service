@@ -7,11 +7,7 @@ open Models.Problems
 open Models.Identificators
 open System.Linq
 
-type ProblemsService(problemsContext: ProblemContext, problemSetContext: ProblemSetContext, headContext: HeadContext) =
-    let problemsContext = (problemsContext :> IContext<Problem>)
-    let problemSetContext = (problemSetContext :> IContext<ProblemSet>)
-    let headContext = (headContext :> IContext<Head>)
-
+type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: IContext<ProblemSet>, headContext: IContext<Head>) =
     interface IProblemsService with
         member this.Create(model: ProblemSetModel) = 
             async {

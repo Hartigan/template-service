@@ -7,8 +7,8 @@ open Models.Reports
 open Services.Problems
 open System
 
-type ExaminationService(reportContext: ReportContext,
-                        submissionContext: SubmissionContext,
+type ExaminationService(reportContext: IReportContext,
+                        submissionContext: ISubmissionContext,
                         problemsService: IProblemsService,
                         generatorService: IGeneratorService) =
 
@@ -64,8 +64,8 @@ type ExaminationService(reportContext: ReportContext,
                     Timestamp = answer.Timestamp
                 }
 
-                match! (submissionContext :> IContext<Submission>).Update(Submission.CreateDocumentKey(submissionId.Value),
-                                                                          this.UpdateSubmission(problemAnswer)) with
+                match! submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
+                                                this.UpdateSubmission(problemAnswer)) with
                 | Ok() -> return Ok()
                 | Result.Error(fail) ->
                     match fail with
@@ -75,7 +75,7 @@ type ExaminationService(reportContext: ReportContext,
 
         member this.Complete(submissionId) = 
             async {
-                match! (submissionContext :> IContext<Submission>).Get(Submission.CreateDocumentKey(submissionId.Value)) with
+                match! submissionContext.Get(Submission.CreateDocumentKey(submissionId.Value)) with
                 | Result.Error(fail) ->
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
@@ -141,13 +141,13 @@ type ExaminationService(reportContext: ReportContext,
                                 Answers = reports |> List.ofArray
                             }
 
-                            match! (reportContext :> IContext<Report>).Insert(report, report) with
+                            match! reportContext.Insert(report, report) with
                             | Result.Error(fail) ->
                                 match fail with
                                 | InsertDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
                             | Ok() ->
-                                match! (submissionContext :> IContext<Submission>).Update(Submission.CreateDocumentKey(submissionId.Value),
-                                                                                          fun sub -> { sub with ReportId = Some(report.Id) }) with
+                                match! submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
+                                                                fun sub -> { sub with ReportId = Some(report.Id) }) with
                                 | Result.Error(fail) ->
                                     match fail with
                                     | UpdateDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
@@ -181,7 +181,7 @@ type ExaminationService(reportContext: ReportContext,
                             Answers = List.empty
                             ReportId = None
                         }
-                        match! (submissionContext :> IContext<Submission>).Insert(submission, submission) with
+                        match! submissionContext.Insert(submission, submission) with
                         | Result.Error(fail) ->
                             match fail with
                             | InsertDocumentFail.Error(error) -> return Result.Error(CreateSubmissionFail.Error(error))
@@ -190,7 +190,7 @@ type ExaminationService(reportContext: ReportContext,
 
         member this.Get(id: ReportId) =
             async {
-                match! (reportContext :> IContext<Report>).Get(Report.CreateDocumentKey(id.Value)) with
+                match! reportContext.Get(Report.CreateDocumentKey(id.Value)) with
                 | Result.Error(fail) ->
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))
@@ -217,7 +217,7 @@ type ExaminationService(reportContext: ReportContext,
 
         member this.Get(id: SubmissionId) =
             async {
-                match! (submissionContext :> IContext<Submission>).Get(Submission.CreateDocumentKey(id.Value)) with
+                match! submissionContext.Get(Submission.CreateDocumentKey(id.Value)) with
                 | Result.Error(fail) ->
                     match fail with
                     | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))

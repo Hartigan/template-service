@@ -10,11 +10,9 @@ open System
 open Models.Permissions
 
 type PermissionsService(userService: IUserService,
-                        groupContext: GroupContext,
+                        groupContext: IGroupContext,
                         permissionsContext: IPermissionsContext,
                         versionControlService: IVersionControlService) =
-
-    let groupContext = (groupContext :> IContext<UserGroup>)
 
     member this.CreateMember(m: Member) =
         async {

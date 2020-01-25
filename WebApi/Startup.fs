@@ -15,6 +15,7 @@ open Microsoft.AspNetCore.Identity
 open Microsoft.Extensions.Configuration
 open Microsoft.AspNetCore.Authentication
 open Models.Authentication
+open DatabaseTypes
 open Storage
 open Contexts
 open System.IdentityModel.Tokens.Jwt
@@ -52,18 +53,18 @@ type Startup private () =
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()
-        |> fun x -> x.AddSingleton<FolderContext>()
-        |> fun x -> x.AddSingleton<HeadContext>()
-        |> fun x -> x.AddSingleton<UserContext>()
-        |> fun x -> x.AddSingleton<UserRoleContext>()
-        |> fun x -> x.AddSingleton<ReportContext>()
-        |> fun x -> x.AddSingleton<SubmissionContext>()
-        |> fun x -> x.AddSingleton<CommitContext>()
-        |> fun x -> x.AddSingleton<ProblemContext>()
-        |> fun x -> x.AddSingleton<ProblemSetContext>()
-        |> fun x -> x.AddSingleton<GeneratedProblemContext>()
-        |> fun x -> x.AddSingleton<GeneratedProblemSetContext>()
-        |> fun x -> x.AddSingleton<GroupContext>()
+        |> fun x -> x.AddSingleton<IContext<Folder>, FolderContext>()
+        |> fun x -> x.AddSingleton<IContext<Head>, HeadContext>()
+        |> fun x -> x.AddSingleton<IUserContext, UserContext>()
+        |> fun x -> x.AddSingleton<IUserRoleContext, UserRoleContext>()
+        |> fun x -> x.AddSingleton<IReportContext, ReportContext>()
+        |> fun x -> x.AddSingleton<ISubmissionContext, SubmissionContext>()
+        |> fun x -> x.AddSingleton<IContext<Commit>, CommitContext>()
+        |> fun x -> x.AddSingleton<IContext<Problem>, ProblemContext>()
+        |> fun x -> x.AddSingleton<IContext<ProblemSet>, ProblemSetContext>()
+        |> fun x -> x.AddSingleton<IContext<GeneratedProblem>, GeneratedProblemContext>()
+        |> fun x -> x.AddSingleton<IContext<GeneratedProblemSet>, GeneratedProblemSetContext>()
+        |> fun x -> x.AddSingleton<IGroupContext, GroupContext>()
         |> fun x -> x.AddSingleton<IPermissionsContext, PermissionsContext>()
         |> fun x -> x.AddSingleton<IUserService, UserService>()
         |> fun x -> x.AddSingleton<IFoldersService, FoldersService>()

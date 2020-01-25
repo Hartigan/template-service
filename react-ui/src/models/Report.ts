@@ -1,4 +1,3 @@
-import { Permissions } from "./Permissions";
 import { GeneratedProblemId, GeneratedProblemSetId, SubmissionId } from "./Identificators";
 
 export interface ProblemReport {
@@ -13,7 +12,6 @@ export interface Report {
     id: string;
     generated_problem_set_id: GeneratedProblemSetId;
     submission_id: SubmissionId;
-    permissions: Permissions;
     started_at: Date;
     finished_at: Date;
     answers: Array<ProblemReport>;

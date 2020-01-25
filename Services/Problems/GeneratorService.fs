@@ -14,14 +14,12 @@ module Async =
     let flatMap f x = async.Bind(x, f)
 
 type GeneratorService(viewFormatter: IViewFormatter,
-                      generatedProblemContext: GeneratedProblemContext,
-                      generatedProblemSetContext: GeneratedProblemSetContext,
+                      generatedProblemContext: IContext<GeneratedProblem>,
+                      generatedProblemSetContext: IContext<GeneratedProblemSet>,
                       problemsService: IProblemsService,
                       versionControlService: IVersionControlService) =
 
     let csharpGenerator = (CSharpDelegateGenerator() :> IDelegateGenerator)
-    let generatedProblemContext = (generatedProblemContext :> IContext<GeneratedProblem>)
-    let generatedProblemSetContext = (generatedProblemSetContext :> IContext<GeneratedProblemSet>)
     let random = Random(0)
 
     member this.CreateGeneratedProblem(problem: ProblemModel): Async<Result<GeneratedProblem, GenerateFail>> =

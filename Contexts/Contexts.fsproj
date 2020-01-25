@@ -9,10 +9,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContextResults.fs" />
-    <Compile Include="IContext.fs" />
+    <Compile Include="ContextInterfaces.fs" />
     <Compile Include="CommonContext.fs" />
     <Compile Include="Contexts.fs" />
-    <Compile Include="IPermissionsContext.fs" />
     <Compile Include="PermissionsContext.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -11,14 +11,14 @@ open DatabaseTypes
 open System
 
 
-type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
+type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
 
     interface IRoleStore<RoleIdentity> with
         member this.CreateAsync(role, cancellationToken) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = role.ToEntity()
-                let! result = (context :> IContext<UserRole>).Insert(entity, entity)
+                let! result = context.Insert(entity, entity)
                 match result with
                 | Result.Ok(ok) ->
                     logger.LogInformation(sprintf "Role %s successfuly added" role.Name)
@@ -34,7 +34,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = role.ToEntity()
-                let! result = (context :> IContext<UserRole>).Remove(entity)
+                let! result = context.Remove(entity)
                 match result with
                 | Result.Ok(ok) ->
                     logger.LogInformation(sprintf "Role %s successfuly deleted" role.Name)
@@ -53,7 +53,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let docId = UserRole.CreateDocumentKey(roleId)
-                let! result = (context :> IContext<UserRole>).Get(docId)
+                let! result = context.Get(docId)
                 match result with
                 | Result.Ok(role) ->
                     logger.LogInformation(sprintf "Role %s successfuly found by id" roleId)
@@ -118,7 +118,7 @@ type RoleStore(context: UserRoleContext, logger: ILogger<RoleStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = role.ToEntity()
-                let! result = (context :> IContext<UserRole>).Update(entity, fun _ -> entity)
+                let! result = context.Update(entity, fun _ -> entity)
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success

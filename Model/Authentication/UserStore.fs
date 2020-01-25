@@ -11,7 +11,7 @@ open DatabaseTypes
 open System
 
 
-type UserStore(context: UserContext, logger: ILogger<UserStore>) =
+type UserStore(context: IUserContext, logger: ILogger<UserStore>) =
 
     interface IUserPasswordStore<UserIdentity> with
         member this.GetPasswordHashAsync(user, cancellationToken) =
@@ -36,7 +36,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = (context :> IContext<User>).Remove(entity)
+                let! result = context.Remove(entity)
                 match result with
                 | Result.Ok(ok) ->
                     logger.LogInformation(sprintf "User %s successefuly deleted" user.Name)
@@ -55,7 +55,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let docKey = User.CreateDocumentKey(userId)
-                let! result = (context :> IContext<User>).Get(docKey)
+                let! result = context.Get(docKey)
                 match result with
                 | Result.Ok(user) ->
                     logger.LogInformation(sprintf "User %s successfuly found by id" userId)
@@ -118,7 +118,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = (context :> IContext<User>).Update(entity, fun _ -> entity)
+                let! result = context.Update(entity, fun _ -> entity)
                 match result with
                 | Result.Ok(ok) ->
                     return IdentityResult.Success
@@ -133,7 +133,7 @@ type UserStore(context: UserContext, logger: ILogger<UserStore>) =
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = (context :> IContext<User>).Insert(entity, entity)
+                let! result = context.Insert(entity, entity)
                 match result with
                 | Result.Ok(ok) ->
                     logger.LogInformation(sprintf "User %s successfuly added" user.Name)

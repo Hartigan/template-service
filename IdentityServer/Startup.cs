@@ -35,8 +35,8 @@ namespace IdentityServer
             services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
                     .AddSingleton<CouchbaseCluster>()
                     .AddSingleton<CouchbaseBuckets>()
-                    .AddSingleton<UserContext>()
-                    .AddSingleton<UserRoleContext>();
+                    .AddSingleton<IUserContext, UserContext>()
+                    .AddSingleton<IUserRoleContext, UserRoleContext>();
 
             services.AddOidcStateDataFormatterCache();
 

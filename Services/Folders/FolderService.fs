@@ -8,11 +8,8 @@ open Models.Identificators
 open DatabaseTypes
 open Contexts
 
-type FoldersService(folderContext: FolderContext,
-                    headContext: HeadContext) =
-
-    let folderContext = (folderContext :> IContext<Folder>)
-    let headContext = (headContext :> IContext<Head>)
+type FoldersService(folderContext: IContext<Folder>,
+                    headContext: IContext<Head>) =
 
     interface IFoldersService with
         member this.AddFolder(folderId, parentId) =

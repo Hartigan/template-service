@@ -9,3 +9,4 @@ type GetUserFail =
 
 type IUserService =
     abstract member Get : UserId -> Async<Result<UserModel, GetUserFail>>
+    abstract member SearchByContains : string -> Async<Result<List<UserModel>, GetUserFail>>

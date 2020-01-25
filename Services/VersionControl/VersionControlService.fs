@@ -6,10 +6,7 @@ open Models.Identificators
 open Models.Heads
 open System
 
-type VersionControlService(commitContext: CommitContext, headContext: HeadContext) =
-    let commitContext = (commitContext :> IContext<Commit>)
-    let headContext = (headContext :> IContext<Head>)
-
+type VersionControlService(commitContext: IContext<Commit>, headContext: IContext<Head>) =
     interface IVersionControlService with
         member this.Create(name: HeadName, concreteId: ConcreteId, description: CommitDescription, userId: UserId) = 
             async {
