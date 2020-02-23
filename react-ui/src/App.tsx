@@ -10,6 +10,8 @@ import { ProblemsService } from './services/ProblemsService';
 import { VersionService } from './services/VersionService';
 import { ProblemSetService } from './services/ProblemSetService';
 import NavigationTabs from './components/tabs/NavigationTabs';
+import { PermissionsService } from './services/PermissionsService';
+import { UserService } from './services/UserService';
 
 const useStyles = makeStyles(theme => ({
   offset: theme.mixins.toolbar,
@@ -35,6 +37,8 @@ const versionService = new VersionService(httpServiceFactory);
 const foldersService = new FoldersService(httpServiceFactory);
 const problemsService = new ProblemsService(httpServiceFactory);
 const problemSetService = new ProblemSetService(httpServiceFactory);
+const permissionsService = new PermissionsService(httpServiceFactory);
+const userService = new UserService(httpServiceFactory);
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -57,6 +61,8 @@ const App: React.FC = () => {
               foldersService={foldersService}
               problemsService={problemsService}
               problemSetService={problemSetService}
+              permissionsService={permissionsService}
+              userService={userService}
             />
         </Grid>
       </Grid>

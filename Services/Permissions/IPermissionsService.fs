@@ -70,9 +70,13 @@ type IPermissionsService =
     abstract member CheckPermissions : ProtectedId * UserId * AccessModel -> Async<Result<unit, CheckPermissionsFail>>
     abstract member CheckPermissions : GroupId * UserId * AccessModel -> Async<Result<unit, CheckPermissionsFail>>
     abstract member Create : UserId * GroupName * GroupDescription -> Async<Result<GroupId, CreateGroupFail>>
+    abstract member Get : UserId -> Async<Result<List<GroupModel>, GetGroupFail>>
     abstract member Get : GroupId -> Async<Result<GroupModel, GetGroupFail>>
     abstract member Get : ProtectedId -> Async<Result<PermissionsModel, GetPermissionsFail>>
     abstract member Update : GroupId * Option<GroupName> * Option<GroupDescription> -> Async<Result<unit, UpdateGroupFail>>
     abstract member Update : GroupId * UserId * Option<AccessModel> -> Async<Result<unit, UpdateGroupFail>>
+    abstract member Add : GroupId * UserId -> Async<Result<unit, UpdateGroupFail>>
     abstract member Update : ProtectedId * UserId * Option<AccessModel> -> Async<Result<unit, UpdatePermissionsFail>>
     abstract member Update : ProtectedId * GroupId * Option<AccessModel> -> Async<Result<unit, UpdatePermissionsFail>>
+    abstract member Add : ProtectedId * UserId -> Async<Result<unit, UpdatePermissionsFail>>
+    abstract member Add : ProtectedId * GroupId -> Async<Result<unit, UpdatePermissionsFail>>

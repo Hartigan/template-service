@@ -22,6 +22,10 @@ export class PermissionsService {
         return this.http.get<Group>(`group?id=${id}`);
     }
 
+    getGroups() {
+        return this.http.get<Array<Group>>(`groups`);
+    }
+
     getPermissions(id: ProtectedId, type: ProtectedType) {
         return this.http.get<Permissions>(`permissions?id=${id}&type=${type}`);
     }
@@ -42,6 +46,10 @@ export class PermissionsService {
         return this.http.post<void>(`remove_group_member`, { id: id, user_id: userId });
     }
 
+    addGroupMember(id: GroupId, userId: UserId) {
+        return this.http.post<void>(`add_group_member`, { id: id, user_id: userId });
+    }
+
     updatePermissionsGroup(id: ProtectedId, type: ProtectedType, groupId: GroupId, access: Access) {
         return this.http.post<void>(`update_permissions_group?id=${id}&type=${type}`, { group_id: groupId, access: access });
     }
@@ -50,11 +58,19 @@ export class PermissionsService {
         return this.http.post<void>(`remove_permissions_group?id=${id}&type=${type}`, { group_id: groupId });
     }
 
+    addPermissionsGroup(id: ProtectedId, type: ProtectedType, groupId: GroupId) {
+        return this.http.post<void>(`add_permissions_group?id=${id}&type=${type}`, { group_id: groupId });
+    }
+
     updatePermissionsMember(id: ProtectedId, type: ProtectedType, userId: UserId, access: Access) {
         return this.http.post<void>(`update_permissions_member?id=${id}&type=${type}`, { user_id: userId, access: access });
     }
 
     removePermissionsMember(id: ProtectedId, type: ProtectedType, userId: GroupId) {
-        return this.http.post<void>(`remove_permissions_group?id=${id}&type=${type}`, { user_id: userId });
+        return this.http.post<void>(`remove_permissions_member?id=${id}&type=${type}`, { user_id: userId });
+    }
+
+    addPermissionsMember(id: ProtectedId, type: ProtectedType, userId: GroupId) {
+        return this.http.post<void>(`add_permissions_group?id=${id}&type=${type}`, { user_id: userId });
     }
 }

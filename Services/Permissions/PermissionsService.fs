@@ -275,6 +275,45 @@ type PermissionsService(userService: IUserService,
 
 
     interface IPermissionsService with
+        member this.Get(userId: UserId) : Async<Result<List<GroupModel>, GetGroupFail>> =
+            async {
+                match! groupContext.GetByUser(userId.Value) with
+                | Result.Error(fail) ->
+                    match fail with
+                    | GetDocumentFail.Error(error) ->
+                        return Result.Error(GetGroupFail.Error(error))
+                | Ok(groups) ->
+                    let! result =
+                        groups
+                        |> Seq.map(fun group ->
+                            async {
+                                match! this.CreateMembersList(group.Members) with
+                                | Result.Error(fail) ->
+                                    match fail with
+                                    | GetUserFail.Error(error) ->
+                                        return Result.Error(GetGroupFail.Error(error))
+                                | Ok(members) ->
+                                    return Ok([{
+                                        GroupModel.Id = GroupId(group.Id)
+                                        OwnerId = UserId(group.OwnerId)
+                                        Name = GroupName(group.Name)
+                                        Description = GroupDescription(group.Description)
+                                        Members = members
+                                    }])
+                            }
+                        )
+                        |> Async.Parallel
+
+                    return
+                        result
+                        |> Seq.fold (fun r x ->
+                            match (r, x) with
+                            | (Ok(l), Ok(r)) -> Ok(l @ r)
+                            | (Result.Error(fail), _) -> Result.Error(fail)
+                            | (_, Result.Error(fail)) -> Result.Error(fail)) (Result.Ok([]))
+
+            }
+
         member this.CheckPermissions(id: GroupId, userId: UserId, access: AccessModel) =
             async {
                 match! (this :> IPermissionsService).Get(id)  with
@@ -430,6 +469,37 @@ type PermissionsService(userService: IUserService,
                                             |> List.ofSeq
                                 }
                         ))
+                match result with
+                | Ok() ->
+                    return Ok()
+                | Result.Error(fail) ->
+                    match fail with
+                    | UpdateDocumentFail.Error(error) ->
+                        return Result.Error(UpdateGroupFail.Error(error))
+
+            }
+
+        member this.Add(id: GroupId, userId: UserId) =
+            async {
+                let! result =
+                    groupContext.Update
+                        (UserGroup.CreateDocumentKey(id.Value),
+                        (fun group ->
+                            let memberExists =
+                                group.Members
+                                    |> Seq.exists(fun m -> m.UserId = userId.Value)
+                            if memberExists then
+                                group
+                            else
+                                let newMember = {
+                                    Member.UserId = userId.Value
+                                    Access = 0UL;
+                                }
+                                {
+                                    group with
+                                        Members = group.Members @ [ newMember ]
+                                }
+                        ))
 
                 match result with
                 | Ok() ->
@@ -439,6 +509,56 @@ type PermissionsService(userService: IUserService,
                     | UpdateDocumentFail.Error(error) ->
                         return Result.Error(UpdateGroupFail.Error(error))
 
+            }
+
+        member this.Add(id: ProtectedId, userId: UserId) =
+            async {
+                let! result =
+                    this.UpdatePermissions
+                        (id,
+                        (fun permissions ->
+                            let memberExists =
+                                permissions.Members
+                                    |> Seq.exists(fun m -> m.UserId = userId.Value)
+                            if memberExists then
+                                permissions
+                            else
+                                let newMember = {
+                                    Member.UserId = userId.Value
+                                    Access = 0UL
+                                }
+                                {
+                                    permissions with
+                                        Members = permissions.Members @ [ newMember ]
+                                }
+                        ))
+
+                return result
+            }
+
+        member this.Add(id: ProtectedId, groupId: GroupId) =
+            async {
+                let! result =
+                    this.UpdatePermissions
+                        (id,
+                        (fun permissions ->
+                            let groupExists =
+                                permissions.Groups
+                                    |> Seq.exists(fun g -> g.GroupId = groupId.Value)
+                            if groupExists then
+                                permissions
+                            else
+                                let newGroup = {
+                                    GroupAccess.GroupId = groupId.Value
+                                    Access = 0UL
+                                }
+                                {
+                                    permissions with
+                                        Groups = permissions.Groups @ [ newGroup ]
+                                }
+                        ))
+
+                return result
             }
 
         member this.Update(id: ProtectedId, userId: UserId, accessOpt: Option<AccessModel>) = 

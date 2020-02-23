@@ -10,6 +10,9 @@ import { VersionService } from '../../services/VersionService';
 import { FoldersService } from '../../services/FoldersService';
 import { ProblemsService } from '../../services/ProblemsService';
 import { ProblemSetService } from '../../services/ProblemSetService';
+import GroupsTab from './GroupsTab';
+import { PermissionsService } from '../../services/PermissionsService';
+import { UserService } from '../../services/UserService';
 
 interface ITabPanelProps {
     children: Array<React.ReactNode> | React.ReactNode;
@@ -43,6 +46,8 @@ export interface INavigationTabsProps {
     foldersService: FoldersService;
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
+    permissionsService: PermissionsService;
+    userService: UserService;
 }
 
 export default function NavigationTabs(props: INavigationTabsProps) {
@@ -62,6 +67,8 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           onChange={(_, newValue) => handleChange(newValue)}
         >
           <Tab label="Editor" />
+          <Tab label="Groups" />
+          <Tab label="Permissions" />
           <Tab label="Train" />
         </Tabs>
       </AppBar>
@@ -74,6 +81,15 @@ export default function NavigationTabs(props: INavigationTabsProps) {
             />
       </TabPanel>
       <TabPanel value={value} index={1}>
+        <GroupsTab
+            permissionsService={props.permissionsService}
+            userService={props.userService}
+            />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        Permissions
+      </TabPanel>
+      <TabPanel value={value} index={3}>
         Train
       </TabPanel>
     </div>

@@ -45,6 +45,13 @@ type RemoveGroupMemberRequest = {
     UserId: UserId
 }
 
+type AddGroupMemberRequest = {
+    [<JsonPropertyName("id")>]
+    Id: GroupId
+    [<JsonPropertyName("user_id")>]
+    UserId: UserId
+}
+
 type UpdateMemberRequest = {
     [<JsonPropertyName("user_id")>]
     UserId: UserId
@@ -57,6 +64,11 @@ type RemoveMemberRequest = {
     UserId: UserId
 }
 
+type AddMemberRequest = {
+    [<JsonPropertyName("user_id")>]
+    UserId: UserId
+}
+
 type UpdatePermissionsGroupRequest = {
     [<JsonPropertyName("group_id")>]
     GroupId: GroupId
@@ -65,6 +77,11 @@ type UpdatePermissionsGroupRequest = {
 }
 
 type RemovePermissionsGroupRequest = {
+    [<JsonPropertyName("group_id")>]
+    GroupId: GroupId
+}
+
+type AddPermissionsGroupRequest = {
     [<JsonPropertyName("group_id")>]
     GroupId: GroupId
 }
@@ -116,6 +133,20 @@ type PermissionsController(permissionsService: IPermissionsService) =
         }
 
     [<HttpGet>]
+    [<Route("groups")>]
+    member this.GetGroups() =
+        async {
+            let userId = this.GetUserId()
+            match! permissionsService.Get(userId) with
+            | Result.Error(fail) ->
+                match fail with
+                | GetGroupFail.Error(_) ->
+                    return (BadRequestResult() :> IActionResult)
+            | Ok(model) ->
+                return (JsonResult(model) :> IActionResult)
+        }
+
+    [<HttpGet>]
     [<Route("permissions")>]
     member this.GetPermissions([<FromQuery(Name = "id")>] id: string, [<FromQuery(Name = "type")>] typeName: string) =
         async {
@@ -150,8 +181,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
                 match! permissionsService.Update(req.Id, Some(req.Name), None) with
-                | Ok() ->
-                    return (EmptyResult() :> IActionResult)
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateGroupFail.Error(error) ->
@@ -174,8 +205,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
                 match! permissionsService.Update(req.Id, None, Some(req.Description)) with
-                | Ok() ->
-                    return (EmptyResult() :> IActionResult)
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateGroupFail.Error(error) ->
@@ -198,8 +229,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
                 match! permissionsService.Update(req.Id, req.UserId, Some(req.Access)) with
-                | Ok() ->
-                    return (EmptyResult() :> IActionResult)
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateGroupFail.Error(error) ->
@@ -222,8 +253,32 @@ type PermissionsController(permissionsService: IPermissionsService) =
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
                 match! permissionsService.Update(req.Id, req.UserId, None) with
-                | Ok() ->
-                    return (EmptyResult() :> IActionResult)
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
+                | Result.Error(fail) ->
+                    match fail with
+                    | UpdateGroupFail.Error(error) ->
+                        return (BadRequestResult() :> IActionResult)
+            | Result.Error(fail) ->
+                match fail with
+                | CheckPermissionsFail.Error(_) ->
+                    return (BadRequestResult() :> IActionResult)
+                | CheckPermissionsFail.Unauthorized() ->
+                    return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("add_group_member")>]
+    member this.AddGroupMember([<FromBody>] req: AddGroupMemberRequest) =
+        async {
+            let userId = this.GetUserId()
+
+            match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
+            | Ok() ->
+                match! permissionsService.Add(req.Id, req.UserId) with
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->
                     match fail with
                     | UpdateGroupFail.Error(error) ->
@@ -254,8 +309,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
                     match! permissionsService.Update(protectedId, req.GroupId, Some(req.Access)) with
-                    | Ok() ->
-                        return (EmptyResult() :> IActionResult)
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
                     | Result.Error(fail) ->
                         match fail with
                         | UpdatePermissionsFail.Error(error) ->
@@ -286,8 +341,40 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
                     match! permissionsService.Update(protectedId, req.GroupId, None) with
-                    | Ok() ->
-                        return (EmptyResult() :> IActionResult)
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
+                    | Result.Error(fail) ->
+                        match fail with
+                        | UpdatePermissionsFail.Error(error) ->
+                            return (BadRequestResult() :> IActionResult)
+                | Result.Error(fail) ->
+                    match fail with
+                    | CheckPermissionsFail.Error(_) ->
+                        return (BadRequestResult() :> IActionResult)
+                    | CheckPermissionsFail.Unauthorized() ->
+                        return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("add_permissions_group")>]
+    member this.AddPermissionsGroup
+        ([<FromQuery(Name = "id")>] id: string,
+        [<FromQuery(Name = "type")>] typeName: string,
+        [<FromBody>] req: AddPermissionsGroupRequest) =
+        async {
+            let userId = this.GetUserId()
+
+            match ProtectedId.Create(id, typeName) with
+            | Result.Error() ->
+                return (BadRequestResult() :> IActionResult)
+
+            | Ok(protectedId) ->
+                match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
+                | Ok() ->
+                    match! permissionsService.Add(protectedId, req.GroupId) with
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
                     | Result.Error(fail) ->
                         match fail with
                         | UpdatePermissionsFail.Error(error) ->
@@ -318,8 +405,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
                     match! permissionsService.Update(protectedId, req.UserId, Some(req.Access)) with
-                    | Ok() ->
-                        return (EmptyResult() :> IActionResult)
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
                     | Result.Error(fail) ->
                         match fail with
                         | UpdatePermissionsFail.Error(error) ->
@@ -350,8 +437,40 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
                     match! permissionsService.Update(protectedId, req.UserId, None) with
-                    | Ok() ->
-                        return (EmptyResult() :> IActionResult)
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
+                    | Result.Error(fail) ->
+                        match fail with
+                        | UpdatePermissionsFail.Error(error) ->
+                            return (BadRequestResult() :> IActionResult)
+                | Result.Error(fail) ->
+                    match fail with
+                    | CheckPermissionsFail.Error(_) ->
+                        return (BadRequestResult() :> IActionResult)
+                    | CheckPermissionsFail.Unauthorized() ->
+                        return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("add_permissions_member")>]
+    member this.AddPermissionsMember
+        ([<FromQuery(Name = "id")>] id: string,
+        [<FromQuery(Name = "type")>] typeName: string,
+        [<FromBody>] req: AddMemberRequest) =
+        async {
+            let userId = this.GetUserId()
+
+            match ProtectedId.Create(id, typeName) with
+            | Result.Error() ->
+                return (BadRequestResult() :> IActionResult)
+
+            | Ok(protectedId) ->
+                match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
+                | Ok() ->
+                    match! permissionsService.Add(protectedId, req.UserId) with
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
                     | Result.Error(fail) ->
                         match fail with
                         | UpdatePermissionsFail.Error(error) ->
