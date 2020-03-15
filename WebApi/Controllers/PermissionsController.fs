@@ -483,3 +483,15 @@ type PermissionsController(permissionsService: IPermissionsService) =
                         return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("search_by_contains")>]
+    member this.SearchByContains([<FromQuery(Name = "pattern")>] pattern: string) =
+        async {
+            match! permissionsService.SearchByContains(pattern) with
+            | Result.Error(fail) ->
+                match fail with
+                | GetGroupFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+        }
+        |> Async.StartAsTask

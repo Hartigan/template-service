@@ -15,6 +15,8 @@
     <Compile Include="PermissionsContext.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.0.0-beta3" />
+    <PackageReference Include="CouchbaseNetClient" Version="3.0.0-beta4" />
+    <PackageReference Include="FSharp.Control.AsyncSeq" Version="2.0.23" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
   </ItemGroup>
 </Project>

@@ -34,8 +34,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
             try
                 let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
                 let item = getResult.ContentAs<'T>()
-                let replaceOptions = ReplaceOptions()
-                replaceOptions.Cas <- getResult.Cas
+                let replaceOptions = ReplaceOptions().Cas(getResult.Cas)
                 let updateResult = updater(item)
                 match updateResult with
                 | Result.Error(error) -> return Result.Error(GenericUpdateDocumentFail<'TFail>.CustomFail(error))

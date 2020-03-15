@@ -16,7 +16,7 @@ namespace IdentityServer
                 ClientId = "react-ui",
                 ClientName = "React UI",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "http://localhost:3001/signin-callback.html" },
+                RedirectUris = { "http://localhost:3000/signin-callback.html" },
                 AccessTokenLifetime = 60 * 60 * 24,
                 AllowedScopes = 
                 {
@@ -25,7 +25,7 @@ namespace IdentityServer
                     "web_api"
                 },
                 AllowAccessTokensViaBrowser = true,
-                AllowedCorsOrigins = { "http://localhost:3001"},
+                AllowedCorsOrigins = { "http://localhost:3000"},
             }
         };
 

@@ -22,7 +22,8 @@ namespace Storage
 
         public async Task<IBucket> Get()
         {
-            return await _couchbaseCluster.Cluster.BucketAsync(_bucketName);
+            var cluster = await _couchbaseCluster.GetClusterAsync();
+            return await cluster.BucketAsync(_bucketName);
         }
     }
 }

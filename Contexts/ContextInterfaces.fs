@@ -36,3 +36,4 @@ type IReportContext =
 type IGroupContext =
     inherit IContext<UserGroup>
     abstract member GetByUser : string -> Async<Result<List<UserGroup>, GetDocumentFail>>
+    abstract member SearchByContainsInName : string -> Async<Result<List<UserGroup>, GetDocumentFail>>

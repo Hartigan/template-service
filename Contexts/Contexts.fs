@@ -7,6 +7,7 @@ open System.Linq
 open Couchbase
 open Couchbase.Query
 open Utils.AsyncHelper
+open FSharp.Control
 
 type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     let commonContext =  CommonContext<UserGroup>(couchbaseBuckets) :> IContext<UserGroup>
@@ -34,17 +35,42 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
         member this.GetByUser(userId) =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", UserGroup.TypeName)
-                        |> fun x -> x.AddNamedParameter("owner_id", userId)
+                        |> fun x -> x.Parameter("type", UserGroup.TypeName)
+                        |> fun x -> x.Parameter("owner_id", userId)
                     let! result = cluster.QueryAsync<UserGroup>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND owner_id = $owner_id" bucket.Name bucket.Name,
                                        queryOptions)
-                    let (submissions : IQueryResult<UserGroup>) = result
-                    return Result.Ok(submissions |> Seq.toList)
+                    let (groupsAsync : IQueryResult<UserGroup>) = result
+                    let groups =
+                        groupsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
+                    return Result.Ok(groups |> Seq.toList)
+                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+            }
+
+        member this.SearchByContainsInName(pattern) =
+            async {
+                try
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
+                    let! bucket = this.GetBucket()
+                    let queryOptions = 
+                        QueryOptions()
+                        |> fun x -> x.Parameter("type", UserGroup.TypeName)
+                        |> fun x -> x.Parameter("pattern", pattern.ToUpper())
+                    let! result = cluster.QueryAsync<UserGroup>
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(UPPER(`name`), $pattern)" bucket.Name bucket.Name,
+                                       queryOptions)
+                    let (groupsAsync : IQueryResult<UserGroup>) = result
+                    let groups =
+                        groupsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
+                    return Result.Ok(groups |> List.ofSeq)
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
 
@@ -74,16 +100,20 @@ type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Cou
         member this.GetByUser(userId) =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", Submission.TypeName)
-                        |> fun x -> x.AddNamedParameter("owner_id", userId)
+                        |> fun x -> x.Parameter("type", Submission.TypeName)
+                        |> fun x -> x.Parameter("owner_id", userId)
                     let! result = cluster.QueryAsync<Submission>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
                                        queryOptions)
-                    let (submissions : IQueryResult<Submission>) = result
+                    let (submissionsAsync : IQueryResult<Submission>) = result
+                    let submissions =
+                        submissionsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
                     return Result.Ok(submissions |> Seq.toList)
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
@@ -114,16 +144,20 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
         member this.GetByUser(userId) =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", Report.TypeName)
-                        |> fun x -> x.AddNamedParameter("owner_id", userId)
+                        |> fun x -> x.Parameter("type", Report.TypeName)
+                        |> fun x -> x.Parameter("owner_id", userId)
                     let! result = cluster.QueryAsync<Report>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
                                        queryOptions)
-                    let (reports : IQueryResult<Report>) = result
+                    let (reportsAsync : IQueryResult<Report>) = result
+                    let reports =
+                        reportsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
                     return Result.Ok(reports |> Seq.toList)
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
@@ -169,33 +203,45 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
         member this.GetByName(name: string): Async<Result<User, GetDocumentFail>> =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", User.TypeName)
-                        |> fun x -> x.AddNamedParameter("normalized_name", name)
+                        |> fun x -> x.Parameter("type", User.TypeName)
+                        |> fun x -> x.Parameter("normalized_name", name)
                     let! result = cluster.QueryAsync<User>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `%s` = $normalized_name LIMIT 1" bucket.Name bucket.Name normalizedName,
                                        queryOptions)
-                    let (users : IQueryResult<User>) = result
-                    return Result.Ok(users.First())
+                    let (usersAsync : IQueryResult<User>) = result
+                    let! user =
+                        usersAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.tryFirst
+                    match user with
+                    | None ->
+                        return Result.Error(GetDocumentFail.Error(InvalidOperationException("User not found")))
+                    | Some(u) ->
+                        return Result.Ok(u)
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
 
         member this.SearchByContainsInName(pattern: string): Async<Result<List<User>, GetDocumentFail>> =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", User.TypeName)
-                        |> fun x -> x.AddNamedParameter("pattern", pattern.ToUpper())
+                        |> fun x -> x.Parameter("type", User.TypeName)
+                        |> fun x -> x.Parameter("pattern", pattern.ToUpper())
                     let! result = cluster.QueryAsync<User>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(`%s`, $pattern)" bucket.Name bucket.Name normalizedName,
                                        queryOptions)
-                    let (users : IQueryResult<User>) = result
+                    let (usersAsync : IQueryResult<User>) = result
+                    let users =
+                        usersAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
                     return Result.Ok(users |> List.ofSeq)
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
@@ -228,21 +274,26 @@ type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couch
         member this.GetByName(name) =
             async {
                 try
-                    let cluster = couchbaseCluster.Cluster
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.AddNamedParameter("type", UserRole.TypeName)
-                        |> fun x -> x.AddNamedParameter("bucket", bucket.Name)
-                        |> fun x -> x.AddNamedParameter("name_property", nameProperty)
-                        |> fun x -> x.AddNamedParameter("name", name)
+                        |> fun x -> x.Parameter("type", UserRole.TypeName)
+                        |> fun x -> x.Parameter("bucket", bucket.Name)
+                        |> fun x -> x.Parameter("name_property", nameProperty)
+                        |> fun x -> x.Parameter("name", name)
                     let! result = cluster.QueryAsync<UserRole>
                                       ("SELECT * as user_role FROM $bucket WHERE type = $type and $name_property = $name LIMIT 1",
                                        queryOptions)
-                    let rows = (result : IQueryResult<UserRole>).Rows
-                    if rows.Count > 0 then
-                        return Result.Ok(rows.First())
-                    else
+                    let rolesAsync = (result : IQueryResult<UserRole>)
+                    let! role =
+                        rolesAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.tryFirst
+                    match role with
+                    | Some(r) ->
+                        return Result.Ok(r)
+                    | None ->
                         return Result.Error(GetDocumentFail.Error(InvalidOperationException(sprintf "User role %s not found" name)))
                 with ex -> return Result.Error(GetDocumentFail.Error(ex))
             }
