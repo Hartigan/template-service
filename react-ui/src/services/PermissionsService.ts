@@ -4,8 +4,12 @@ import { HttpServiceFactory } from './HttpServiceFactory';
 import { Id, GroupId, FolderId, CommitId, HeadId, SubmissionId, ReportId, UserId } from '../models/Identificators';
 import { Group, Permissions, Access } from '../models/Permissions';
 
-type ProtectedType = "folder" | "head" | "commit" | "submission" | "report";
-type ProtectedId = FolderId | HeadId | CommitId | SubmissionId | ReportId;
+export type ProtectedType = "folder" | "head" | "commit" | "submission" | "report";
+export type ProtectedId = FolderId | HeadId | CommitId | SubmissionId | ReportId;
+export interface Protected {
+    id: ProtectedId;
+    type: ProtectedType;
+}
 
 export class PermissionsService {
     private http : HttpService;
@@ -26,8 +30,8 @@ export class PermissionsService {
         return this.http.get<Array<Group>>(`groups`);
     }
 
-    getPermissions(id: ProtectedId, type: ProtectedType) {
-        return this.http.get<Permissions>(`permissions?id=${id}&type=${type}`);
+    getPermissions(item: Protected) {
+        return this.http.get<Permissions>(`permissions?id=${item.id}&type=${item.type}`);
     }
 
     updateGroupName(id: GroupId, userId: UserId, name: string) {
@@ -50,27 +54,31 @@ export class PermissionsService {
         return this.http.post<void>(`add_group_member`, { id: id, user_id: userId });
     }
 
-    updatePermissionsGroup(id: ProtectedId, type: ProtectedType, groupId: GroupId, access: Access) {
-        return this.http.post<void>(`update_permissions_group?id=${id}&type=${type}`, { group_id: groupId, access: access });
+    updatePermissionsGroup(item: Protected, groupId: GroupId, access: Access) {
+        return this.http.post<void>(`update_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId, access: access });
     }
 
-    removePermissionsGroup(id: ProtectedId, type: ProtectedType, groupId: GroupId) {
-        return this.http.post<void>(`remove_permissions_group?id=${id}&type=${type}`, { group_id: groupId });
+    removePermissionsGroup(item: Protected, groupId: GroupId) {
+        return this.http.post<void>(`remove_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId });
     }
 
-    addPermissionsGroup(id: ProtectedId, type: ProtectedType, groupId: GroupId) {
-        return this.http.post<void>(`add_permissions_group?id=${id}&type=${type}`, { group_id: groupId });
+    addPermissionsGroup(item: Protected, groupId: GroupId) {
+        return this.http.post<void>(`add_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId });
     }
 
-    updatePermissionsMember(id: ProtectedId, type: ProtectedType, userId: UserId, access: Access) {
-        return this.http.post<void>(`update_permissions_member?id=${id}&type=${type}`, { user_id: userId, access: access });
+    updatePermissionsMember(item: Protected, userId: UserId, access: Access) {
+        return this.http.post<void>(`update_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId, access: access });
     }
 
-    removePermissionsMember(id: ProtectedId, type: ProtectedType, userId: GroupId) {
-        return this.http.post<void>(`remove_permissions_member?id=${id}&type=${type}`, { user_id: userId });
+    removePermissionsMember(item: Protected, userId: GroupId) {
+        return this.http.post<void>(`remove_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
     }
 
-    addPermissionsMember(id: ProtectedId, type: ProtectedType, userId: GroupId) {
-        return this.http.post<void>(`add_permissions_group?id=${id}&type=${type}`, { user_id: userId });
+    addPermissionsMember(item: Protected, userId: GroupId) {
+        return this.http.post<void>(`add_permissions_group?id=${item.id}&type=${item.type}`, { user_id: userId });
+    }
+
+    searchByContains(pattern: string) {
+        return this.http.get<Array<Group>>(`search_by_contains?pattern=${pattern}`);
     }
 }

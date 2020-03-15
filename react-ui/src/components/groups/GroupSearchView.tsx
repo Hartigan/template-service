@@ -4,9 +4,8 @@ import { PermissionsService } from "../../services/PermissionsService";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { User } from "../../models/User";
-import { UserService } from "../../services/UserService";
-import { UserId } from "../../models/Identificators";
+import { Group } from "../../models/Permissions";
+import { GroupId } from "../../models/Identificators";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -18,21 +17,20 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     open: boolean;
     pattern: string;
-    users: Array<User>;
+    groups: Array<Group>;
     loaded: boolean;
 }
 
-export interface IUserSearchViewProps {
+export interface IGroupSearchViewProps {
     permissionsService: PermissionsService;
-    userService: UserService;
-    onUserSelected: (userId: UserId | null) => void;
+    onGroupSelected: (groupId: GroupId | null) => void;
 }
 
-export default function UserSearchView(props: IUserSearchViewProps) {
+export default function GroupSearchView(props: IGroupSearchViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
         open: false,
-        users: [],
+        groups: [],
         loaded: false,
         pattern: ""
     });
@@ -47,13 +45,13 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         }
     
         if (state.pattern !== "") {
-            props.userService
+            props.permissionsService
                 .searchByContains(state.pattern)
-                .then(users => {
+                .then(groups => {
                     if (active) {
                         setState({
                             ...state,
-                            users: users,
+                            groups: groups,
                             loaded: true
                         });
                     }
@@ -69,7 +67,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         if (!state.open) {
             setState({
                 ...state,
-                users: [],
+                groups: [],
                 loaded: true
             });
         }
@@ -88,7 +86,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         setState({
             ...state,
             pattern: value,
-            users: [],
+            groups: [],
             loaded: false
         });
     }
@@ -99,15 +97,15 @@ export default function UserSearchView(props: IUserSearchViewProps) {
             open={state.open}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
-            getOptionSelected={(option, value) => option.username === value.username}
-            getOptionLabel={option => option.username}
-            onChange={(event: any, value: User | null) => props.onUserSelected(value ? value.id : null)}
-            options={state.users}
+            getOptionSelected={(option, value) => option.name === value.name}
+            getOptionLabel={option => option.name}
+            onChange={(event: any, value: Group | null) => props.onGroupSelected(value ? value.id : null)}
+            options={state.groups}
             loading={loading}
             renderInput={params => (
                 <TextField
                     {...params}
-                    label="User"
+                    label="Name"
                     fullWidth
                     variant="outlined"
                     value={state.pattern}

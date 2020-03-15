@@ -64,7 +64,7 @@ export default function GroupView(props: IGroupViewProps) {
     };
 
     useEffect(() => {
-        if (state.group && state.group.id === props.groupId) {
+        if (state.group) {
             return;
         }
         refresh();

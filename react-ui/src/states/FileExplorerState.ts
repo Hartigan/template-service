@@ -2,14 +2,18 @@ import { FolderId, HeadId } from "../models/Identificators";
 import { Subject } from "rxjs";
 import { FoldersService } from "../services/FoldersService";
 import { FolderLink, HeadLink } from "../models/Folder";
+import { Protected } from "../services/PermissionsService";
 
 export class FileExplorerState {
     private curFolder : FolderLink | null = null;
     private folder = new Subject<FolderLink | null>();
     private curHead : HeadLink | null = null;
     private head = new Subject<HeadLink | null>();
+    private curProtected : Protected | null = null;
+    private protectedChange = new Subject<Protected>();
     private folderChange = new Subject<FolderId>();
     private headChange = new Subject<HeadId>();
+    
     private root : FolderLink | null = null;
 
     constructor(private foldersService: FoldersService) {
@@ -34,6 +38,10 @@ export class FileExplorerState {
     setCurrentFolder(link: FolderLink) {
         this.curFolder = link;
         this.folder.next(link);
+        this.protectedChange.next({
+            id: link.id,
+            type: "folder"
+        });
     }
 
     currentFolder() {
@@ -47,6 +55,10 @@ export class FileExplorerState {
     setCurrentHead(link: HeadLink) {
         this.curHead = link;
         this.head.next(link);
+        this.protectedChange.next({
+            id: link.id,
+            type: "head"
+        });
     }
 
     currentHead() {
@@ -55,6 +67,10 @@ export class FileExplorerState {
 
     currentHeadChanged() {
         return this.head.asObservable();
+    }
+
+    currentProtectedChanged() {
+        return this.protectedChange.asObservable();
     }
 
     async currentFolderOrRoot() {

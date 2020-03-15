@@ -13,6 +13,7 @@ import { ProblemSetService } from '../../services/ProblemSetService';
 import GroupsTab from './GroupsTab';
 import { PermissionsService } from '../../services/PermissionsService';
 import { UserService } from '../../services/UserService';
+import PermissionsTab from './PermissionsTab';
 
 interface ITabPanelProps {
     children: Array<React.ReactNode> | React.ReactNode;
@@ -82,12 +83,17 @@ export default function NavigationTabs(props: INavigationTabsProps) {
       </TabPanel>
       <TabPanel value={value} index={1}>
         <GroupsTab
-            permissionsService={props.permissionsService}
-            userService={props.userService}
-            />
+          permissionsService={props.permissionsService}
+          userService={props.userService}
+          />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Permissions
+        <PermissionsTab
+          permissionsService={props.permissionsService}
+          userService={props.userService}
+          versionService={props.versionService}
+          foldersService={props.foldersService}
+          />
       </TabPanel>
       <TabPanel value={value} index={3}>
         Train
