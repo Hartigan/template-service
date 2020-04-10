@@ -21,5 +21,6 @@
     <Compile Include="GeneratedProblemSet.fs" />
     <Compile Include="Submission.fs" />
     <Compile Include="Report.fs" />
+    <Compile Include="UserGroups.fs" />
   </ItemGroup>
 </Project>

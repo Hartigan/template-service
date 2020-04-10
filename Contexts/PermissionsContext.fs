@@ -19,10 +19,10 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
         LookupInSpec.Get("permissions")
     }
 
-    member internal this.GetCollection(): Async<ICollection> = 
+    member internal this.GetCollection(): Async<ICouchbaseCollection> = 
         async {
             let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
-            let (collection: ICollection) = bucket.DefaultCollection()
+            let (collection: ICouchbaseCollection) = bucket.DefaultCollection()
             return collection
         }
 
@@ -32,7 +32,7 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
             return bucket
         }
 
-    member private this.DoUpdateAttempt<'TFail>(collection: ICollection,
+    member private this.DoUpdateAttempt<'TFail>(collection: ICouchbaseCollection,
                                                 key: IDocumentKey,
                                                 updater: (Permissions -> Result<Permissions, 'TFail>)) =
         async {
@@ -45,7 +45,10 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
                 match updateResult with
                 | Result.Error(error) -> return Result.Error(GenericUpdateDocumentFail<'TFail>.CustomFail(error))
                 | Result.Ok(updatedItem) ->
-                    let! replaceResult = collection.ReplaceAsync(key.Key, updatedItem)
+                    let replaceSpecs = seq {
+                        MutateInSpec.Replace("permissions", updatedItem)
+                    }
+                    let! replaceResult = collection.MutateInAsync(key.Key, replaceSpecs)
                     return Result.Ok()
 
             with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))

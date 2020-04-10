@@ -64,6 +64,7 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IContext<ProblemSet>, ProblemSetContext>()
         |> fun x -> x.AddSingleton<IContext<GeneratedProblem>, GeneratedProblemContext>()
         |> fun x -> x.AddSingleton<IContext<GeneratedProblemSet>, GeneratedProblemSetContext>()
+        |> fun x -> x.AddSingleton<IContext<UserGroups>, UserGroupsContext>()
         |> fun x -> x.AddSingleton<IGroupContext, GroupContext>()
         |> fun x -> x.AddSingleton<IPermissionsContext, PermissionsContext>()
         |> fun x -> x.AddSingleton<IUserService, UserService>()

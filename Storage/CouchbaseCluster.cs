@@ -24,9 +24,9 @@ namespace Storage
             if (_cluster == null)
             {
                 var options = new ClusterOptions()
-                    .Credentials(_config.Value.Username, _config.Value.Password)
-                    .Logging(_loggerFactory)
-                    .Bucket("main");
+                    .WithCredentials(_config.Value.Username, _config.Value.Password)
+                    .WithLogging(_loggerFactory)
+                    .WithBuckets("main");
                 _cluster = await Couchbase.Cluster.ConnectAsync(_config.Value.Domain, options);
             }
             return _cluster;

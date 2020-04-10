@@ -176,6 +176,24 @@ type ProblemContext = CommonContext<Problem>
 
 type ProblemSetContext = CommonContext<ProblemSet>
 
+type UserGroupsContext(couchbaseBuckets: CouchbaseBuckets) =
+    let commonContext = CommonContext<UserGroups>(couchbaseBuckets) :> IContext<UserGroups>
+
+    interface IContext<UserGroups> with
+        member this.Exists(key) =
+            commonContext.Exists(key)
+        member this.Get(key) = 
+            commonContext.Get(key)
+        member this.Insert(key, entity) =
+            commonContext.Insert(key, entity)
+        member this.Remove(key) =
+            commonContext.Remove(key)
+        member this.Update(key: IDocumentKey, updater: UserGroups -> Result<UserGroups,'TFail>) =
+            commonContext.Update(key, updater)
+        member this.Update(key: IDocumentKey, updater: UserGroups -> UserGroups) =
+            commonContext.Update(key, updater)
+
+
 type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     let commonContext = CommonContext<User>(couchbaseBuckets) :> IContext<User>
     let normalizedName = "normalized_name"

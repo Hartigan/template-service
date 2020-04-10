@@ -26,8 +26,8 @@ export class PermissionsService {
         return this.http.get<Group>(`group?id=${id}`);
     }
 
-    getGroups() {
-        return this.http.get<Array<Group>>(`groups`);
+    getGroups(access: Access) {
+        return this.http.get<Array<Group>>(`groups?admin=${access.admin}&read=${access.read}&write=${access.write}&generate=${access.generate}`);
     }
 
     getPermissions(item: Protected) {
@@ -75,7 +75,7 @@ export class PermissionsService {
     }
 
     addPermissionsMember(item: Protected, userId: GroupId) {
-        return this.http.post<void>(`add_permissions_group?id=${item.id}&type=${item.type}`, { user_id: userId });
+        return this.http.post<void>(`add_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
     }
 
     searchByContains(pattern: string) {

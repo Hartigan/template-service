@@ -14,10 +14,10 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
 
     let updateAttempts = 10  
 
-    member internal this.GetCollection(): Async<ICollection> = 
+    member internal this.GetCollection(): Async<ICouchbaseCollection> = 
         async {
             let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
-            let (collection: ICollection) = bucket.DefaultCollection()
+            let (collection: ICouchbaseCollection) = bucket.DefaultCollection()
             return collection
         }
 
@@ -27,7 +27,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
             return bucket
         }
 
-    member private this.DoUpdateAttempt<'TFail>(collection: ICollection,
+    member private this.DoUpdateAttempt<'TFail>(collection: ICouchbaseCollection,
                                                 key: IDocumentKey,
                                                 updater: ('T -> Result<'T, 'TFail>)): Async<Result<unit, GenericUpdateDocumentFail<'TFail>>> =
         async {

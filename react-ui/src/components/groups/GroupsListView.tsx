@@ -44,7 +44,12 @@ export default function GroupsListView(props: IGroupsListViewProps) {
     };
 
     const fetchGroups = async () => {
-        let groups = await props.permissionsService.getGroups();
+        let groups = await props.permissionsService.getGroups({
+            admin: true,
+            read: false,
+            write: false,
+            generate: false
+        });
         setState({
             ...state,
             openCreateGroupDialog: false,

@@ -4,10 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
-
-  <ItemGroup>
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Storage/Storage.csproj" />

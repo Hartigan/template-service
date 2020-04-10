@@ -134,10 +134,20 @@ type PermissionsController(permissionsService: IPermissionsService) =
 
     [<HttpGet>]
     [<Route("groups")>]
-    member this.GetGroups() =
+    member this.GetGroups([<FromQuery(Name = "admin")>] canAdministrate: bool,
+                          [<FromQuery(Name = "read")>] canRead: bool,
+                          [<FromQuery(Name = "write")>] canWrite: bool,
+                          [<FromQuery(Name = "generate")>] canGenerate: bool) =
         async {
             let userId = this.GetUserId()
-            match! permissionsService.Get(userId) with
+            let access =
+                {
+                    AccessModel.Admin = canAdministrate
+                    Read = canRead
+                    Write = canWrite
+                    Generate = canGenerate
+                }
+            match! permissionsService.Get(userId, access) with
             | Result.Error(fail) ->
                 match fail with
                 | GetGroupFail.Error(_) ->
@@ -228,7 +238,7 @@ type PermissionsController(permissionsService: IPermissionsService) =
 
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
-                match! permissionsService.Update(req.Id, req.UserId, Some(req.Access)) with
+                match! permissionsService.Update(req.Id, req.UserId, req.Access) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->
@@ -252,7 +262,7 @@ type PermissionsController(permissionsService: IPermissionsService) =
 
             match! permissionsService.CheckPermissions(req.Id, userId, AccessModel.CanAdministrate) with
             | Ok() ->
-                match! permissionsService.Update(req.Id, req.UserId, None) with
+                match! permissionsService.Remove(req.Id, req.UserId) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
                 | Result.Error(fail) ->

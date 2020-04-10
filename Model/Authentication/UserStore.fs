@@ -11,7 +11,9 @@ open DatabaseTypes
 open System
 
 
-type UserStore(context: IUserContext, logger: ILogger<UserStore>) =
+type UserStore(context: IUserContext,
+               userGroupsContext: IContext<UserGroups>,
+               logger: ILogger<UserStore>) =
 
     interface IUserPasswordStore<UserIdentity> with
         member this.GetPasswordHashAsync(user, cancellationToken) =
@@ -37,15 +39,28 @@ type UserStore(context: IUserContext, logger: ILogger<UserStore>) =
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
                 let! result = context.Remove(entity)
-                match result with
-                | Result.Ok(ok) ->
+                let! resultUserGroups = context.Remove(UserGroups.CreateDocumentKey(entity.Id))
+                match (result, resultUserGroups) with
+                | (Ok(u), Ok(ug)) ->
                     logger.LogInformation(sprintf "User %s successefuly deleted" user.Name)
                     return IdentityResult.Success
-                | Result.Error(error) ->
-                    match error with
+                | (Ok(u), Result.Error(fail)) ->
+                    match fail with
                     | RemoveDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not deleted" user.Name)
                         return ex.ToIdentityResult()
+                | (Result.Error(fail), Ok(ug)) ->
+                    match fail with
+                    | RemoveDocumentFail.Error(ex) ->
+                        logger.LogError(ex, sprintf "User %s not deleted" user.Name)
+                        return ex.ToIdentityResult()
+                | (Result.Error(userFail), Result.Error(userGroupsFail)) ->
+                    match (userFail, userGroupsFail) with
+                    | (RemoveDocumentFail.Error(userEx), RemoveDocumentFail.Error(userGroupsEx)) ->
+                        let aggergatedEx = AggregateException(userEx, userGroupsEx)
+                        logger.LogError(aggergatedEx, sprintf "User %s not deleted" user.Name)
+                        return aggergatedEx.ToIdentityResult()
+
             }
 
         member this.Dispose(): unit = 
@@ -134,13 +149,31 @@ type UserStore(context: IUserContext, logger: ILogger<UserStore>) =
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
                 let! result = context.Insert(entity, entity)
-                match result with
-                | Result.Ok(ok) ->
-                    logger.LogInformation(sprintf "User %s successfuly added" user.Name)
+                let userGroups =
+                    {
+                        UserGroups.UserId = entity.Id
+                        Groups = []
+                    }
+                let! userGroupsResult = userGroupsContext.Insert(userGroups, userGroups)
+
+                match (result, userGroupsResult) with
+                | (Ok(u), Ok(ug)) ->
+                    logger.LogInformation(sprintf "User %s successefuly added" user.Name)
                     return IdentityResult.Success
-                | Result.Error(error) ->
-                    match error with
+                | (Ok(u), Result.Error(fail)) ->
+                    match fail with
                     | InsertDocumentFail.Error(ex) ->
                         logger.LogError(ex, sprintf "User %s not added" user.Name)
                         return ex.ToIdentityResult()
+                | (Result.Error(fail), Ok(ug)) ->
+                    match fail with
+                    | InsertDocumentFail.Error(ex) ->
+                        logger.LogError(ex, sprintf "User %s not added" user.Name)
+                        return ex.ToIdentityResult()
+                | (Result.Error(userFail), Result.Error(userGroupsFail)) ->
+                    match (userFail, userGroupsFail) with
+                    | (InsertDocumentFail.Error(userEx), InsertDocumentFail.Error(userGroupsEx)) ->
+                        let aggergatedEx = AggregateException(userEx, userGroupsEx)
+                        logger.LogError(aggergatedEx, sprintf "User %s not added" user.Name)
+                        return aggergatedEx.ToIdentityResult()
             }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Storage;
 using Contexts;
+using DatabaseTypes;
 using Models.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Stores;
@@ -36,6 +37,7 @@ namespace IdentityServer
                     .AddSingleton<CouchbaseCluster>()
                     .AddSingleton<CouchbaseBuckets>()
                     .AddSingleton<IUserContext, UserContext>()
+                    .AddSingleton<IContext<UserGroups>, UserGroupsContext>()
                     .AddSingleton<IUserRoleContext, UserRoleContext>();
 
             services.AddOidcStateDataFormatterCache();

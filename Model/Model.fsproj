@@ -22,6 +22,7 @@
     <Compile Include="Permissions/GroupModel.fs" />
     <Compile Include="Permissions/GroupAccessModel.fs" />
     <Compile Include="Permissions/PermissionsModel.fs" />
+    <Compile Include="Permissions/UserGroupsModel.fs" />
     <Compile Include="Code/CodeModel.fs" />
     <Compile Include="Heads/CommitModel.fs" />
     <Compile Include="Heads/HeadModel.fs" />
