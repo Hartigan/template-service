@@ -4,6 +4,7 @@ open DatabaseTypes
 open Models.Identificators
 open Models.Converters
 open System.Text.Json.Serialization
+open System
 
 [<JsonConverter(typeof<FirstNameConverter>)>]
 type FirstName(firstName: string) =
@@ -41,7 +42,7 @@ type UserModel =
         Username: Username
     }
 
-    static member Create(user: User) : Result<UserModel, unit> =
+    static member Create(user: User) : Result<UserModel, Exception> =
         Ok({
             UserModel.Id    = UserId(user.Id)
             FirstName       = FirstName(user.FirstName)

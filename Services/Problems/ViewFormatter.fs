@@ -17,16 +17,16 @@ type ViewFormatter() =
                         let current = enumerator.Current
                         if validateName.IsMatch(current.Key) then
                             let parameterFinder = Regex("\\{\\{" + Regex.Escape(current.Key) + "\\}\\}")
-                            Result.Ok(parameterFinder.Replace(source, current.Value))
+                            Ok(parameterFinder.Replace(source, current.Value))
                         else
-                            Result.Error(GenerateFail.Error(InvalidOperationException(sprintf "Invalid parameter name format: %s" current.Key)))
+                            Error(InvalidOperationException(sprintf "Invalid parameter name format: %s" current.Key) :> Exception)
                     else
-                        Result.Ok(source)
+                        Ok(source)
 
                 let parametersEnumerator = (controllerResult.Parameters :> IEnumerable<KeyValuePair<string, string>>).GetEnumerator()
                 let formatResult = format(parametersEnumerator, modelView.Content.Value)
 
                 match formatResult with
-                | Result.Ok(contentString) -> return Result.Ok(GeneratedViewModel.Create(modelView, ContentModel(contentString)))
-                | Result.Error(fail) -> return Result.Error(fail)
+                | Ok(contentString) -> return Ok(GeneratedViewModel.Create(modelView, ContentModel(contentString)))
+                | Error(fail) -> return Error(fail)
             }

@@ -5,10 +5,13 @@ open Microsoft.AspNetCore.Authorization
 open Services.Permissions
 open Models.Identificators
 open System.Security.Claims
+open System
+open Microsoft.Extensions.Logging
 
 [<Authorize>]
 [<Route("user")>]
-type UserController(userService: IUserService) =
+type UserController(userService: IUserService,
+                    logger: ILogger<UserController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -19,10 +22,10 @@ type UserController(userService: IUserService) =
         async {
             let userId = UserId(id)
             match! userService.Get(userId) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetUserFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) -> 
+                logger.LogError(ex, "Cannot get user")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -31,9 +34,9 @@ type UserController(userService: IUserService) =
     member this.SearchByContains([<FromQuery(Name = "pattern")>] pattern: string) =
         async {
             match! userService.SearchByContains(pattern) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetUserFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Search failed")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask

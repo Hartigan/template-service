@@ -27,7 +27,7 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: UserGroup -> Result<UserGroup,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: UserGroup -> Result<UserGroup, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: UserGroup -> UserGroup) =
             commonContext.Update(key, updater)
@@ -49,8 +49,8 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                         groupsAsync
                         |> AsyncSeq.ofAsyncEnum
                         |> AsyncSeq.toBlockingSeq
-                    return Result.Ok(groups |> Seq.toList)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                    return Ok(groups |> Seq.toList)
+                with ex -> return Result.Error(ex)
             }
 
         member this.SearchByContainsInName(pattern) =
@@ -70,8 +70,8 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                         groupsAsync
                         |> AsyncSeq.ofAsyncEnum
                         |> AsyncSeq.toBlockingSeq
-                    return Result.Ok(groups |> List.ofSeq)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                    return Ok(groups |> List.ofSeq)
+                with ex -> return Result.Error(ex)
             }
 
 type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
@@ -92,7 +92,7 @@ type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Cou
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: Submission -> Result<Submission,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: Submission -> Result<Submission, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: Submission -> Submission) =
             commonContext.Update(key, updater)
@@ -114,8 +114,8 @@ type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Cou
                         submissionsAsync
                         |> AsyncSeq.ofAsyncEnum
                         |> AsyncSeq.toBlockingSeq
-                    return Result.Ok(submissions |> Seq.toList)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                    return Ok(submissions |> Seq.toList)
+                with ex -> return Result.Error(ex)
             }
 
 type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
@@ -136,7 +136,7 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: Report -> Result<Report,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: Report -> Result<Report, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: Report -> Report) =
             commonContext.Update(key, updater)
@@ -158,8 +158,8 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
                         reportsAsync
                         |> AsyncSeq.ofAsyncEnum
                         |> AsyncSeq.toBlockingSeq
-                    return Result.Ok(reports |> Seq.toList)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                    return Ok(reports |> Seq.toList)
+                with ex -> return Result.Error(ex)
             }
 
 type GeneratedProblemSetContext = CommonContext<GeneratedProblemSet>
@@ -188,7 +188,7 @@ type UserGroupsContext(couchbaseBuckets: CouchbaseBuckets) =
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: UserGroups -> Result<UserGroups,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: UserGroups -> Result<UserGroups, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: UserGroups -> UserGroups) =
             commonContext.Update(key, updater)
@@ -213,12 +213,12 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: User -> Result<User,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: User -> Result<User, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: User -> User) =
             commonContext.Update(key, updater)
         
-        member this.GetByName(name: string): Async<Result<User, GetDocumentFail>> =
+        member this.GetByName(name: string): Async<Result<User, Exception>> =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
@@ -237,13 +237,13 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                         |> AsyncSeq.tryFirst
                     match user with
                     | None ->
-                        return Result.Error(GetDocumentFail.Error(InvalidOperationException("User not found")))
+                        return Result.Error(InvalidOperationException("User not found") :> Exception)
                     | Some(u) ->
-                        return Result.Ok(u)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                        return Ok(u)
+                with ex -> return Result.Error(ex)
             }
 
-        member this.SearchByContainsInName(pattern: string): Async<Result<List<User>, GetDocumentFail>> =
+        member this.SearchByContainsInName(pattern: string): Async<Result<List<User>, Exception>> =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
@@ -260,8 +260,8 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                         usersAsync
                         |> AsyncSeq.ofAsyncEnum
                         |> AsyncSeq.toBlockingSeq
-                    return Result.Ok(users |> List.ofSeq)
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                    return Ok(users |> List.ofSeq)
+                with ex -> return Result.Error(ex)
             }
 
 type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
@@ -284,7 +284,7 @@ type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couch
             commonContext.Insert(key, entity)
         member this.Remove(key) =
             commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: UserRole -> Result<UserRole,'TFail>) =
+        member this.Update(key: IDocumentKey, updater: UserRole -> Result<UserRole, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: UserRole -> UserRole) =
             commonContext.Update(key, updater)
@@ -310,8 +310,8 @@ type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couch
                         |> AsyncSeq.tryFirst
                     match role with
                     | Some(r) ->
-                        return Result.Ok(r)
+                        return Ok(r)
                     | None ->
-                        return Result.Error(GetDocumentFail.Error(InvalidOperationException(sprintf "User role %s not found" name)))
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                        return Result.Error(InvalidOperationException(sprintf "User role %s not found" name) :> Exception)
+                with ex -> return Result.Error(ex)
             }

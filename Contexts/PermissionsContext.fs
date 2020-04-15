@@ -32,9 +32,9 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
             return bucket
         }
 
-    member private this.DoUpdateAttempt<'TFail>(collection: ICouchbaseCollection,
-                                                key: IDocumentKey,
-                                                updater: (Permissions -> Result<Permissions, 'TFail>)) =
+    member private this.DoUpdateAttempt(collection: ICouchbaseCollection,
+                                        key: IDocumentKey,
+                                        updater: (Permissions -> Result<Permissions, Exception>)) =
         async {
             try
                 let! (getResult: ILookupInResult) =
@@ -43,15 +43,15 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
                 let replaceOptions = ReplaceOptions().Cas(getResult.Cas)
                 let updateResult = updater(item)
                 match updateResult with
-                | Result.Error(error) -> return Result.Error(GenericUpdateDocumentFail<'TFail>.CustomFail(error))
-                | Result.Ok(updatedItem) ->
+                | Error(error) -> return Error(error)
+                | Ok(updatedItem) ->
                     let replaceSpecs = seq {
                         MutateInSpec.Replace("permissions", updatedItem)
                     }
                     let! replaceResult = collection.MutateInAsync(key.Key, replaceSpecs)
-                    return Result.Ok()
+                    return Ok()
 
-            with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
+            with ex -> return Error(ex)
         }
 
     interface IPermissionsContext with
@@ -64,9 +64,9 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
                         let! attemptResult = this.DoUpdateAttempt(collection, key, updater)
 
                         match attemptResult with
-                            | Result.Ok(ok) -> 
+                            | Ok(ok) -> 
                                 return attemptResult
-                            | Result.Error(error) ->
+                            | Error(error) ->
                                 if restAttemps > 0 then
                                     return! retroLoop (restAttemps - 1)
                                 else
@@ -75,20 +75,12 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
 
                     return! retroLoop updateAttempts
 
-                with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
+                with ex -> return Error(ex)
             }
 
         member this.Update(docKey: IDocumentKey, updater: Permissions -> Permissions) = 
             async {
-                match! (this :> IPermissionsContext).Update(docKey, updater >> Ok) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GenericUpdateDocumentFail.Error(error) ->
-                        return Result.Error(UpdateDocumentFail.Error(error))
-                    | GenericUpdateDocumentFail.CustomFail() ->
-                        return Result.Error(UpdateDocumentFail.Error(InvalidOperationException("Unexpected exception on update")))
-                | Ok() ->
-                    return Ok()
+                return! (this :> IPermissionsContext).Update(docKey, updater >> Ok)
             }
 
         member this.Get(key) =
@@ -96,9 +88,9 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (getResult: ILookupInResult) = collection.LookupInAsync(key.Key, specs)
-                    return Result.Ok(getResult.ContentAs<Permissions>(0))
+                    return Ok(getResult.ContentAs<Permissions>(0))
 
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                with ex -> return Error(ex)
             }
 
         member this.Exists(key) =
@@ -106,7 +98,7 @@ type PermissionsContext(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (existsResult: IExistsResult) = collection.ExistsAsync(key.Key)
-                    return Result.Ok(existsResult.Exists)
-                with ex -> return Result.Error(ExistsDocumentFail.Error(ex))
+                    return Ok(existsResult.Exists)
+                with ex -> return Error(ex)
             }
 

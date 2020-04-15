@@ -8,6 +8,7 @@ open Contexts
 open DatabaseTypes
 open System
 open Models.Permissions
+open Utils.ResultHelper
 
 type PermissionsService(userService: IUserService,
                         groupContext: IGroupContext,
@@ -18,23 +19,17 @@ type PermissionsService(userService: IUserService,
     member this.GetUserGroups(userId: UserId) =
         async {
             match! userGroupsContext.Get(UserGroups.CreateDocumentKey(userId.Value)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetGroupFail.Error(error))
+            | Error(ex) ->
+                return Error(ex)
             | Ok(userGroups) ->
-                match UserGroupsModel.Create(userGroups) with
-                | Result.Error() ->
-                    return Result.Error(GetGroupFail.Error(InvalidOperationException("Cannot create model")))
-                | Ok(model) ->
-                    return Ok(model)
+                return UserGroupsModel.Create(userGroups)
         }
 
     member this.CreateMember(m: Member) =
         async {
             match! userService.Get(UserId(m.UserId)) with
-            | Result.Error(fail) ->
-                return Result.Error(fail)
+            | Error(ex) ->
+                return Error(ex)
             | Ok(user) ->
                 return Ok({
                     MemberModel.UserId = user.Id
@@ -50,37 +45,13 @@ type PermissionsService(userService: IUserService,
                 |> Seq.map(this.CreateMember)
                 |> Async.Parallel
 
-            return
-                membersResults
-                |> Seq.map(fun r ->
-                    match r with
-                    | Result.Error(fail) ->
-                        Result.Error(fail)
-                    | Ok(memberModel) ->
-                        Ok([ memberModel ])
-                )
-                |> Seq.fold
-                    (fun l r ->
-                        match (l, r) with
-                        | (Ok(lm), Ok(rm)) ->
-                            Ok(lm @ rm)
-                        | (Result.Error(fail), Ok(rm)) ->
-                            Result.Error(fail)
-                        | (Ok(lm), Result.Error(fail)) ->
-                            Result.Error(fail)
-                        | (Result.Error(lfail), Result.Error(rfail)) ->
-                            Result.Error(lfail)
-                    )
-                    (Ok([]))
+            return ResultOfSeq membersResults
         }
     
     member this.CreateGroupAccessModel(g: GroupAccess) =
         async {
             match! groupContext.Get(UserGroup.CreateDocumentKey(g.GroupId)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
+            | Error(ex) -> return Error(ex)
             | Ok(group) ->
                 return Ok({
                     GroupAccessModel.GroupId = GroupId(g.GroupId)
@@ -96,36 +67,15 @@ type PermissionsService(userService: IUserService,
                 |> Seq.map(this.CreateGroupAccessModel)
                 |> Async.Parallel
 
-            return
-                groupsAccessResults
-                |> Seq.map(fun r ->
-                    match r with
-                    | Result.Error(fail) ->
-                        Result.Error(fail)
-                    | Ok(groupAccessModel) ->
-                        Ok([ groupAccessModel ])
-                )
-                |> Seq.fold
-                    (fun l r ->
-                        match (l, r) with
-                        | (Ok(lm), Ok(rm)) ->
-                            Ok(lm @ rm)
-                        | (Result.Error(fail), Ok(rm)) ->
-                            Result.Error(fail)
-                        | (Ok(lm), Result.Error(fail)) ->
-                            Result.Error(fail)
-                        | (Result.Error(lfail), Result.Error(rfail)) ->
-                            Result.Error(lfail)
-                    )
-                    (Ok([]))
+            return ResultOfSeq groupsAccessResults
         }
 
-    member this.CheckPermissions(permissions: Permissions, userId: UserId, access: AccessModel): Async<Result<unit, CheckPermissionsFail>> = 
+    member this.CheckPermissions(permissions: Permissions, userId: UserId, access: AccessModel): Async<Result<unit, Exception>> = 
         async {
             let ownerId = UserId(permissions.OwnerId)
 
             if (ownerId = userId) then
-                return Result.Ok()
+                return Ok()
             else
                 let isDirectAccess =
                     permissions.Members
@@ -136,7 +86,7 @@ type PermissionsService(userService: IUserService,
                     )
 
                 if isDirectAccess then
-                    return Result.Ok()
+                    return Ok()
                 else
                     let! groupsResults =
                         permissions.Groups
@@ -158,120 +108,48 @@ type PermissionsService(userService: IUserService,
                         )
 
                     if groupAccess then
-                        return Result.Ok()
+                        return Ok()
                     else
-                        return Result.Error(CheckPermissionsFail.Unauthorized())
+                        return Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
         }
 
     member this.GetFolderPermissions(id: FolderId) =
-        async {
-            match! permissionsContext.Get(Folder.CreateDocumentKey(id.Value)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
-            | Ok(permissions) ->
-                return Ok(permissions)
-        }
+        permissionsContext.Get(Folder.CreateDocumentKey(id.Value))
 
     member this.UpdateFolderPermissions(id: FolderId, updater: Permissions -> Permissions) =
-        async {
-            match! permissionsContext.Update(Folder.CreateDocumentKey(id.Value), updater) with
-            | Result.Error(fail) ->
-                match fail with
-                | UpdateDocumentFail.Error(error) ->
-                    return Result.Error(UpdatePermissionsFail.Error(error))
-            | Ok() ->
-                return Ok()
-        }
+        permissionsContext.Update(Folder.CreateDocumentKey(id.Value), updater)
 
     member this.GetHeadPermissions(id: HeadId) =
-        async {
-            match! permissionsContext.Get(Head.CreateDocumentKey(id.Value)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
-            | Ok(permissions) ->
-                return Ok(permissions)
-        }
+        permissionsContext.Get(Head.CreateDocumentKey(id.Value))
 
     member this.UpdateHeadPermissions(id: HeadId, updater: Permissions -> Permissions) =
-        async {
-            match! permissionsContext.Update(Head.CreateDocumentKey(id.Value), updater) with
-            | Result.Error(fail) ->
-                match fail with
-                | UpdateDocumentFail.Error(error) ->
-                    return Result.Error(UpdatePermissionsFail.Error(error))
-            | Ok() ->
-                return Ok()
-        }
+        permissionsContext.Update(Head.CreateDocumentKey(id.Value), updater)
 
     member this.GetCommitPermissions(id: CommitId) =
         async {
             match! versionControlService.Get(id) with
-            | Result.Error(fail) ->
-                match fail with
-                | Services.VersionControl.GetFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
-            | Result.Ok(commit) ->
-                return! this.GetHeadPermissions(commit.HeadId)
+            | Error(ex) -> return Error(ex)
+            | Ok(commit) -> return! this.GetHeadPermissions(commit.HeadId)
         }
 
     member this.UpdateCommitPermissions(id: CommitId, updater: Permissions -> Permissions) =
         async {
             match! versionControlService.Get(id) with
-            | Result.Error(fail) ->
-                match fail with
-                | Services.VersionControl.GetFail.Error(error) ->
-                    return Result.Error(UpdatePermissionsFail.Error(error))
-            | Result.Ok(commit) ->
-                return! this.UpdateHeadPermissions(commit.HeadId, updater)
+            | Error(ex) -> return Error(ex)
+            | Ok(commit) -> return! this.UpdateHeadPermissions(commit.HeadId, updater)
         }
 
     member this.GetSubmissionPermissions(id: SubmissionId) =
-        async {
-            match! permissionsContext.Get(Submission.CreateDocumentKey(id.Value)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
-            | Ok(permissions) ->
-                return Ok(permissions)
-        }
+        permissionsContext.Get(Submission.CreateDocumentKey(id.Value))
 
     member this.UpdateSubmissionPermissions(id: SubmissionId, updater: Permissions -> Permissions) =
-        async {
-            match! permissionsContext.Update(Submission.CreateDocumentKey(id.Value), updater) with
-            | Result.Error(fail) ->
-                match fail with
-                | UpdateDocumentFail.Error(error) ->
-                    return Result.Error(UpdatePermissionsFail.Error(error))
-            | Ok() ->
-                return Ok()
-        }
+        permissionsContext.Update(Submission.CreateDocumentKey(id.Value), updater)
 
     member this.GetReportPermissions(id: ReportId) =
-        async {
-            match! permissionsContext.Get(Report.CreateDocumentKey(id.Value)) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetDocumentFail.Error(error) ->
-                    return Result.Error(GetPermissionsFail.Error(error))
-            | Ok(permissions) ->
-                return Ok(permissions)
-        }
+        permissionsContext.Get(Report.CreateDocumentKey(id.Value))
 
     member this.UpdateReportPermissions(id: ReportId, updater: Permissions -> Permissions) =
-        async {
-            match! permissionsContext.Update(Report.CreateDocumentKey(id.Value), updater) with
-            | Result.Error(fail) ->
-                match fail with
-                | UpdateDocumentFail.Error(error) ->
-                    return Result.Error(UpdatePermissionsFail.Error(error))
-            | Ok() ->
-                return Ok()
-        }
+        permissionsContext.Update(Report.CreateDocumentKey(id.Value), updater)
 
     member this.GetPermissions(protectedId: ProtectedId) =
         match protectedId with
@@ -289,17 +167,14 @@ type PermissionsService(userService: IUserService,
         | ProtectedId.Submission(id) -> this.UpdateSubmissionPermissions(id, updater)
         | ProtectedId.Report(id) -> this.UpdateReportPermissions(id, updater)
 
-    member this.CreateGroups(groups: List<UserGroup>) : Async<Result<List<GroupModel>, GetGroupFail>> =
+    member this.CreateGroups(groups: List<UserGroup>) : Async<Result<List<GroupModel>, Exception>> =
         async {
             let! result =
                 groups
                 |> Seq.map(fun group ->
                     async {
                         match! this.CreateMembersList(group.Members) with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | GetUserFail.Error(error) ->
-                                return Result.Error(GetGroupFail.Error(error))
+                        | Error(ex) -> return Error(ex)
                         | Ok(members) ->
                             return Ok([{
                                 GroupModel.Id = GroupId(group.Id)
@@ -317,63 +192,34 @@ type PermissionsService(userService: IUserService,
                 |> Seq.fold (fun r x ->
                     match (r, x) with
                     | (Ok(l), Ok(r)) -> Ok(l @ r)
-                    | (Result.Error(fail), _) -> Result.Error(fail)
-                    | (_, Result.Error(fail)) -> Result.Error(fail)) (Result.Ok([]))
+                    | errors -> Error(ErrorOf2 errors)
+                ) (Result<List<GroupModel>, Exception>.Ok([]))
         }
-
-    member this.HandleUserGroupStateResult(resultGroup : Result<unit, UpdateDocumentFail>, resultUserGroups: Result<unit, UpdateDocumentFail>) =
-        match (resultGroup, resultUserGroups) with
-        | (Ok(), Ok()) ->
-            Ok()
-        | (Result.Error(fail), Ok()) ->
-            match fail with
-            | UpdateDocumentFail.Error(error) ->
-                Result.Error(UpdateGroupFail.Error(error))
-        | (Ok(), Result.Error(fail)) ->
-            match fail with
-            | UpdateDocumentFail.Error(error) ->
-                Result.Error(UpdateGroupFail.Error(error))
-        | (Result.Error(failGroupUpdate), Result.Error(failUserGroupsUpdate)) ->
-            match (failGroupUpdate, failUserGroupsUpdate) with
-            | (UpdateDocumentFail.Error(errorGroupUpdate), UpdateDocumentFail.Error(errorUserGroupsUpdate)) ->
-                Result.Error(UpdateGroupFail.Error(AggregateException(errorGroupUpdate, errorUserGroupsUpdate)))
 
     interface IPermissionsService with
 
         member this.SearchByContains(pattern) =
             async {
                 match! groupContext.SearchByContainsInName(pattern) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) ->
-                        return Result.Error(GetGroupFail.Error(error))
-                | Ok(groups) ->
-                    return! this.CreateGroups(groups)
+                | Error(ex) -> return Error(ex)
+                | Ok(groups) -> return! this.CreateGroups(groups)
             }
 
-        member this.Get(userId: UserId, access: AccessModel) : Async<Result<List<GroupModel>, GetGroupFail>> =
+        member this.Get(userId: UserId, access: AccessModel) : Async<Result<List<GroupModel>, Exception>> =
             async {
                 match! groupContext.GetByUser(userId.Value) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) ->
-                        return Result.Error(GetGroupFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(groups) ->
                     match! this.GetUserGroups(userId) with
-                    | Result.Error(fail) ->
-                        return Result.Error(fail)
-                    | Ok(userGroups) ->
-                        
-                    return! this.CreateGroups(groups)
+                    | Error(ex) -> return Error(ex)
+                    | Ok(userGroups) -> return! this.CreateGroups(groups)
+                        //TODO
             }
 
         member this.CheckPermissions(id: GroupId, userId: UserId, access: AccessModel) =
             async {
                 match! (this :> IPermissionsService).Get(id)  with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetGroupFail.Error(error) ->
-                        return Result.Error(CheckPermissionsFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(group) ->
                     if group.OwnerId = userId then
                         return Ok()
@@ -385,22 +231,16 @@ type PermissionsService(userService: IUserService,
                                 if allowed then
                                     Ok()
                                 else
-                                    Result.Error(CheckPermissionsFail.Unauthorized())
+                                    Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
             }
 
         member this.Get(id: GroupId) =
             async {
                 match! groupContext.Get(UserGroup.CreateDocumentKey(id.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) ->
-                        return Result.Error(GetGroupFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(group) ->
                     match! this.CreateMembersList(group.Members) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GetUserFail.Error(error) ->
-                            return Result.Error(GetGroupFail.Error(error))
+                    | Error(ex) -> return Error(ex)
                     | Ok(membersList) ->
                         return Ok({
                             GroupModel.Id = id
@@ -414,8 +254,7 @@ type PermissionsService(userService: IUserService,
         member this.Get(protectedId: ProtectedId) =
             async {
                 match! this.GetPermissions(protectedId) with
-                | Result.Error(fail) ->
-                    return Result.Error(fail)
+                | Error(ex) -> return Error(ex)
                 | Ok(permissions) ->
                     let! membersListResult = this.CreateMembersList(permissions.Members)
                     let! groupsListResult = this.CreateGroupsList(permissions.Groups)
@@ -426,23 +265,14 @@ type PermissionsService(userService: IUserService,
                             Groups = groupsList
                             Members = membersList
                         })
-                    | (Result.Error(fail), _) ->
-                        match fail with
-                        | GetUserFail.Error(error) ->
-                            return Result.Error(GetPermissionsFail.Error(error))
-                    | (_, Result.Error(fail)) ->
-                        return Result.Error(fail)
+                    | errors -> return Error(ErrorOf2 errors)
             }
 
         member this.CheckPermissions(protectedId, userId, access) =
             async {
                 match! this.GetPermissions(protectedId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetPermissionsFail.Error(error) ->
-                        return Result.Error(CheckPermissionsFail.Error(error))
-                | Ok(permissions) ->
-                    return! this.CheckPermissions(permissions, userId, access)
+                | Error(ex) -> return Error(ex)
+                | Ok(permissions) -> return! this.CheckPermissions(permissions, userId, access)
             } 
 
         member this.Create(userId, groupName, groupDescription) =
@@ -456,37 +286,24 @@ type PermissionsService(userService: IUserService,
                 }
 
                 match! groupContext.Insert(group, group) with
-                | Ok() ->
-                    return Ok(GroupId(group.Id))
-                | Result.Error(fail) ->
-                    match fail with
-                    | InsertDocumentFail.Error(error) ->
-                        return Result.Error(CreateGroupFail.Error(error))
+                | Ok() -> return Ok(GroupId(group.Id))
+                | Error(ex) -> return Error(ex)
             }
 
         member this.Update(id: GroupId, nameOpt: Option<GroupName>, descriptionOpt: Option<GroupDescription>) =
-            async {
-                let! result =
-                    groupContext.Update
-                        (UserGroup.CreateDocumentKey(id.Value),
-                        (fun group ->
-                            match (nameOpt, descriptionOpt) with
-                            | (Some(name), Some(description)) ->
-                                { group with Name = name.Value; Description = description.Value }
-                            | (Some(name), None) ->
-                                { group with Name = name.Value }
-                            | (None, Some(description)) ->
-                                { group with Description = description.Value }
-                            | (None, None) ->
-                                group
-                        ))
-                match result with
-                | Ok() -> return Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateDocumentFail.Error(error) ->
-                        return Result.Error(UpdateGroupFail.Error(error))
-            }
+            groupContext.Update
+                (UserGroup.CreateDocumentKey(id.Value),
+                (fun group ->
+                    match (nameOpt, descriptionOpt) with
+                    | (Some(name), Some(description)) ->
+                        { group with Name = name.Value; Description = description.Value }
+                    | (Some(name), None) ->
+                        { group with Name = name.Value }
+                    | (None, Some(description)) ->
+                        { group with Description = description.Value }
+                    | (None, None) ->
+                        group
+                ))
 
         member this.Remove(id: GroupId, userId: UserId) =
             async {
@@ -516,41 +333,31 @@ type PermissionsService(userService: IUserService,
                             }
                         ))
 
-                return this.HandleUserGroupStateResult(resultGroup, resultUserGroups)
-
+                match (resultGroup, resultUserGroups) with
+                | (Ok(), Ok()) -> return Ok()
+                | errors -> return Error(ErrorOf2 errors)
             }
 
         member this.Update(id: GroupId, userId: UserId, access: AccessModel) =
-            async {
-                let! result =
-                    groupContext.Update
-                        (UserGroup.CreateDocumentKey(id.Value),
-                        (fun group ->
-                            {
-                                group with
-                                    Members =
-                                        group.Members
-                                        |> Seq.map(fun m ->
-                                            if m.UserId = userId.Value then
-                                                {
-                                                    m with
-                                                        Access = access.ToFlags()
-                                                }
-                                            else
-                                                m
-                                        )
-                                        |> List.ofSeq
-                            }
-                        ))
-                match result with
-                | Ok() ->
-                    return Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateDocumentFail.Error(error) ->
-                        return Result.Error(UpdateGroupFail.Error(error))
-
-            }
+            groupContext.Update
+                (UserGroup.CreateDocumentKey(id.Value),
+                (fun group ->
+                    {
+                        group with
+                            Members =
+                                group.Members
+                                |> Seq.map(fun m ->
+                                    if m.UserId = userId.Value then
+                                        {
+                                            m with
+                                                Access = access.ToFlags()
+                                        }
+                                    else
+                                        m
+                                )
+                                |> List.ofSeq
+                    }
+                ))
 
         member this.Add(id: GroupId, userId: UserId) =
             async {
@@ -589,127 +396,113 @@ type PermissionsService(userService: IUserService,
                                 }
                         ))
 
-                return this.HandleUserGroupStateResult(resultGroup, resultUserGroups)
+                match (resultGroup, resultUserGroups) with
+                | (Ok(), Ok()) -> return Ok()
+                | errors -> return Error(ErrorOf2 errors)
             }
 
         member this.Add(id: ProtectedId, userId: UserId) =
-            async {
-                let! result =
-                    this.UpdatePermissions
-                        (id,
-                        (fun permissions ->
-                            let memberExists =
-                                permissions.Members
-                                    |> Seq.exists(fun m -> m.UserId = userId.Value)
-                            if memberExists then
-                                permissions
-                            else
-                                let newMember = {
-                                    Member.UserId = userId.Value
-                                    Access = 0UL
-                                }
-                                {
-                                    permissions with
-                                        Members = permissions.Members @ [ newMember ]
-                                }
-                        ))
-
-                return result
-            }
+            this.UpdatePermissions
+                (id,
+                (fun permissions ->
+                    let memberExists =
+                        permissions.Members
+                            |> Seq.exists(fun m -> m.UserId = userId.Value)
+                    if memberExists then
+                        permissions
+                    else
+                        let newMember = {
+                            Member.UserId = userId.Value
+                            Access = 0UL
+                        }
+                        {
+                            permissions with
+                                Members = permissions.Members @ [ newMember ]
+                        }
+                ))
 
         member this.Add(id: ProtectedId, groupId: GroupId) =
-            async {
-                let! result =
-                    this.UpdatePermissions
-                        (id,
-                        (fun permissions ->
-                            let groupExists =
-                                permissions.Groups
-                                    |> Seq.exists(fun g -> g.GroupId = groupId.Value)
-                            if groupExists then
-                                permissions
-                            else
-                                let newGroup = {
-                                    GroupAccess.GroupId = groupId.Value
-                                    Access = 0UL
-                                }
-                                {
-                                    permissions with
-                                        Groups = permissions.Groups @ [ newGroup ]
-                                }
-                        ))
-
-                return result
-            }
+            this.UpdatePermissions
+                (id,
+                (fun permissions ->
+                    let groupExists =
+                        permissions.Groups
+                            |> Seq.exists(fun g -> g.GroupId = groupId.Value)
+                    if groupExists then
+                        permissions
+                    else
+                        let newGroup = {
+                            GroupAccess.GroupId = groupId.Value
+                            Access = 0UL
+                        }
+                        {
+                            permissions with
+                                Groups = permissions.Groups @ [ newGroup ]
+                        }
+                ))
 
         member this.Update(id: ProtectedId, userId: UserId, accessOpt: Option<AccessModel>) = 
-            async {
-                let accessFlagsOpt = accessOpt |> Option.map(fun x -> x.ToFlags())
+            let accessFlagsOpt = accessOpt |> Option.map(fun x -> x.ToFlags())
 
-                return!
-                    this.UpdatePermissions
-                        (id,
-                        fun perm ->
-                            match accessFlagsOpt with
-                            | None ->
-                                {
-                                    perm with
-                                        Members =
-                                            perm.Members
-                                            |> Seq.filter(fun m -> m.UserId <> userId.Value)
-                                            |> List.ofSeq
-                                }
-                            | Some(accessFlags) ->
-                                {
-                                    perm with
-                                        Members =
-                                            perm.Members
-                                            |> Seq.map(fun m ->
-                                                if m.UserId = userId.Value then
-                                                    {
-                                                        m with
-                                                            Access = accessFlags
-                                                    }
-                                                else
-                                                    m
-                                            )
-                                            |> List.ofSeq
-                                }
-                        )
-            }
+            this.UpdatePermissions
+                (id,
+                fun perm ->
+                    match accessFlagsOpt with
+                    | None ->
+                        {
+                            perm with
+                                Members =
+                                    perm.Members
+                                    |> Seq.filter(fun m -> m.UserId <> userId.Value)
+                                    |> List.ofSeq
+                        }
+                    | Some(accessFlags) ->
+                        {
+                            perm with
+                                Members =
+                                    perm.Members
+                                    |> Seq.map(fun m ->
+                                        if m.UserId = userId.Value then
+                                            {
+                                                m with
+                                                    Access = accessFlags
+                                            }
+                                        else
+                                            m
+                                    )
+                                    |> List.ofSeq
+                        }
+                )
 
         member this.Update(id: ProtectedId, groupId: GroupId, accessOpt: Option<AccessModel>) = 
-            async {
-                let accessFlagsOpt = accessOpt |> Option.map(fun x -> x.ToFlags())
+            let accessFlagsOpt = accessOpt |> Option.map(fun x -> x.ToFlags())
 
-                return!
-                    this.UpdatePermissions
-                        (id,
-                        fun perm ->
-                            match accessFlagsOpt with
-                            | None ->
-                                {
-                                    perm with
-                                        Groups =
-                                            perm.Groups
-                                            |> Seq.filter(fun m -> m.GroupId <> groupId.Value)
-                                            |> List.ofSeq
-                                }
-                            | Some(accessFlags) ->
-                                {
-                                    perm with
-                                        Groups =
-                                            perm.Groups
-                                            |> Seq.map(fun m ->
-                                                if m.GroupId = groupId.Value then
-                                                    {
-                                                        m with
-                                                            Access = accessFlags
-                                                    }
-                                                else
-                                                    m
-                                            )
-                                            |> List.ofSeq
-                                }
-                        )
-            }
+            this.UpdatePermissions
+                (id,
+                fun perm ->
+                    match accessFlagsOpt with
+                    | None ->
+                        {
+                            perm with
+                                Groups =
+                                    perm.Groups
+                                    |> Seq.filter(fun m -> m.GroupId <> groupId.Value)
+                                    |> List.ofSeq
+                        }
+                    | Some(accessFlags) ->
+                        {
+                            perm with
+                                Groups =
+                                    perm.Groups
+                                    |> Seq.map(fun m ->
+                                        if m.GroupId = groupId.Value then
+                                            {
+                                                m with
+                                                    Access = accessFlags
+                                            }
+                                        else
+                                            m
+                                    )
+                                    |> List.ofSeq
+                        }
+                )

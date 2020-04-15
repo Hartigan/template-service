@@ -4,6 +4,7 @@ open Models.Converters
 open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 type ViewLanguage =
     | Markdown
@@ -15,21 +16,21 @@ type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel
     member val Name = model.Name with get
     member val Language = viewLanguage with get
 
-    static member Create(model: LanguageModel) : Result<ViewLanguageModel, unit> =
+    static member Create(model: LanguageModel) : Result<ViewLanguageModel, Exception> =
         match model.Language with
-        | Language.Markdown -> Result.Ok(ViewLanguageModel(ViewLanguage.Markdown, model))
-        | Language.PlainText -> Result.Ok(ViewLanguageModel(ViewLanguage.PlainText, model))
-        | _ -> Result.Error()
+        | Language.Markdown -> Ok(ViewLanguageModel(ViewLanguage.Markdown, model))
+        | Language.PlainText -> Ok(ViewLanguageModel(ViewLanguage.PlainText, model))
+        | _ -> Error(InvalidOperationException(sprintf "cannot create ViewLanguageModel") :> Exception)
 
 and ViewLanguageModelConverter() =
     inherit StringConverter<ViewLanguageModel>((fun m -> m.Name),
                                                (fun s ->
                                                     match LanguageModel.Create(s) with
-                                                    | Result.Ok(languageModel) ->
+                                                    | Ok(languageModel) ->
                                                         match ViewLanguageModel.Create(languageModel) with
-                                                        | Result.Ok(viewLanguageModel) -> viewLanguageModel
-                                                        | Result.Error() -> failwith "Invalid view language"
-                                                    | Result.Error() -> failwith "Invalid language"))
+                                                        | Ok(viewLanguageModel) -> viewLanguageModel
+                                                        | Error(ex) -> failwith ex.Message
+                                                    | Error(ex) -> failwith ex.Message))
 
 type ViewModel =
     {
@@ -38,11 +39,11 @@ type ViewModel =
         [<JsonPropertyName("content")>]
         Content: ContentModel
     }
-    static member Create(model: CodeModel) : Result<ViewModel, unit> =
+    static member Create(model: CodeModel) : Result<ViewModel, Exception> =
         match ViewLanguageModel.Create(model.Language) with
-        | Result.Ok(viewLanguageModel) ->
+        | Ok(viewLanguageModel) ->
             Ok({
                 Language = viewLanguageModel
                 Content = model.Content
             })
-        | Result.Error() -> Result.Error()
+        | Error(ex) -> Error(InvalidOperationException(sprintf "cannot create ViewModel", ex) :> Exception)

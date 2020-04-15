@@ -27,9 +27,9 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
             return bucket
         }
 
-    member private this.DoUpdateAttempt<'TFail>(collection: ICouchbaseCollection,
-                                                key: IDocumentKey,
-                                                updater: ('T -> Result<'T, 'TFail>)): Async<Result<unit, GenericUpdateDocumentFail<'TFail>>> =
+    member private this.DoUpdateAttempt(collection: ICouchbaseCollection,
+                                        key: IDocumentKey,
+                                        updater: ('T -> Result<'T, Exception>)): Async<Result<unit, Exception>> =
         async {
             try
                 let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
@@ -37,26 +37,18 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 let replaceOptions = ReplaceOptions().Cas(getResult.Cas)
                 let updateResult = updater(item)
                 match updateResult with
-                | Result.Error(error) -> return Result.Error(GenericUpdateDocumentFail<'TFail>.CustomFail(error))
-                | Result.Ok(updatedItem) ->
+                | Error(error) -> return Error(error)
+                | Ok(updatedItem) ->
                     let! replaceResult = collection.ReplaceAsync(key.Key, updatedItem)
-                    return Result.Ok()
+                    return Ok()
 
-            with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
+            with ex -> return Error(ex)
         }
 
     interface IContext<'T> with
         member this.Update(docKey: IDocumentKey, updater: 'T -> 'T) = 
             async {
-                match! (this :> IContext<'T>).Update(docKey, updater >> Ok) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GenericUpdateDocumentFail.Error(error) ->
-                        return Result.Error(UpdateDocumentFail.Error(error))
-                    | GenericUpdateDocumentFail.CustomFail() ->
-                        return Result.Error(UpdateDocumentFail.Error(InvalidOperationException("Unexpected exception on update")))
-                | Ok() ->
-                    return Ok()
+                return! (this :> IContext<'T>).Update(docKey, updater >> Ok)
             }
 
         member this.Insert(key, doc) =
@@ -64,8 +56,8 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! insertResult = collection.InsertAsync(key.Key, doc, InsertOptions())
-                    return Result.Ok(())
-                with ex -> return Result.Error(InsertDocumentFail.Error(ex))
+                    return Ok(())
+                with ex -> return Error(ex)
             } 
 
         member this.Remove(key) =
@@ -73,8 +65,8 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     do! collection.RemoveAsync(key.Key, RemoveOptions())
-                    return Result.Ok(())
-                with ex -> return Result.Error(RemoveDocumentFail.Error(ex))
+                    return Ok(())
+                with ex -> return Error(ex)
             }
 
         member this.Update(key, updater) = 
@@ -86,9 +78,9 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                         let! attemptResult = this.DoUpdateAttempt(collection, key, updater)
 
                         match attemptResult with
-                            | Result.Ok(ok) -> 
+                            | Ok(ok) -> 
                                 return attemptResult
-                            | Result.Error(error) ->
+                            | Error(error) ->
                                 if restAttemps > 0 then
                                     return! retroLoop (restAttemps - 1)
                                 else
@@ -97,7 +89,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
 
                     return! retroLoop updateAttempts
 
-                with ex -> return Result.Error(GenericUpdateDocumentFail.Error(ex))
+                with ex -> return Error(ex)
             }
 
         member this.Get(key) =
@@ -105,9 +97,9 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (getResult: IGetResult) = collection.GetAsync(key.Key)
-                    return Result.Ok(getResult.ContentAs<'T>())
+                    return Ok(getResult.ContentAs<'T>())
 
-                with ex -> return Result.Error(GetDocumentFail.Error(ex))
+                with ex -> return Error(ex)
             }
 
         member this.Exists(key) =
@@ -115,7 +107,7 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                 try
                     let! collection = this.GetCollection()
                     let! (existsResult: IExistsResult) = collection.ExistsAsync(key.Key)
-                    return Result.Ok(existsResult.Exists)
-                with ex -> return Result.Error(ExistsDocumentFail.Error(ex))
+                    return Ok(existsResult.Exists)
+                with ex -> return Error(ex)
             }
 

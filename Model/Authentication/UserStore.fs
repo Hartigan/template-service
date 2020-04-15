@@ -9,7 +9,7 @@ open Utils.TaskHelper
 open Contexts
 open DatabaseTypes
 open System
-
+open Utils.ResultHelper
 
 type UserStore(context: IUserContext,
                userGroupsContext: IContext<UserGroups>,
@@ -44,23 +44,10 @@ type UserStore(context: IUserContext,
                 | (Ok(u), Ok(ug)) ->
                     logger.LogInformation(sprintf "User %s successefuly deleted" user.Name)
                     return IdentityResult.Success
-                | (Ok(u), Result.Error(fail)) ->
-                    match fail with
-                    | RemoveDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "User %s not deleted" user.Name)
-                        return ex.ToIdentityResult()
-                | (Result.Error(fail), Ok(ug)) ->
-                    match fail with
-                    | RemoveDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "User %s not deleted" user.Name)
-                        return ex.ToIdentityResult()
-                | (Result.Error(userFail), Result.Error(userGroupsFail)) ->
-                    match (userFail, userGroupsFail) with
-                    | (RemoveDocumentFail.Error(userEx), RemoveDocumentFail.Error(userGroupsEx)) ->
-                        let aggergatedEx = AggregateException(userEx, userGroupsEx)
-                        logger.LogError(aggergatedEx, sprintf "User %s not deleted" user.Name)
-                        return aggergatedEx.ToIdentityResult()
-
+                | errors ->
+                    let ex = ErrorOf2 errors
+                    logger.LogError(ex, sprintf "User %s not deleted" user.Name)
+                    return ex.ToIdentityResult()
             }
 
         member this.Dispose(): unit = 
@@ -72,14 +59,12 @@ type UserStore(context: IUserContext,
                 let docKey = User.CreateDocumentKey(userId)
                 let! result = context.Get(docKey)
                 match result with
-                | Result.Ok(user) ->
+                | Ok(user) ->
                     logger.LogInformation(sprintf "User %s successfuly found by id" userId)
                     return user.ToModel()
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(ex) ->
-                        logger.LogError(sprintf "User %s not found by id" userId, ex)
-                        return null
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "User %s not found by id" userId)
+                    return null
             }
 
         member this.FindByNameAsync(normalizedUserName, cancellationToken) = 
@@ -87,14 +72,12 @@ type UserStore(context: IUserContext,
                 cancellationToken.ThrowIfCancellationRequested()
                 let! result = context.GetByName(normalizedUserName)
                 match result with
-                | Result.Ok(user) ->
+                | Ok(user) ->
                     logger.LogInformation(sprintf "User %s successfuly found by normalized name" normalizedUserName)
                     return user.ToModel()
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(ex) ->
-                        logger.LogError(sprintf "User %s not found by normalized name" normalizedUserName, ex)
-                        return null
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "User %s not found by normalized name" normalizedUserName)
+                    return null
             }
 
         member this.GetNormalizedUserNameAsync(user, cancellationToken) = 
@@ -135,13 +118,11 @@ type UserStore(context: IUserContext,
                 let entity = user.ToEntity()
                 let! result = context.Update(entity, fun _ -> entity)
                 match result with
-                | Result.Ok(ok) ->
+                | Ok(ok) ->
                     return IdentityResult.Success
-                | Result.Error(fail) ->
-                    match fail with
-                        | UpdateDocumentFail.Error(ex) ->
-                            logger.LogError(sprintf "User %s not updated" user.Name, ex)
-                            return ex.ToIdentityResult()
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "User %s not updated" user.Name)
+                    return ex.ToIdentityResult()
             }
 
         member this.CreateAsync(user, cancellationToken) =
@@ -160,20 +141,8 @@ type UserStore(context: IUserContext,
                 | (Ok(u), Ok(ug)) ->
                     logger.LogInformation(sprintf "User %s successefuly added" user.Name)
                     return IdentityResult.Success
-                | (Ok(u), Result.Error(fail)) ->
-                    match fail with
-                    | InsertDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "User %s not added" user.Name)
-                        return ex.ToIdentityResult()
-                | (Result.Error(fail), Ok(ug)) ->
-                    match fail with
-                    | InsertDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "User %s not added" user.Name)
-                        return ex.ToIdentityResult()
-                | (Result.Error(userFail), Result.Error(userGroupsFail)) ->
-                    match (userFail, userGroupsFail) with
-                    | (InsertDocumentFail.Error(userEx), InsertDocumentFail.Error(userGroupsEx)) ->
-                        let aggergatedEx = AggregateException(userEx, userGroupsEx)
-                        logger.LogError(aggergatedEx, sprintf "User %s not added" user.Name)
-                        return aggergatedEx.ToIdentityResult()
+                | errors ->
+                    let ex = ErrorOf2 errors
+                    logger.LogError(ex, sprintf "User %s not added" user.Name)
+                    return ex.ToIdentityResult()
             }

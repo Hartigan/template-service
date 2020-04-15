@@ -6,6 +6,7 @@ open Models.Converters
 open Models.Permissions
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 [<JsonConverter(typeof<HeadNameConverter>)>]
 type HeadName(name: string) =
@@ -22,11 +23,11 @@ type HeadModel private (id: HeadId, name: HeadName, commit: CommitModel) =
     [<JsonPropertyName("commit")>]
     member val Commit   = commit with get
     
-    static member Create(head: Head): Result<HeadModel, unit> =
+    static member Create(head: Head): Result<HeadModel, Exception> =
         match CommitModel.Create(head.Commit) with
-        | Result.Error() -> Result.Error()
-        | Result.Ok(commitModel) ->
-            Result.Ok(HeadModel(HeadId(head.Id),
-                                HeadName(head.Name),
-                                commitModel))
+        | Error(ex) -> Error(InvalidOperationException("cannot create HeadModel", ex) :> Exception)
+        | Ok(commitModel) ->
+            Ok(HeadModel(HeadId(head.Id),
+                         HeadName(head.Name),
+                         commitModel))
      

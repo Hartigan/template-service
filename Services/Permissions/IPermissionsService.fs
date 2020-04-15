@@ -6,32 +6,13 @@ open Models.Identificators
 open Models.Converters
 open DatabaseTypes
 
-type CheckPermissionsFail =
-    | Error of Exception
-    | Unauthorized of unit
-
-type CreateGroupFail =
-    | Error of Exception
-
-type UpdateGroupFail =
-    | Error of Exception
-
-type UpdatePermissionsFail =
-    | Error of Exception
-
-type GetGroupFail =
-    | Error of Exception
-
-type GetPermissionsFail =
-    | Error of Exception
-
 type ProtectedType =
     | Folder
     | Head
     | Commit
     | Submission
     | Report
-    static member Create(typeName: string) : Result<ProtectedType, unit> =
+    static member Create(typeName: string) : Result<ProtectedType, Exception> =
         if typeName = Folder.TypeName then
             Ok(ProtectedType.Folder)
         elif typeName = Head.TypeName then
@@ -43,7 +24,7 @@ type ProtectedType =
         elif typeName = Report.TypeName then
             Ok(ProtectedType.Report)
         else
-            Result.Error()
+            Error(InvalidOperationException("cannot create ProtectedType") :> Exception)
 
 type ProtectedId =
     | Folder of FolderId
@@ -54,8 +35,7 @@ type ProtectedId =
 
     static member Create(id: string, typeName: string) =
         match ProtectedType.Create(typeName) with
-            | Result.Error() ->
-                Result.Error()
+            | Error(ex) -> Error(ex)
             | Ok(protectedType) ->
                 Ok(
                     match protectedType with
@@ -67,18 +47,18 @@ type ProtectedId =
                 )
 
 type IPermissionsService =
-    abstract member CheckPermissions : ProtectedId * UserId * AccessModel -> Async<Result<unit, CheckPermissionsFail>>
-    abstract member CheckPermissions : GroupId * UserId * AccessModel -> Async<Result<unit, CheckPermissionsFail>>
-    abstract member Create : UserId * GroupName * GroupDescription -> Async<Result<GroupId, CreateGroupFail>>
-    abstract member SearchByContains : string -> Async<Result<List<GroupModel>, GetGroupFail>>
-    abstract member Get : UserId * AccessModel -> Async<Result<List<GroupModel>, GetGroupFail>>
-    abstract member Get : GroupId -> Async<Result<GroupModel, GetGroupFail>>
-    abstract member Get : ProtectedId -> Async<Result<PermissionsModel, GetPermissionsFail>>
-    abstract member Update : GroupId * Option<GroupName> * Option<GroupDescription> -> Async<Result<unit, UpdateGroupFail>>
-    abstract member Remove : GroupId * UserId -> Async<Result<unit, UpdateGroupFail>>
-    abstract member Update : GroupId * UserId * AccessModel -> Async<Result<unit, UpdateGroupFail>>
-    abstract member Add : GroupId * UserId -> Async<Result<unit, UpdateGroupFail>>
-    abstract member Update : ProtectedId * UserId * Option<AccessModel> -> Async<Result<unit, UpdatePermissionsFail>>
-    abstract member Update : ProtectedId * GroupId * Option<AccessModel> -> Async<Result<unit, UpdatePermissionsFail>>
-    abstract member Add : ProtectedId * UserId -> Async<Result<unit, UpdatePermissionsFail>>
-    abstract member Add : ProtectedId * GroupId -> Async<Result<unit, UpdatePermissionsFail>>
+    abstract member CheckPermissions : ProtectedId * UserId * AccessModel -> Async<Result<unit, Exception>>
+    abstract member CheckPermissions : GroupId * UserId * AccessModel -> Async<Result<unit, Exception>>
+    abstract member Create : UserId * GroupName * GroupDescription -> Async<Result<GroupId, Exception>>
+    abstract member SearchByContains : string -> Async<Result<List<GroupModel>, Exception>>
+    abstract member Get : UserId * AccessModel -> Async<Result<List<GroupModel>, Exception>>
+    abstract member Get : GroupId -> Async<Result<GroupModel, Exception>>
+    abstract member Get : ProtectedId -> Async<Result<PermissionsModel, Exception>>
+    abstract member Update : GroupId * Option<GroupName> * Option<GroupDescription> -> Async<Result<unit, Exception>>
+    abstract member Remove : GroupId * UserId -> Async<Result<unit, Exception>>
+    abstract member Update : GroupId * UserId * AccessModel -> Async<Result<unit, Exception>>
+    abstract member Add : GroupId * UserId -> Async<Result<unit, Exception>>
+    abstract member Update : ProtectedId * UserId * Option<AccessModel> -> Async<Result<unit, Exception>>
+    abstract member Update : ProtectedId * GroupId * Option<AccessModel> -> Async<Result<unit, Exception>>
+    abstract member Add : ProtectedId * UserId -> Async<Result<unit, Exception>>
+    abstract member Add : ProtectedId * GroupId -> Async<Result<unit, Exception>>

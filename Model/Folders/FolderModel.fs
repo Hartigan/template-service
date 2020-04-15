@@ -8,6 +8,7 @@ open Models.Permissions
 open Models.Converters
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open Utils.ResultHelper
 
 [<JsonConverter(typeof<FolderNameConverter>)>]
 type FolderName(name: string) =
@@ -24,7 +25,7 @@ type FolderLinkModel =
         Name     : FolderName
     }
 
-    static member Create(link: FolderLink) : Result<FolderLinkModel, unit> =
+    static member Create(link: FolderLink) : Result<FolderLinkModel, Exception> =
         Ok({
             FolderLinkModel.Id      = FolderId(link.Id)
             Name                    = FolderName(link.Name)
@@ -41,7 +42,7 @@ type HeadLinkModel =
         Type     : ModelType
     }
 
-    static member Create(link: HeadLink) : Result<HeadLinkModel, unit> =
+    static member Create(link: HeadLink) : Result<HeadLinkModel, Exception> =
         match ModelTypeConverter.Create(link.Type) with
         | Ok(modelType) ->
             Ok({
@@ -49,7 +50,7 @@ type HeadLinkModel =
                 Name                = HeadName(link.Name)
                 Type                = modelType
             })
-        | Result.Error() -> Result.Error()
+        | Error(ex) -> Error(InvalidOperationException("cannot create HeadLinkModel", ex) :> Exception)
 
 type FolderModel =
     {
@@ -63,31 +64,16 @@ type FolderModel =
         Heads        : List<HeadLinkModel>
     }
 
-    static member Create(folder: Folder) : Result<FolderModel, unit> =
+    static member Create(folder: Folder) : Result<FolderModel, Exception> =
         let folderLinks =
             folder.Folders
-            |> Seq.map(fun x ->
-                match FolderLinkModel.Create x with
-                | Ok(model) -> Ok([ model ])
-                | Result.Error() -> Result.Error()
-            )
-            |> Seq.fold (fun r x ->
-                match (r, x) with
-                | (Ok(l), Ok(r)) -> Ok(l @ r)
-                | _ -> Result.Error()) (Result<List<FolderLinkModel>, unit>.Ok([]))
-            
+            |> Seq.map FolderLinkModel.Create
+            |> ResultOfSeq
 
         let headLinks =
             folder.Heads
-            |> Seq.map(fun x ->
-                match HeadLinkModel.Create x with
-                | Ok(model) -> Ok([ model ])
-                | Error() -> Error()
-            )
-            |> Seq.fold (fun r x ->
-                match (r, x) with
-                | (Ok(l), Ok(r)) -> Ok(l @ r)
-                | _ -> Result.Error()) (Result<List<HeadLinkModel>, unit>.Ok([]))
+            |> Seq.map HeadLinkModel.Create
+            |> ResultOfSeq
 
         match (folderLinks, headLinks) with
         | (Ok(folders), Ok(heads)) ->
@@ -97,4 +83,4 @@ type FolderModel =
                 Folders             = folders
                 Heads               = heads
             })
-        | _ -> Result.Error()
+        | errors -> Error(ErrorOf2 errors)

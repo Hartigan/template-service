@@ -15,41 +15,25 @@ type FoldersService(folderContext: IContext<Folder>,
         member this.AddFolder(folderId, parentId) =
             async {
                 let folderDocId = Folder.CreateDocumentKey(folderId.Value)
-                let! getFolderResult = folderContext.Get(folderDocId)
-                match getFolderResult with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                | Result.Ok(folder) ->
-                    let docId = Folder.CreateDocumentKey(parentId.Value)
-                    let! result = folderContext.Update(docId, fun parent ->
+                match! folderContext.Get(folderDocId) with
+                | Error(ex) -> return Error(ex)
+                | Ok(folder) ->
+                    return! folderContext.Update(Folder.CreateDocumentKey(parentId.Value), fun parent ->
                         let contains =
                             parent.Folders
                             |> Seq.exists(fun link -> FolderId(link.Id) = folderId)
                         if not contains then
-                            Result.Ok({parent with Folders = parent.Folders @ [{ FolderLink.Id = folderId.Value; Name = folder.Name }] })
+                            Ok({parent with Folders = parent.Folders @ [{ FolderLink.Id = folderId.Value; Name = folder.Name }] })
                         else
-                            Result.Error(AddFail.Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value))))
-
-                    match result with
-                    | Result.Ok(ok) -> return Result.Ok()
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                        | GenericUpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                            Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value) :> Exception))
             }
 
         member this.AddHead(headId, parentId) =
             async {
-                let headDocId = Head.CreateDocumentKey(headId.Value)
-                let! getHeadResult = headContext.Get(headDocId)
-                match getHeadResult with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                | Result.Ok(head) ->
-                    let docId = Folder.CreateDocumentKey(parentId.Value)
-                    let! result = folderContext.Update(docId, fun parent ->
+                match! headContext.Get(Head.CreateDocumentKey(headId.Value)) with
+                | Error(ex) -> return Error(ex)
+                | Ok(head) ->
+                    return! folderContext.Update(Folder.CreateDocumentKey(parentId.Value), fun parent ->
                         let exists =
                             parent.Heads
                             |> Seq.exists(fun link -> HeadId(link.Id) = headId)
@@ -64,14 +48,7 @@ type FoldersService(folderContext: IContext<Folder>,
                                         }]
                             })
                         else
-                            Result.Error(AddFail.Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value))))
-
-                    match result with
-                    | Result.Ok(ok) -> return Result.Ok()
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(AddFail.Error(error))
-                        | GenericUpdateDocumentFail.CustomFail(fail) -> return Result.Error(fail)
+                            Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value) :> Exception))
             }
 
         member this.CreateFolder(name, userId) = 
@@ -91,19 +68,15 @@ type FoldersService(folderContext: IContext<Folder>,
                 let! result = folderContext.Insert(folder, folder)
 
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | InsertDocumentFail.Error(error) ->
-                        return Result.Error(CreateFolderFail.Error(error))
-                | Result.Ok(ok) ->
-                    return Result.Ok(FolderId(folder.Id))
+                | Error(ex) -> return Error(ex)
+                | Ok(ok) -> return Ok(FolderId(folder.Id))
             }
 
         member this.GetRoot(userId) =
             async {
                 match! (this :> IFoldersService).Get(FolderId(userId.Value)) with
                 | Ok(model) -> return Ok(model)
-                | Result.Error(fail) ->
+                | Error(fail) ->
                     let folder = {
                         Folder.Id = userId.Value
                         Name = "root"
@@ -117,13 +90,8 @@ type FoldersService(folderContext: IContext<Folder>,
                     }
 
                     match! folderContext.Insert(folder, folder) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | InsertDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
-                    | Ok() ->
-                        match FolderModel.Create(folder) with
-                        | Ok(folderModel) -> return Ok(folderModel)
-                        | Result.Error() -> return Result.Error(GetFail.Error(InvalidOperationException("Cannot create FolderModel")))
+                    | Error(ex) -> return Error(ex)
+                    | Ok() -> return FolderModel.Create(folder)
             }
             
 
@@ -132,68 +100,42 @@ type FoldersService(folderContext: IContext<Folder>,
         member this.MoveHeadToTrash(headId, userId) = 
             failwith "Not Implemented"
 
-        member this.RenameFolderLink(folderId, folderLinkId, folderName): Async<Result<unit,RenameFail>> = 
-            async {
-                let docId = Folder.CreateDocumentKey(folderId.Value)
-                let! result = folderContext.Update(docId, fun folder ->
-                   {
-                        folder with
-                            Folders =
-                                folder.Folders
-                                |> Seq.map(fun x ->
-                                    if FolderId(x.Id) = folderLinkId then
-                                        { x with Name = folderName.Value }
-                                    else
-                                        x
-                                )
-                                |> List.ofSeq
-                    }
-                )
-
-                match result with
-                | Result.Ok(ok) -> return Result.Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-            }
+        member this.RenameFolderLink(folderId, folderLinkId, folderName): Async<Result<unit, Exception>> = 
+            folderContext.Update(Folder.CreateDocumentKey(folderId.Value), fun folder ->
+               {
+                    folder with
+                        Folders =
+                            folder.Folders
+                            |> Seq.map(fun x ->
+                                if FolderId(x.Id) = folderLinkId then
+                                    { x with Name = folderName.Value }
+                                else
+                                    x
+                            )
+                            |> List.ofSeq
+                }
+            )
 
         member this.RenameHeadLink(folderId, headLinkId, headName) = 
-            async {
-                let docId = Folder.CreateDocumentKey(folderId.Value)
-                let! result = folderContext.Update(docId, fun folder ->
-                   {
-                        folder with
-                            Heads =
-                                folder.Heads
-                                |> Seq.map(fun x ->
-                                    if HeadId(x.Id) = headLinkId then
-                                        { x with Name = headName.Value }
-                                    else
-                                        x
-                                )
-                                |> List.ofSeq
-                    }
-                )
-
-                match result with
-                | Result.Ok(ok) -> return Result.Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-            }
+            folderContext.Update(Folder.CreateDocumentKey(folderId.Value), fun folder ->
+               {
+                    folder with
+                        Heads =
+                            folder.Heads
+                            |> Seq.map(fun x ->
+                                if HeadId(x.Id) = headLinkId then
+                                    { x with Name = headName.Value }
+                                else
+                                    x
+                            )
+                            |> List.ofSeq
+                }
+            )
 
         member this.RenameFolder(folderId, folderName) =
-            async {
-                let docId = Folder.CreateDocumentKey(folderId.Value)
-                let! result = folderContext.Update(docId, fun folder -> 
-                    { folder with Name = folderName.Value }
-                )
-                match result with
-                | Result.Ok(ok) -> return Result.Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateDocumentFail.Error(error) -> return Result.Error(RenameFail.Error(error))
-            }
+            folderContext.Update(Folder.CreateDocumentKey(folderId.Value), fun folder -> 
+                { folder with Name = folderName.Value }
+            )
 
         member this.Get(folderId) =
             async {
@@ -201,11 +143,6 @@ type FoldersService(folderContext: IContext<Folder>,
                 let! result = folderContext.Get(docId)
 
                 match result with
-                | Result.Ok(folder) ->
-                    match FolderModel.Create(folder) with
-                        | Ok(folderModel) -> return Ok(folderModel)
-                        | Result.Error() -> return Result.Error(GetFail.Error(InvalidOperationException("Cannot create FolderModel")))
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
+                | Ok(folder) -> return FolderModel.Create(folder)
+                | Error(ex) -> return Error(ex)
             }

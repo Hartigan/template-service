@@ -6,6 +6,7 @@ open Models.Converters
 open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 [<JsonConverter(typeof<ProblemSeedConverter>)>]
 type ProblemSeed(seed: int32) =
@@ -42,18 +43,18 @@ type GeneratedProblemModel private (id: GeneratedProblemId,
     [<JsonPropertyName("answer")>]
     member val Answer       = answer with get
 
-    static member Create(generatedProblem: GeneratedProblem) : Result<GeneratedProblemModel, unit> =
-        let codes = (CodeModel.Create(generatedProblem.View))
+    static member Create(generatedProblem: GeneratedProblem) : Result<GeneratedProblemModel, Exception> =
+        let codes = CodeModel.Create(generatedProblem.View)
         match codes with
-        | (Ok(viewCode)) ->
-            let codeModels = (GeneratedViewModel.Create(viewCode))
+        | Ok(viewCode) ->
+            let codeModels = GeneratedViewModel.Create(viewCode)
             match codeModels with
-            | (Ok(viewModel)) ->
+            | Ok(viewModel) ->
                 Ok(GeneratedProblemModel(GeneratedProblemId(generatedProblem.Id),
                                          ProblemId(generatedProblem.ProblemId),
                                          ProblemSeed(generatedProblem.Seed),
                                          ProblemTitle(generatedProblem.Title),
                                          viewModel,
                                          ProblemAnswer(generatedProblem.Answer)))
-            | _ -> Error()
-        | _ -> Error()
+            | Error(ex) -> Error(InvalidOperationException("cannot create GeneratedProblemModel", ex) :> Exception)
+        | Error(ex) -> Error(InvalidOperationException("cannot create GeneratedProblemModel", ex) :> Exception)

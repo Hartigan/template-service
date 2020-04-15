@@ -20,14 +20,12 @@ type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
                 let entity = role.ToEntity()
                 let! result = context.Insert(entity, entity)
                 match result with
-                | Result.Ok(ok) ->
+                | Ok(ok) ->
                     logger.LogInformation(sprintf "Role %s successfuly added" role.Name)
                     return IdentityResult.Success
-                | Result.Error(error) ->
-                    match error with
-                    | InsertDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "Role %s not added" role.Name)
-                        return ex.ToIdentityResult()
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Role %s not added" role.Name)
+                    return ex.ToIdentityResult()
             }
 
         member this.DeleteAsync(role, cancellationToken) =
@@ -36,14 +34,12 @@ type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
                 let entity = role.ToEntity()
                 let! result = context.Remove(entity)
                 match result with
-                | Result.Ok(ok) ->
+                | Ok(ok) ->
                     logger.LogInformation(sprintf "Role %s successfuly deleted" role.Name)
                     return IdentityResult.Success
-                | Result.Error(error) ->
-                    match error with
-                    | RemoveDocumentFail.Error(ex) ->
-                        logger.LogError(ex, sprintf "Role %s not deleted" role.Name)
-                        return ex.ToIdentityResult()
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Role %s not deleted" role.Name)
+                    return ex.ToIdentityResult()
             }
 
         member this.Dispose(): unit = 
@@ -55,16 +51,14 @@ type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
                 let docId = UserRole.CreateDocumentKey(roleId)
                 let! result = context.Get(docId)
                 match result with
-                | Result.Ok(role) ->
+                | Ok(role) ->
                     logger.LogInformation(sprintf "Role %s successfuly found by id" roleId)
                     return role.ToModel()
-                | Result.Error(error) ->
-                    match error with
-                    | GetDocumentFail.Error(ex) ->
-                        logger.LogError(sprintf "Role %s not found by id" roleId, ex)
-                        let roleIdentity = RoleIdentity()
-                        roleIdentity.Id <- Guid.Empty
-                        return roleIdentity;
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Role %s not found by id" roleId)
+                    let roleIdentity = RoleIdentity()
+                    roleIdentity.Id <- Guid.Empty
+                    return roleIdentity;
             }
 
         member this.FindByNameAsync(normalizedRoleName, cancellationToken) =
@@ -72,16 +66,14 @@ type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
                 cancellationToken.ThrowIfCancellationRequested()
                 let! result = context.GetByName(normalizedRoleName)
                 match result with
-                | Result.Ok(role) ->
+                | Ok(role) ->
                     logger.LogInformation(sprintf "Role %s successfuly found by name" normalizedRoleName)
                     return role.ToModel()
-                | Result.Error(error) ->
-                    match error with
-                    | GetDocumentFail.Error(ex) ->
-                        logger.LogError(sprintf "Role %s not found by name" normalizedRoleName, ex)
-                        let roleIdentity = RoleIdentity()
-                        roleIdentity.Id <- Guid.Empty
-                        return roleIdentity;
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Role %s not found by name" normalizedRoleName)
+                    let roleIdentity = RoleIdentity()
+                    roleIdentity.Id <- Guid.Empty
+                    return roleIdentity;
             }
 
         member this.GetNormalizedRoleNameAsync(role, cancellationToken) =
@@ -120,11 +112,9 @@ type RoleStore(context: IUserRoleContext, logger: ILogger<RoleStore>) =
                 let entity = role.ToEntity()
                 let! result = context.Update(entity, fun _ -> entity)
                 match result with
-                | Result.Ok(ok) ->
+                | Ok(ok) ->
                     return IdentityResult.Success
-                | Result.Error(fail) ->
-                    match fail with
-                        | UpdateDocumentFail.Error(ex) ->
-                            logger.LogError(sprintf "Role %s not updated" role.Name, ex)
-                            return ex.ToIdentityResult()
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Role %s not updated" role.Name)
+                    return ex.ToIdentityResult()
             }

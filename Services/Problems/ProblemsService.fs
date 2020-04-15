@@ -23,7 +23,7 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
                 let notExists = exists |> Seq.exists(fun exists -> not exists)
 
                 if notExists then
-                    return Result.Error(CreateFail.Error(InvalidOperationException("Some head ids not found")))
+                    return Error(InvalidOperationException("Some head ids not found") :> Exception)
                 else
                     let problemSet = {
                         ProblemSet.Id = Guid.NewGuid().ToString()
@@ -33,25 +33,16 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
                     }
 
                     match! problemSetContext.Insert(problemSet, problemSet) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | InsertDocumentFail.Error(error) ->
-                            return Result.Error(CreateFail.Error(error))
-                    | Result.Ok(ok) ->
-                        return Result.Ok(ProblemSetId(problemSet.Id))
+                    | Error(ex) -> return Error(ex)
+                    | Ok(ok) -> return Ok(ProblemSetId(problemSet.Id))
             }
         member this.Get(id: ProblemSetId) = 
             async {
                 let docId = ProblemSet.CreateDocumentKey(id.Value)
                 let! result = problemSetContext.Get(docId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
-                | Result.Ok(problemSet) ->
-                    match ProblemSetModel.Create(problemSet) with
-                    | Result.Error() -> return Result.Error(GetFail.Error(InvalidOperationException("Cannot create model from entity")))
-                    | Result.Ok(problemSetModel) -> return Result.Ok(problemSetModel)
+                | Error(ex) -> return Error(ex)
+                | Ok(problemSet) -> return ProblemSetModel.Create(problemSet)
             }
 
         member this.Create(model: ProblemModel) = 
@@ -76,12 +67,8 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
                 let! result = problemsContext.Insert(problem, problem)
 
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | InsertDocumentFail.Error(error) ->
-                        return Result.Error(CreateFail.Error(error))
-                | Result.Ok(ok) ->
-                    return Result.Ok(ProblemId(problem.Id))
+                | Error(ex) -> return Error(ex)
+                | Ok(ok) -> return Ok(ProblemId(problem.Id))
             }
 
         member this.Get(id: ProblemId) =
@@ -89,11 +76,6 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
                 let docId = Problem.CreateDocumentKey(id.Value)
                 let! result = problemsContext.Get(docId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
-                | Result.Ok(problem) ->
-                    match ProblemModel.Create(problem) with
-                    | Result.Error() -> return Result.Error(GetFail.Error(InvalidOperationException("Cannot create model from entity")))
-                    | Result.Ok(problemModel) -> return Result.Ok(problemModel)
+                | Error(ex) -> return Error(ex)
+                | Ok(problem) -> return ProblemModel.Create(problem)
             }

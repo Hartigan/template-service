@@ -7,6 +7,7 @@ open Models.Identificators
 open System.Security.Claims
 open System.Text.Json.Serialization
 open Models.Permissions
+open Microsoft.Extensions.Logging
 
 type CreateGroupRequest = {
     [<JsonPropertyName("name")>]
@@ -88,7 +89,8 @@ type AddPermissionsGroupRequest = {
 
 [<Authorize>]
 [<Route("permissions")>]
-type PermissionsController(permissionsService: IPermissionsService) =
+type PermissionsController(permissionsService: IPermissionsService,
+                           logger: ILogger<PermissionsController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -102,10 +104,9 @@ type PermissionsController(permissionsService: IPermissionsService) =
             match! permissionsService.Create(userId, req.Name, req.Description) with
             | Ok(groupId) ->
                 return (JsonResult(Id(groupId)) :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CreateGroupFail.Error(_) ->
-                    return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot create group")
+                return (BadRequestResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -116,18 +117,14 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let groupId = GroupId(id)
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(groupId, userId, AccessModel.CanRead) with
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
-                    return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
             | Ok() ->
                 match! permissionsService.Get(groupId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetGroupFail.Error(_) ->
-                        return (BadRequestResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get group")
+                    return (BadRequestResult() :> IActionResult)
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
         }
@@ -148,10 +145,9 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     Generate = canGenerate
                 }
             match! permissionsService.Get(userId, access) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetGroupFail.Error(_) ->
-                    return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot fetch groups")
+                return (BadRequestResult() :> IActionResult)
             | Ok(model) ->
                 return (JsonResult(model) :> IActionResult)
         }
@@ -161,23 +157,20 @@ type PermissionsController(permissionsService: IPermissionsService) =
     member this.GetPermissions([<FromQuery(Name = "id")>] id: string, [<FromQuery(Name = "type")>] typeName: string) =
         async {
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get permissions")
                 return (BadRequestResult() :> IActionResult)
             | Ok(protectedId) ->
                 let userId = this.GetUserId()
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
-                        return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
                 | Ok() ->
                     match! permissionsService.Get(protectedId) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GetPermissionsFail.Error(_) ->
-                            return (BadRequestResult() :> IActionResult)
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot get permissions")
+                        return (BadRequestResult() :> IActionResult)
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
         }
@@ -193,16 +186,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.Update(req.Id, Some(req.Name), None) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateGroupFail.Error(error) ->
-                        return (BadRequestResult() :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot update group name")
                     return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -217,16 +206,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.Update(req.Id, None, Some(req.Description)) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateGroupFail.Error(error) ->
-                        return (BadRequestResult() :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot update group description")
                     return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -241,16 +226,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.Update(req.Id, req.UserId, req.Access) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateGroupFail.Error(error) ->
-                        return (BadRequestResult() :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot update group member")
                     return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -265,16 +246,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.Remove(req.Id, req.UserId) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateGroupFail.Error(error) ->
-                        return (BadRequestResult() :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot remove group member")
                     return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -289,16 +266,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                 match! permissionsService.Add(req.Id, req.UserId) with
                 | Ok(model) ->
                     return (JsonResult(model) :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | UpdateGroupFail.Error(error) ->
-                        return (BadRequestResult() :> IActionResult)
-            | Result.Error(fail) ->
-                match fail with
-                | CheckPermissionsFail.Error(_) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot add group member")
                     return (BadRequestResult() :> IActionResult)
-                | CheckPermissionsFail.Unauthorized() ->
-                    return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -312,7 +285,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot update group permissions")
                 return (BadRequestResult() :> IActionResult)
 
             | Ok(protectedId) ->
@@ -321,16 +295,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     match! permissionsService.Update(protectedId, req.GroupId, Some(req.Access)) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot udpate group permissions")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -344,7 +314,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot remove group from permissions")
                 return (BadRequestResult() :> IActionResult)
 
             | Ok(protectedId) ->
@@ -353,16 +324,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     match! permissionsService.Update(protectedId, req.GroupId, None) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot remove group from permissions")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -376,7 +343,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot add group to permissions")
                 return (BadRequestResult() :> IActionResult)
 
             | Ok(protectedId) ->
@@ -385,16 +353,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     match! permissionsService.Add(protectedId, req.GroupId) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot add group to permissions")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -408,7 +372,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot update member in permissions")
                 return (BadRequestResult() :> IActionResult)
 
             | Ok(protectedId) ->
@@ -417,16 +382,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     match! permissionsService.Update(protectedId, req.UserId, Some(req.Access)) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot update member in permissions")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -440,25 +401,21 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot remove member from permissions")
                 return (BadRequestResult() :> IActionResult)
-
             | Ok(protectedId) ->
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
                     match! permissionsService.Update(protectedId, req.UserId, None) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot remove member from permission")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -472,7 +429,8 @@ type PermissionsController(permissionsService: IPermissionsService) =
             let userId = this.GetUserId()
 
             match ProtectedId.Create(id, typeName) with
-            | Result.Error() ->
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot add member to permissions")
                 return (BadRequestResult() :> IActionResult)
 
             | Ok(protectedId) ->
@@ -481,16 +439,12 @@ type PermissionsController(permissionsService: IPermissionsService) =
                     match! permissionsService.Add(protectedId, req.UserId) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
-                    | Result.Error(fail) ->
-                        match fail with
-                        | UpdatePermissionsFail.Error(error) ->
-                            return (BadRequestResult() :> IActionResult)
-                | Result.Error(fail) ->
-                    match fail with
-                    | CheckPermissionsFail.Error(_) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot add member to persmissions")
                         return (BadRequestResult() :> IActionResult)
-                    | CheckPermissionsFail.Unauthorized() ->
-                        return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -499,9 +453,9 @@ type PermissionsController(permissionsService: IPermissionsService) =
     member this.SearchByContains([<FromQuery(Name = "pattern")>] pattern: string) =
         async {
             match! permissionsService.SearchByContains(pattern) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetGroupFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Search failed")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask

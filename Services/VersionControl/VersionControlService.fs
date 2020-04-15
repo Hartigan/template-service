@@ -30,10 +30,8 @@ type VersionControlService(commitContext: IContext<Commit>, headContext: IContex
                       Description = description.Value }
 
                 match! commitContext.Insert(commit, commit) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                | Result.Ok() ->
+                | Error(ex) -> return Error(ex)
+                | Ok() ->
                     let head = {
                         Head.Id = headId.ToString()
                         Permissions = {
@@ -45,20 +43,16 @@ type VersionControlService(commitContext: IContext<Commit>, headContext: IContex
                         Name = name.Value
                     }
                     match! headContext.Insert(head, head) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                    | Result.Ok() -> return Result.Ok(HeadId(head.Id))
+                    | Error(ex) -> return Error(ex)
+                    | Ok() -> return Ok(HeadId(head.Id))
             }
 
 
         member this.Create(id: ConcreteId, description: CommitDescription, userId: UserId, headId: HeadId) =
             async {
                 match! headContext.Get(Head.CreateDocumentKey(headId.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                | Result.Ok(head) ->
+                | Error(ex) -> return Error(ex)
+                | Ok(head) ->
                     let target =
                         match id with
                         | ConcreteId.Problem(problemId) ->
@@ -79,44 +73,27 @@ type VersionControlService(commitContext: IContext<Commit>, headContext: IContex
 
                     match! headContext.Update(Head.CreateDocumentKey(headId.Value), fun head ->
                         if head.Commit.Target.Type = commit.Target.Type then
-                            Result.Ok({ head with Commit = commit })
+                            Ok({ head with Commit = commit })
                         else
-                            Result.Error(CreateFail.Error(InvalidOperationException("Wrong commit target type")))) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GenericUpdateDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                        | GenericUpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
-                    | Result.Ok() ->
+                            Error(InvalidOperationException("Wrong commit target type") :> Exception)) with
+                    | Error(ex) -> return Error(ex)
+                    | Ok() ->
                         match! commitContext.Insert(commit, commit) with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | InsertDocumentFail.Error(error) -> return Result.Error(CreateFail.Error(error))
-                        | Result.Ok() -> return Result.Ok(CommitId(commit.Id))
+                        | Error(ex) -> return Error(ex)
+                        | Ok() -> return Ok(CommitId(commit.Id))
             }
 
 
         member this.Get(headId: HeadId) =
             async {
                 match! headContext.Get(Head.CreateDocumentKey(headId.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
-                | Result.Ok(head) ->
-                    match HeadModel.Create(head) with
-                    | Result.Error() ->
-                        return Result.Error(GetFail.Error(InvalidOperationException("Cannot create HeadModel")))
-                    | Result.Ok(model) -> return Result.Ok(model)
+                | Error(ex) -> return Error(ex)
+                | Ok(head) -> return HeadModel.Create(head)
             }
 
         member this.Get(commitId: CommitId) =
             async {
                 match! commitContext.Get(Commit.CreateDocumentKey(commitId.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(GetFail.Error(error))
-                | Result.Ok(commit) ->
-                    match CommitModel.Create(commit) with
-                    | Result.Error() ->
-                        return Result.Error(GetFail.Error(InvalidOperationException("Cannot create CommitModel")))
-                    | Result.Ok(model) -> return Result.Ok(model)
+                | Error(ex) -> return Error(ex)
+                | Ok(commit) -> return CommitModel.Create(commit)
             }

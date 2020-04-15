@@ -6,6 +6,7 @@ open Models.Identificators
 open Models.Reports
 open Services.Problems
 open System
+open Utils.ResultHelper
 
 type ExaminationService(reportContext: IReportContext,
                         submissionContext: ISubmissionContext,
@@ -15,33 +16,17 @@ type ExaminationService(reportContext: IReportContext,
     member this.GetGeneratedProblemModels(generatedProblemSetId: GeneratedProblemSetId) =
         async {
             match! generatorService.Get(generatedProblemSetId) with
-            | Result.Error(fail) ->
-                match fail with
-                | GetFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
+            | Error(ex) -> return Error(ex)
             | Ok(generatedProblemSet) ->
                 let! results =
                     generatedProblemSet.Problems
                     |> Seq.map(fun x -> generatorService.Get(x))
                     |> Async.Parallel
 
-                let res =
-                    results
-                    |> Seq.map(fun x ->
-                        match x with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | GetFail.Error(error) -> Result.Error(CompleteSubmissionFail.Error(error))
-                        | Ok(generatedProblem) -> Ok([ generatedProblem ]))
-                    |> Seq.reduce(fun a b ->
-                        match (a, b) with
-                        | (Ok(listA), Ok(listB)) -> Ok(listA @ listB)
-                        | (Result.Error(fail), _) -> Result.Error(fail)
-                        | (_, Result.Error(fail)) -> Result.Error(fail))
-
-                return res
+                return ResultOfSeq results
         }
 
-        member this.UpdateSubmission(answer: ProblemAnswer) : Submission -> Result<Submission, ApplyAnswerFail> =
+        member this.UpdateSubmission(answer: ProblemAnswer) : Submission -> Result<Submission, Exception> =
             fun submission ->
                 if submission.Deadline > DateTimeOffset.UtcNow then
                     Ok({
@@ -53,39 +38,30 @@ type ExaminationService(reportContext: IReportContext,
                                 |> List.ofSeq
                     })
                 else
-                    Result.Error(ApplyAnswerFail.OutOfTime())
+                    Error(InvalidOperationException("Out of time") :> Exception)
 
     interface IExaminationService with
         member this.ApplyAnswer(answer, submissionId) =
-            async {
-                let problemAnswer = {
-                    ProblemAnswer.GeneratedProblemId = answer.GeneratedProblemId.Value
-                    Answer = answer.Answer.Value
-                    Timestamp = answer.Timestamp
-                }
-
-                match! submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
-                                                this.UpdateSubmission(problemAnswer)) with
-                | Ok() -> return Ok()
-                | Result.Error(fail) ->
-                    match fail with
-                    | GenericUpdateDocumentFail.Error(error) -> return Result.Error(ApplyAnswerFail.Error(error))
-                    | GenericUpdateDocumentFail.CustomFail(customFail) -> return Result.Error(customFail)
+            let problemAnswer = {
+                ProblemAnswer.GeneratedProblemId = answer.GeneratedProblemId.Value
+                Answer = answer.Answer.Value
+                Timestamp = answer.Timestamp
             }
+
+            submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
+                                     this.UpdateSubmission(problemAnswer))
 
         member this.Complete(submissionId) = 
             async {
                 match! submissionContext.Get(Submission.CreateDocumentKey(submissionId.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(entity) ->
                     let submission = SubmissionModel(entity)
                     match submission.ReportId with
                     | Some(reportId) -> return Ok(reportId)
                     | None ->
                         match! this.GetGeneratedProblemModels(submission.GeneratedProblemSetId) with
-                        | Result.Error(fail) -> return Result.Error(fail)
+                        | Error(ex) -> return Error(ex)
                         | Ok(generatedProblemModels) ->
                             let answersById =
                                 submission.Answers
@@ -108,16 +84,14 @@ type ExaminationService(reportContext: IReportContext,
                                             }
                                         | Some(answer) ->
                                             match! generatorService.Validate(x.Id, answer.Answer) with
-                                            | Result.Error(fail) ->
-                                                match fail with
-                                                | GenerateFail.Error(error) ->
-                                                    return {
-                                                        ProblemReport.GeneratedProblemId = x.Id.Value
-                                                        Answer = Some(answer.Answer.Value)
-                                                        ExpectedAnswer = x.Answer.Value
-                                                        IsCorrect = false
-                                                        Timestamp = Some(answer.Timestamp)
-                                                    }
+                                            | Error(ex) ->
+                                                return {
+                                                    ProblemReport.GeneratedProblemId = x.Id.Value
+                                                    Answer = Some(answer.Answer.Value)
+                                                    ExpectedAnswer = x.Answer.Value
+                                                    IsCorrect = false
+                                                    Timestamp = Some(answer.Timestamp)
+                                                }
                                             | Ok(isCorrect) ->
                                                 return {
                                                     ProblemReport.GeneratedProblemId = x.Id.Value
@@ -142,29 +116,21 @@ type ExaminationService(reportContext: IReportContext,
                             }
 
                             match! reportContext.Insert(report, report) with
-                            | Result.Error(fail) ->
-                                match fail with
-                                | InsertDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
+                            | Error(ex) -> return Error(ex)
                             | Ok() ->
                                 match! submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
                                                                 fun sub -> { sub with ReportId = Some(report.Id) }) with
-                                | Result.Error(fail) ->
-                                    match fail with
-                                    | UpdateDocumentFail.Error(error) -> return Result.Error(CompleteSubmissionFail.Error(error))
-                                | Ok() -> return Result.Ok(ReportId(report.Id))
+                                | Error(ex) -> return Error(ex)
+                                | Ok() -> return Ok(ReportId(report.Id))
             }
 
         member this.CreateSubmission(problemSetId, userId) = 
             async {
                 match! generatorService.Generate(problemSetId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GenerateFail.Error(error) -> return Result.Error(CreateSubmissionFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(generatedProblemSetId) ->
                     match! generatorService.Get(generatedProblemSetId) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | GetFail.Error(error) -> return Result.Error(CreateSubmissionFail.Error(error))
+                    | Error(ex) -> return Error(ex)
                     | Ok(generatedProblemSet) ->
                         let startedAt = DateTimeOffset.UtcNow
                         let deadline = startedAt.Add(generatedProblemSet.Duration)
@@ -182,44 +148,34 @@ type ExaminationService(reportContext: IReportContext,
                             ReportId = None
                         }
                         match! submissionContext.Insert(submission, submission) with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | InsertDocumentFail.Error(error) -> return Result.Error(CreateSubmissionFail.Error(error))
+                        | Error(ex) -> return Error(ex)
                         | Ok() -> return Ok(SubmissionId(submission.Id))
             }
 
         member this.Get(id: ReportId) =
             async {
                 match! reportContext.Get(Report.CreateDocumentKey(id.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(entity) -> return Ok(ReportModel(entity))
             }
 
         member this.GetReports(userId: UserId) =
             async {
                 match! reportContext.GetByUser(userId.Value) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(entities) -> return entities |> Seq.map(ReportModel) |> Seq.toList |> Ok
             }
 
         member this.GetSubmissions(userId: UserId) =
             async {
                 match! submissionContext.GetByUser(userId.Value) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(entities) -> return entities |> Seq.map(SubmissionModel) |> Seq.toList |> Ok
             }
 
         member this.Get(id: SubmissionId) =
             async {
                 match! submissionContext.Get(Submission.CreateDocumentKey(id.Value)) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetDocumentFail.Error(error) -> return Result.Error(Services.Examination.GetFail.Error(error))
+                | Error(ex) -> return Error(ex)
                 | Ok(entity) -> return Ok(SubmissionModel(entity))
             }

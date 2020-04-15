@@ -5,5 +5,5 @@ open Models.Problems
 open System
 
 type IDelegateGenerator =
-    abstract member CreateDelegate : ControllerModel -> Async<Result<Func<Generator, ControllerResult>, GenerateFail>>
-    abstract member CreateDelegate : ValidatorModel -> Async<Result<Func<Answer, Answer, bool>, GenerateFail>>
+    abstract member CreateDelegate : ControllerModel -> Async<Result<Func<Generator, ControllerResult>, Exception>>
+    abstract member CreateDelegate : ValidatorModel -> Async<Result<Func<Answer, Answer, bool>, Exception>>

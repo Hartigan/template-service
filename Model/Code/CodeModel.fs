@@ -6,6 +6,7 @@ open Models.Converters
 open Models.Permissions
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 type Language =
     | Markdown
@@ -18,19 +19,19 @@ type LanguageModel private (name: string,  language: Language) =
     member val Name = name with get
     member val Language = language with get
 
-    static member Create(language: string) : Result<LanguageModel, unit> =
+    static member Create(language: string) : Result<LanguageModel, Exception> =
         match language with
-        | "csharp" -> Result.Ok(LanguageModel(language, Language.CSharp))
-        | "markdown" -> Result.Ok(LanguageModel(language, Language.Markdown))
-        | "plain_text" -> Result.Ok(LanguageModel(language, Language.PlainText))
-        | _ -> Result.Error()
+        | "csharp" -> Ok(LanguageModel(language, Language.CSharp))
+        | "markdown" -> Ok(LanguageModel(language, Language.Markdown))
+        | "plain_text" -> Ok(LanguageModel(language, Language.PlainText))
+        | _ -> Error(InvalidOperationException(sprintf "Cannot create LanguageModel" ) :> Exception)
 
 and LanguageModelConverter() =
     inherit StringConverter<LanguageModel>((fun m -> m.Name),
                                            (fun s ->
                                                 match LanguageModel.Create(s) with
-                                                | Result.Ok(languageModel) -> languageModel
-                                                | Result.Error() -> failwith "Invalid language"))
+                                                | Ok(languageModel) -> languageModel
+                                                | Error(ex) -> failwith ex.Message))
 
 [<JsonConverter(typeof<ContentModelConverter>)>]
 type ContentModel(content: string) =
@@ -46,7 +47,7 @@ type CodeModel private (language: LanguageModel, content: ContentModel) =
     [<JsonPropertyName("content")>]
     member val Content     = content with get
 
-    static member Create(code: Code) : Result<CodeModel, unit> =
+    static member Create(code: Code) : Result<CodeModel, Exception> =
         match LanguageModel.Create(code.Language) with
-        | Result.Ok(languageModel) -> Result.Ok(CodeModel(languageModel, ContentModel(code.Content)))
-        | Result.Error() -> Result.Error()
+        | Ok(languageModel) -> Ok(CodeModel(languageModel, ContentModel(code.Content)))
+        | Error(ex) -> Error(InvalidOperationException(sprintf "Cannot create CodeModel", ex) :> Exception)

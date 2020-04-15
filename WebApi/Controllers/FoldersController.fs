@@ -12,6 +12,8 @@ open Models.Heads
 open System.Security.Claims
 open System.Text.Json.Serialization
 open Models.Permissions
+open Microsoft.Extensions.Logging
+open Utils.ResultHelper
 
 type CreateFolderRequest = {
     [<JsonPropertyName("name")>]
@@ -69,7 +71,9 @@ type RenameHeadLinkRequest = {
 
 [<Authorize>]
 [<Route("folders")>]
-type FoldersController(foldersService: IFoldersService, permissionsService: IPermissionsService) =
+type FoldersController(foldersService: IFoldersService,
+                       permissionsService: IPermissionsService,
+                       logger: ILogger<FoldersController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() =
@@ -84,11 +88,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             match! permissionsService.CheckPermissions(ProtectedId.Folder(folderId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! foldersService.Get(folderId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get folder")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -99,10 +105,10 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             let userId = this.GetUserId()
             let! result = foldersService.CreateFolder(req.Name, userId)
             match result with
-            | Result.Error(fail) ->
-                match fail with
-                | CreateFolderFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot create folder")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -118,11 +124,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | (Ok(), Ok()) ->
                 let! result = foldersService.AddFolder(req.TargetId, req.DestinationId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ ->  return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot add folder")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | errors ->
+                logger.LogError(ErrorOf2 errors, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -138,11 +146,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | (Ok(), Ok()) ->
                 let! result = foldersService.AddHead(req.TargetId, req.DestinationId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot add head")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | errors ->
+                logger.LogError(ErrorOf2 errors, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -153,10 +163,10 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             let userId = this.GetUserId()
             let! result = foldersService.GetRoot(userId)
             match result with
-            | Result.Error(fail) ->
-                match fail with
-                | GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get root")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -169,11 +179,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Ok() ->
                 let! result = foldersService.MoveHeadToTrash(req.TargetId, userId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok() -> return (OkResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot move head to trash")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok() -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -186,11 +198,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Ok() ->
                 let! result = foldersService.MoveFolderToTrash(req.TargetId, userId)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | MoveTrashFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (OkResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot move folder to trash")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex,"Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -203,11 +217,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Ok() ->
                 let! result = foldersService.RenameFolder(req.TargetId, req.Name)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (OkResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot rename folder")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -220,11 +236,13 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Ok() ->
                 let! result = foldersService.RenameFolderLink(req.ParentId, req.LinkId, req.Name)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (OkResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot rename folder link")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -237,10 +255,12 @@ type FoldersController(foldersService: IFoldersService, permissionsService: IPer
             | Ok() ->
                 let! result = foldersService.RenameHeadLink(req.ParentId, req.LinkId, req.Name)
                 match result with
-                | Result.Error(fail) ->
-                    match fail with
-                    | RenameFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (OkResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot rename head link")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask

@@ -6,6 +6,8 @@ open Models.Converters
 open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
+open Utils.ResultHelper
 
 [<JsonConverter(typeof<ProblemTitleConverter>)>]
 type ProblemTitle(title: string) =
@@ -28,7 +30,7 @@ type ProblemModel =
         [<JsonPropertyName("validator")>]
         Validator: ValidatorModel
     }
-    static member Create(problem: Problem) : Result<ProblemModel, unit> =
+    static member Create(problem: Problem) : Result<ProblemModel, Exception> =
         let codes = (CodeModel.Create(problem.View), CodeModel.Create(problem.Controller), CodeModel.Create(problem.Validator))
         match codes with
         | (Ok(viewCode), Ok(controllerCode), Ok(validatorCode)) ->
@@ -42,5 +44,5 @@ type ProblemModel =
                     Controller = controllerModel
                     Validator = validatorModel
                 })
-            | _ -> Error()
-        | _ -> Error()
+            | errors -> Error(ErrorOf3 errors)
+        | errors -> Error(ErrorOf3 errors)

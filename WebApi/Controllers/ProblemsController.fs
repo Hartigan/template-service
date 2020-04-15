@@ -13,6 +13,7 @@ open Models.Problems
 open Microsoft.AspNetCore.Http
 open System.Text.Json.Serialization
 open Models.Permissions
+open Microsoft.Extensions.Logging
 
 type CreateProblemRequest = {
     [<JsonPropertyName("folder_id")>]
@@ -34,7 +35,11 @@ type UpdateProblemRequest = {
 
 [<Authorize>]
 [<Route("problems")>]
-type ProblemsController(foldersService: IFoldersService, permissionsService: IPermissionsService, versionControlService: IVersionControlService, problemsService: IProblemsService) =
+type ProblemsController(foldersService: IFoldersService,
+                        permissionsService: IPermissionsService,
+                        versionControlService: IVersionControlService,
+                        problemsService: IProblemsService,
+                        logger: ILogger<ProblemsController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -48,17 +53,23 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
             match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(commitId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.VersionControl.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(commit) ->
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get commit for problem")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(commit) ->
                     match commit.Target.ConcreteId with
                     | Problem(problemId) ->
                         match! problemsService.Get(problemId) with
                         | Ok(model) -> return (JsonResult(model) :> IActionResult)
-                        | _ -> return (StatusCodeResult(StatusCodes.Status500InternalServerError) :> IActionResult)
-                    | _ -> return (StatusCodeResult(StatusCodes.Status500InternalServerError) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                        | Error(ex) -> 
+                            logger.LogError(ex, "Cannot get problem")
+                            return (BadRequestResult() :> IActionResult)
+                    | _ ->
+                        logger.LogError("Invalid type")
+                        return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -70,21 +81,23 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.Folder), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! problemsService.Create(req.Problem) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot create problem") 
+                    return (BadRequestResult() :> IActionResult)
                 | Ok(problemId) ->
                     match! versionControlService.Create(req.Name, ConcreteId.Problem(problemId), CommitDescription("Initial commit"), userId) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                    | Result.Ok(headId) ->
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot commit problem")
+                        return (BadRequestResult() :> IActionResult)
+                    | Ok(headId) ->
                         match! foldersService.AddHead(headId, req.Folder) with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | AddFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                        | Error(ex) ->
+                            logger.LogError(ex, "Cannot create head for problem")
+                            return (BadRequestResult() :> IActionResult)
                         | Ok() -> return (JsonResult(Id(headId)) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied") 
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -96,15 +109,17 @@ type ProblemsController(foldersService: IFoldersService, permissionsService: IPe
             match! permissionsService.CheckPermissions(ProtectedId.Head(req.Head), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! problemsService.Create(req.Problem) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot update problem") 
+                    return (BadRequestResult() :> IActionResult)
                 | Ok(problemId) ->
                     match! versionControlService.Create(ConcreteId.Problem(problemId), req.Description, userId, req.Head) with
-                    | Result.Error(fail) ->
-                        match fail with
-                        | Services.VersionControl.CreateFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                    | Result.Ok(commitId) -> return (JsonResult(Id(commitId)) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot commit changes of problem")
+                        return (BadRequestResult() :> IActionResult)
+                    | Ok(commitId) -> return (JsonResult(Id(commitId)) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied") 
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask

@@ -23,7 +23,7 @@ type GeneratedProblemSetModel private (id: GeneratedProblemSetId,
     [<JsonPropertyName("duration")>]
     member val Duration     = duration with get
 
-    static member Create(generatedProblemSet: GeneratedProblemSet) : Result<GeneratedProblemSetModel, unit> =
+    static member Create(generatedProblemSet: GeneratedProblemSet) : Result<GeneratedProblemSetModel, Exception> =
         Ok(GeneratedProblemSetModel(GeneratedProblemSetId(generatedProblemSet.Id),
                                     ProblemSetTitle(generatedProblemSet.Title),
                                     generatedProblemSet.Problems.Select(fun x -> GeneratedProblemId(x)).ToList(),

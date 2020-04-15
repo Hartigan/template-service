@@ -4,6 +4,7 @@ open Models.Converters
 open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 type ValidatorLanguage =
     | CSharp
@@ -14,20 +15,20 @@ type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model
     member val Name = model.Name with get
     member val Language = validatorLanguage with get
 
-    static member Create(model: LanguageModel) : Result<ValidatorLanguageModel, unit> =
+    static member Create(model: LanguageModel) : Result<ValidatorLanguageModel, Exception> =
         match model.Language with
-        | Language.CSharp -> Result.Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp, model))
-        | _ -> Result.Error()
+        | Language.CSharp -> Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp, model))
+        | _ -> Error(InvalidOperationException(sprintf "cannot create ValidatorLanguageModel") :> Exception)
 
 and ValidatorLanguageModelConverter() =
     inherit StringConverter<ValidatorLanguageModel>((fun m -> m.Name),
                                                (fun s ->
                                                     match LanguageModel.Create(s) with
-                                                    | Result.Ok(languageModel) ->
+                                                    | Ok(languageModel) ->
                                                         match ValidatorLanguageModel.Create(languageModel) with
-                                                        | Result.Ok(validatorLanguageModel) -> validatorLanguageModel
-                                                        | Result.Error() -> failwith "Invalid validator language"
-                                                    | Result.Error() -> failwith "Invalid language"))
+                                                        | Ok(validatorLanguageModel) -> validatorLanguageModel
+                                                        | Error(ex) -> failwith ex.Message
+                                                    | Error(ex) -> failwith ex.Message))
 
 type ValidatorModel =
     {
@@ -36,11 +37,11 @@ type ValidatorModel =
         [<JsonPropertyName("content")>]
         Content: ContentModel
     }
-    static member Create(model: CodeModel) : Result<ValidatorModel, unit> =
+    static member Create(model: CodeModel) : Result<ValidatorModel, Exception> =
         match ValidatorLanguageModel.Create(model.Language) with
-        | Result.Ok(validatorLanguageModel) ->
+        | Ok(validatorLanguageModel) ->
             Ok({
                 Language = validatorLanguageModel
                 Content = model.Content
             })
-        | Result.Error() -> Result.Error()
+        | Error(ex) -> Error(InvalidOperationException(sprintf "cannot create ValidatorModel", ex) :> Exception)

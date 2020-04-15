@@ -8,7 +8,6 @@
     <ProjectReference Include="../Storage/Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContextResults.fs" />
     <Compile Include="ContextInterfaces.fs" />
     <Compile Include="CommonContext.fs" />
     <Compile Include="Contexts.fs" />

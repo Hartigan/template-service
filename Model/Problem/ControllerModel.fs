@@ -4,6 +4,7 @@ open Models.Converters
 open Models.Code
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 type ControllerLanguage =
     | CSharp
@@ -14,20 +15,20 @@ type ControllerLanguageModel private (controllerLanguage: ControllerLanguage, mo
     member val Name = model.Name with get
     member val Language = controllerLanguage with get
 
-    static member Create(model: LanguageModel) : Result<ControllerLanguageModel, unit> =
+    static member Create(model: LanguageModel) : Result<ControllerLanguageModel, Exception> =
         match model.Language with
-        | Language.CSharp -> Result.Ok(ControllerLanguageModel(ControllerLanguage.CSharp, model))
-        | _ -> Result.Error()
+        | Language.CSharp -> Ok(ControllerLanguageModel(ControllerLanguage.CSharp, model))
+        | _ -> Error(InvalidOperationException(sprintf "cannot create ControllerLanguageModel") :> Exception)
 
 and ControllerLanguageModelConverter() =
     inherit StringConverter<ControllerLanguageModel>((fun m -> m.Name),
                                                      (fun s ->
                                                           match LanguageModel.Create(s) with
-                                                          | Result.Ok(languageModel) ->
+                                                          | Ok(languageModel) ->
                                                               match ControllerLanguageModel.Create(languageModel) with
-                                                              | Result.Ok(controllerLanguageModel) -> controllerLanguageModel
-                                                              | Result.Error() -> failwith "Invalid controller language"
-                                                          | Result.Error() -> failwith "Invalid language"))
+                                                              | Ok(controllerLanguageModel) -> controllerLanguageModel
+                                                              | Error(ex) -> failwith ex.Message
+                                                          | Error(ex) -> failwith ex.Message))
 
 type ControllerModel =
     {
@@ -36,11 +37,11 @@ type ControllerModel =
         [<JsonPropertyName("content")>]
         Content: ContentModel
     }
-    static member Create(model: CodeModel) : Result<ControllerModel, unit> =
+    static member Create(model: CodeModel) : Result<ControllerModel, Exception> =
         match ControllerLanguageModel.Create(model.Language) with
-        | Result.Ok(controllerLanguageModel) ->
+        | Ok(controllerLanguageModel) ->
             Ok({
                 Language = controllerLanguageModel
                 Content = model.Content
             })
-        | Result.Error() -> Result.Error()
+        | Error(ex) -> Error(InvalidOperationException(sprintf "cannot create ControllerModel", ex) :> Exception)

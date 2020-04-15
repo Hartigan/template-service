@@ -33,7 +33,7 @@ type ProblemSetModel =
         [<JsonPropertyName("duration")>]
         Duration    : DurationModel
     }
-    static member Create(problemSet: ProblemSet) : Result<ProblemSetModel, unit> =
+    static member Create(problemSet: ProblemSet) : Result<ProblemSetModel, Exception> =
         Ok({
             ProblemSetModel.Id      = ProblemSetId(problemSet.Id)
             Title                   = ProblemSetTitle(problemSet.Title)

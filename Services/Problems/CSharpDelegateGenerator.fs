@@ -35,8 +35,8 @@ type CSharpDelegateGenerator() =
                 try
                     let! (state : ScriptState<obj>) = CSharpScript.RunAsync(String.Format(templateController, model.Content.Value), ScriptOptions.Default.WithReferences(metadata))
                     let fn = (state.GetVariable("fn").Value :?> Func<Generator, ControllerResult>)
-                    return Result.Ok(fn)
-                with ex -> return Result.Error(GenerateFail.Error(ex))
+                    return Ok(fn)
+                with ex -> return Error(ex)
             }
 
         member this.CreateDelegate(model: ValidatorModel) =
@@ -44,6 +44,6 @@ type CSharpDelegateGenerator() =
                 try
                     let! (state : ScriptState<obj>) = CSharpScript.RunAsync(String.Format(templateValidator, model.Content.Value), ScriptOptions.Default.WithReferences(metadata))
                     let fn = (state.GetVariable("fn").Value :?> Func<Answer, Answer, bool>)
-                    return Result.Ok(fn)
-                with ex -> return Result.Error(GenerateFail.Error(ex))
+                    return Ok(fn)
+                with ex -> return Error(ex)
             }

@@ -13,6 +13,7 @@ open Models.Identificators
 open Models.Reports
 open System.Text.Json.Serialization
 open Models.Permissions
+open Microsoft.Extensions.Logging
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
@@ -26,7 +27,8 @@ type ApplyAnswerRequest = {
 type ExaminationController(permissionsService: IPermissionsService,
                            versionControlService: IVersionControlService,
                            problemsService: IProblemsService,
-                           examinationService: IExaminationService) =
+                           examinationService: IExaminationService,
+                           logger: ILogger<ExaminationController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -40,11 +42,13 @@ type ExaminationController(permissionsService: IPermissionsService,
             match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! examinationService.Get(submissionId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.Examination.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get submossion")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -56,13 +60,13 @@ type ExaminationController(permissionsService: IPermissionsService,
             match! permissionsService.CheckPermissions(ProtectedId.Submission(req.Id), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! examinationService.ApplyAnswer(req.ProblemAnswer, req.Id) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | ApplyAnswerFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                    | ApplyAnswerFail.SubmissionAlreadyCompleted() -> return (BadRequestResult() :> IActionResult)
-                    | ApplyAnswerFail.OutOfTime() -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot apply answer")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -75,11 +79,13 @@ type ExaminationController(permissionsService: IPermissionsService,
             match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 match! examinationService.Complete(submissionId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | CompleteSubmissionFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot complete")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -92,19 +98,23 @@ type ExaminationController(permissionsService: IPermissionsService,
             match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanGenerate) with
             | Ok() ->
                 match! versionControlService.Get(headId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.VersionControl.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get head for start")
+                    return (BadRequestResult() :> IActionResult)
                 | Ok(head) ->
                     match head.Commit.Target.ConcreteId with
                     | ConcreteId.ProblemSet(problemSetId) ->
                         match! examinationService.CreateSubmission(problemSetId, userId) with
-                        | Result.Error(fail) ->
-                            match fail with
-                            | CreateSubmissionFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                        | Result.Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
-                    | _ ->  return (BadRequestResult() :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                        | Error(ex) ->
+                            logger.LogError(ex, "Cannot create submission")
+                            return (BadRequestResult() :> IActionResult)
+                        | Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
+                    | _ ->
+                        logger.LogError("Invalid type")
+                        return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied", ex)
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -117,11 +127,13 @@ type ExaminationController(permissionsService: IPermissionsService,
             match! permissionsService.CheckPermissions(ProtectedId.Report(reportId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! examinationService.Get(reportId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.Examination.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get report")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -131,10 +143,10 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             match! examinationService.GetSubmissions(userId) with
-            | Result.Error(fail) ->
-                match fail with
-                | Services.Examination.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(models) -> return (JsonResult(models) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get submissions")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(models) -> return (JsonResult(models) :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -144,9 +156,9 @@ type ExaminationController(permissionsService: IPermissionsService,
         async {
             let userId = this.GetUserId()
             match! examinationService.GetReports(userId) with
-            | Result.Error(fail) ->
-                match fail with
-                | Services.Examination.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-            | Result.Ok(models) -> return (JsonResult(models) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get reports")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(models) -> return (JsonResult(models) :> IActionResult)
         }
         |> Async.StartAsTask

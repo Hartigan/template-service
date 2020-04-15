@@ -8,10 +8,14 @@ open Models.Identificators
 open System.Security.Claims
 open Services.VersionControl
 open Models.Permissions
+open Microsoft.Extensions.Logging
 
 [<Authorize>]
 [<Route("version")>]
-type VersionController(foldersService: IFoldersService, permissionsService: IPermissionsService, versionControlService: IVersionControlService) =
+type VersionController(foldersService: IFoldersService,
+                       permissionsService: IPermissionsService,
+                       versionControlService: IVersionControlService,
+                       logger: ILogger<VersionController>) =
     inherit ControllerBase()
 
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -25,11 +29,13 @@ type VersionController(foldersService: IFoldersService, permissionsService: IPer
             match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(headId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.VersionControl.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get head")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -42,10 +48,12 @@ type VersionController(foldersService: IFoldersService, permissionsService: IPer
             match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
             | Ok() ->
                 match! versionControlService.Get(commitId) with
-                | Result.Error(fail) ->
-                    match fail with
-                    | Services.VersionControl.GetFail.Error(error) -> return (BadRequestResult() :> IActionResult)
-                | Result.Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | _ -> return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get commit")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
