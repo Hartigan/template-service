@@ -207,13 +207,26 @@ type PermissionsService(userService: IUserService,
 
         member this.Get(userId: UserId, access: AccessModel) : Async<Result<List<GroupModel>, Exception>> =
             async {
-                match! groupContext.GetByUser(userId.Value) with
+                match! this.GetUserGroups(userId) with
                 | Error(ex) -> return Error(ex)
-                | Ok(groups) ->
-                    match! this.GetUserGroups(userId) with
-                    | Error(ex) -> return Error(ex)
-                    | Ok(userGroups) -> return! this.CreateGroups(groups)
-                        //TODO
+                | Ok(groupIds) ->
+                    let! assignedGroupsResults =
+                        groupIds.Groups
+                        |> Seq.map(fun id -> UserGroup.CreateDocumentKey(id.Value))
+                        |> Seq.map groupContext.Get
+                        |> Async.Parallel
+
+                    let assignedGroups = ResultOfSeq assignedGroupsResults
+                    let! ownedGroups = groupContext.GetByUser(userId.Value)
+                
+                    match (assignedGroups, ownedGroups) with
+                    | (Ok(assigned), Ok(owned)) ->
+                        return! this.CreateGroups(
+                            (assigned @ owned)
+                            |> Seq.distinctBy(fun x -> x.Id)
+                            |> List.ofSeq
+                        )
+                    | errors -> return Error(ErrorOf2 errors)
             }
 
         member this.CheckPermissions(id: GroupId, userId: UserId, access: AccessModel) =
