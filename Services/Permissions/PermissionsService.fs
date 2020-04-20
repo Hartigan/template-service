@@ -221,11 +221,28 @@ type PermissionsService(userService: IUserService,
                 
                     match (assignedGroups, ownedGroups) with
                     | (Ok(assigned), Ok(owned)) ->
-                        return! this.CreateGroups(
-                            (assigned @ owned)
-                            |> Seq.distinctBy(fun x -> x.Id)
-                            |> List.ofSeq
-                        )
+                        let! allGroups =
+                            this.CreateGroups(
+                                (assigned @ owned)
+                                |> Seq.distinctBy(fun x -> x.Id)
+                                |> List.ofSeq
+                            )
+
+                        match allGroups with
+                        | Ok(groups) ->
+                            return
+                                Ok(
+                                    groups
+                                    |> Seq.filter(fun group ->
+                                        group.OwnerId = userId ||
+                                        group.Members
+                                        |> Seq.exists(fun m ->
+                                            m.UserId = userId && m.Access.IsAllowed(access)
+                                        )
+                                    )
+                                    |> List.ofSeq
+                                )
+                        | Error(error) -> return Error(error)
                     | errors -> return Error(ErrorOf2 errors)
             }
 
