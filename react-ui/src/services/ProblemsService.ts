@@ -3,6 +3,7 @@ import { HttpService } from './HttpService';
 import { CommitId, HeadId, FolderId, Id } from '../models/Identificators';
 import { Problem } from '../models/Problem';
 import { HttpServiceFactory } from './HttpServiceFactory';
+import { GeneratedProblem } from '../models/GeneratedProblem';
 
 export class ProblemsService {
     private http : HttpService;
@@ -13,6 +14,14 @@ export class ProblemsService {
 
     get(id: CommitId) {
         return this.http.get<Problem>(`model?id=${id}`);
+    }
+
+    test(id: CommitId, seed: number) {
+        return this.http.get<GeneratedProblem>(`test?id=${id}&seed=${seed}`);
+    }
+
+    validate(id: CommitId, expected: string, actual: string) {
+        return this.http.get<boolean>(`validate?id=${id}&expected=${encodeURIComponent(expected)}&actual=${encodeURIComponent(actual)}`);
     }
 
     create(folder: FolderId, headName: string, problem: Problem) {

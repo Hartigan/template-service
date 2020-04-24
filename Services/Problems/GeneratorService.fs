@@ -22,7 +22,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
     let csharpGenerator = (CSharpDelegateGenerator() :> IDelegateGenerator)
     let random = Random(0)
 
-    member this.CreateGeneratedProblem(problem: ProblemModel): Async<Result<GeneratedProblem, Exception>> =
+    member this.CreateGeneratedProblem(problem: ProblemModel, seed: ProblemSeed): Async<Result<GeneratedProblem, Exception>> =
         async {
             match problem.Controller.Language.Language with
             | ControllerLanguage.CSharp ->
@@ -30,23 +30,48 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 match generatorResult with
                 | Error(ex) -> return Error(ex)
                 | Ok(controllerDelegate) ->
-                    let seed = random.Next()
-                    let controllerResult = controllerDelegate.Invoke(Generator(seed))
-                    match! viewFormatter.Format(controllerResult, problem.View) with
+                    let controllerResult = controllerDelegate(Generator(seed.Value))
+                    match controllerResult with
                     | Error(ex) -> return Error(ex)
-                    | Ok(formattedView) ->
-                        return Ok
-                           ({ GeneratedProblem.Id = Guid.NewGuid().ToString()
-                              ProblemId = problem.Id.Value
-                              Seed = seed
-                              Title = problem.Title.Value
-                              View =
-                                  { Code.Language = formattedView.Language.Name
-                                    Code.Content = formattedView.Content.Value }
-                              Answer = controllerResult.Answer })
+                    | Ok(result) ->
+                        match! viewFormatter.Format(result, problem.View) with
+                        | Error(ex) -> return Error(ex)
+                        | Ok(formattedView) ->
+                            return Ok
+                               ({ GeneratedProblem.Id = Guid.NewGuid().ToString()
+                                  ProblemId = problem.Id.Value
+                                  Seed = seed.Value
+                                  Title = problem.Title.Value
+                                  View =
+                                      { Code.Language = formattedView.Language.Name
+                                        Code.Content = formattedView.Content.Value }
+                                  Answer = result.Answer })
         }
 
     interface IGeneratorService with
+        member this.TestGenerate(problemId, seed) =
+            async {
+                match! problemsService.Get(problemId) with
+                | Error(ex) -> return Error(ex)
+                | Ok(problem) ->
+                    match! this.CreateGeneratedProblem(problem, seed) with
+                    | Error(ex) -> return Error(ex)
+                    | Ok(generatedProblem) -> return GeneratedProblemModel.Create(generatedProblem)
+            }
+
+        member this.TestValidate(problemId, expected, actual) =
+            async {
+                match! problemsService.Get(problemId) with
+                | Error(ex) -> return Error(ex)
+                | Ok(problem) ->
+                    match problem.Validator.Language.Language with
+                    | ValidatorLanguage.CSharp ->
+                        match! csharpGenerator.CreateDelegate(problem.Validator) with
+                        | Error(ex) -> return Error(ex)
+                        | Ok(validator) ->
+                            return validator(Answer(actual.Value), Answer(expected.Value))
+            }
+
         member this.Validate(generatedProblemId, problemAnswer) =
             async {
                 match! (this :> IGeneratorService).Get(generatedProblemId) with
@@ -60,7 +85,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                             match! csharpGenerator.CreateDelegate(problem.Validator) with
                             | Error(ex) -> return Error(ex)
                             | Ok(validator) ->
-                                return Ok(validator.Invoke(Answer(problemAnswer.Value), Answer(generatedProblem.Answer.Value)))
+                                return validator(Answer(problemAnswer.Value), Answer(generatedProblem.Answer.Value))
             }
 
         member this.Get(id: GeneratedProblemId): Async<Result<GeneratedProblemModel, Exception>> =
@@ -93,7 +118,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                                     | ConcreteId.Problem(problemId) ->
                                         match! problemsService.Get(problemId) with
                                         | Error(ex) -> return Error(ex)
-                                        | Ok(problem) -> return! this.CreateGeneratedProblem(problem)
+                                        | Ok(problem) -> return! this.CreateGeneratedProblem(problem, ProblemSeed(random.Next()))
                                     | _ -> return Error(InvalidOperationException("Invalid target type") :> Exception)
                             })
                         |> Async.Parallel
@@ -140,7 +165,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 match! problemsService.Get(problemId) with
                 | Error(ex) -> return Error(ex)
                 | Ok(problem) ->
-                    match! this.CreateGeneratedProblem(problem) with
+                    match! this.CreateGeneratedProblem(problem, ProblemSeed(random.Next())) with
                     | Error(ex) -> return Error(ex)
                     | Ok(generatedProblem) ->
                         match! generatedProblemContext.Insert(generatedProblem, generatedProblem) with

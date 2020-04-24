@@ -18,7 +18,7 @@ type CSharpDelegateGenerator() =
         "    CodeGeneratorContext.ControllerResult result = new CodeGeneratorContext.ControllerResult();\n" + 
         "{0}\n" +
         "    return result;\n"+
-        "}}\n"
+        "}};\n"
 
     let templateValidator = 
         "System.Func<CodeGeneratorContext.Answer, CodeGeneratorContext.Answer, bool> fn = (CodeGeneratorContext.Answer actual, CodeGeneratorContext.Answer expected) =>\n" +
@@ -26,24 +26,36 @@ type CSharpDelegateGenerator() =
         "    bool result = false;\n" + 
         "{0}\n" +
         "    return result;\n"+
-        "}}\n"
+        "}};\n"
 
 
     interface IDelegateGenerator with
         member this.CreateDelegate(model: ControllerModel) =
             async {
                 try
-                    let! (state : ScriptState<obj>) = CSharpScript.RunAsync(String.Format(templateController, model.Content.Value), ScriptOptions.Default.WithReferences(metadata))
+                    let program = String.Format(templateController, model.Content.Value)
+                    let! (state : ScriptState<obj>) = CSharpScript.RunAsync(program, ScriptOptions.Default.WithReferences(metadata))
                     let fn = (state.GetVariable("fn").Value :?> Func<Generator, ControllerResult>)
-                    return Ok(fn)
+                    return Ok(fun (generator: Generator) ->
+                        try
+                            Ok(fn.Invoke(generator))
+                        with ex -> Error(ex)
+
+                    )
                 with ex -> return Error(ex)
             }
 
         member this.CreateDelegate(model: ValidatorModel) =
             async {
                 try
-                    let! (state : ScriptState<obj>) = CSharpScript.RunAsync(String.Format(templateValidator, model.Content.Value), ScriptOptions.Default.WithReferences(metadata))
+                    let program = String.Format(templateValidator, model.Content.Value)
+                    let! (state : ScriptState<obj>) = CSharpScript.RunAsync(program, ScriptOptions.Default.WithReferences(metadata))
                     let fn = (state.GetVariable("fn").Value :?> Func<Answer, Answer, bool>)
-                    return Ok(fn)
+                    return Ok(fun (actual: Answer, expected: Answer) ->
+                        try
+                            Ok(fn.Invoke(actual, expected))
+                        with ex -> Error(ex)
+
+                    )
                 with ex -> return Error(ex)
             }

@@ -13,6 +13,9 @@ import { FileExplorerState } from "../../states/FileExplorerState";
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SaveIcon from '@material-ui/icons/Save';
+import BugReportIcon from '@material-ui/icons/BugReport';
+import { GeneratedProblem } from "../../models/GeneratedProblem";
+import TestProblemDialog from "./TestProblemDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -29,6 +32,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+interface IProblemEditorState {
+    description: string;
+    disabled: boolean;
+    problem: Problem | null;
+    generatedProblem: GeneratedProblem | null;
+    testProblemDialogOpened: boolean;
+}
+
 export interface IProblemEditorProps {
     commit: Commit;
     problemsService: ProblemsService;
@@ -37,135 +48,226 @@ export interface IProblemEditorProps {
 
 export default function ProblemEditor(props: IProblemEditorProps) {
 
-    const [ loadedCommitId, setLoadedCommitId ] = React.useState(props.commit.id);
-    const [ disabled, setDisabled ] = React.useState(true);
-    const [ description, setDescription ] = React.useState(props.commit.description);
-    const [ title, setTitle ] = React.useState<string>(""); 
-    const [ controller, setController ] = React.useState<Controller>({
-        language: "csharp",
-        content: ""
-    });
-    const [ view, setView ] = React.useState<View>({
-        language: "plain_text",
-        content: ""
-    });
-    const [ validator, setValidator ] = React.useState<Validator>({
-        language: "csharp",
-        content: ""
+    const [ state, setState ] = React.useState<IProblemEditorState>({
+        description: props.commit.description,
+        disabled: true,
+        problem: null,
+        testProblemDialogOpened: false,
+        generatedProblem: null
     });
 
     const sync = (commit: Commit) => {
-        setLoadedCommitId(commit.id);
         props.problemsService
             .get(commit.id)
             .then(problem => {
-                setTitle(problem.title);
-                setController(problem.controller);
-                setView(problem.view);
-                setValidator(problem.validator);
-                setDescription(commit.description);
+                setState({
+                    ...state,
+                    problem: problem
+                });
             });
     };
 
     useEffect(() => {
-        if (loadedCommitId === props.commit.id) {
+        if (state.problem !== null && state.problem.id === props.commit.target.id) {
             return;
         }
         sync(props.commit);
     });
 
+    const setTitle = (value: string) => {
+        if (state.problem) {
+            setState({
+                ...state,
+                problem: {
+                    ...state.problem,
+                    title: value
+                }
+            });
+        }
+    };
+
+    const setController = (value: Controller) => {
+        if (state.problem) {
+            setState({
+                ...state,
+                problem: {
+                    ...state.problem,
+                    controller: value
+                }
+            });
+        }
+    };
+
+    const setView = (value: View) => {
+        if (state.problem) {
+            setState({
+                ...state,
+                problem: {
+                    ...state.problem,
+                    view: value
+                }
+            });
+        }
+    };
+
+    const setValidator = (value: Validator) => {
+        if (state.problem) {
+            setState({
+                ...state,
+                problem: {
+                    ...state.problem,
+                    validator: value
+                }
+            });
+        }
+    };
+
     const onCancel = () => {
-        setDescription(props.commit.description);
-        setDisabled(true);
+        setState({
+            ...state,
+            disabled: true,
+            description: props.commit.description
+        });
         sync(props.commit);
     };
     const onEdit = () => {
-        setDescription("");
-        setDisabled(false);
+        setState({
+            ...state,
+            disabled: false,
+            description: ""
+        });
     };
     const onSave = async () => {
-        let problem : Problem = {
-            id: "",
-            title: title,
-            controller: controller,
-            view: view,
-            validator: validator
-        };
+        if (!state.problem) {
+            return;
+        }
+
         await props.problemsService.update(
             props.commit.head_id,
-            description,
-            problem
+            state.description,
+            state.problem
         );
-        setDisabled(true);
+        setState({
+            ...state,
+            disabled: true
+        });
         props.fileExplorerState.syncHead(props.commit.head_id);
+    };
+
+    const onTest = async () => {
+        let generatedProblem = await props.problemsService.test(props.commit.id, Math.floor(Math.random() * 1000000));
+        setState({
+            ...state,
+            generatedProblem: generatedProblem,
+            testProblemDialogOpened: true
+        });
+    };
+
+    const onCloseTest = () => {
+        setState({
+            ...state,
+            generatedProblem: null,
+            testProblemDialogOpened: false
+        });
+    };
+
+    const onRefreshTest = async (seed: number) => {
+        let generatedProblem = await props.problemsService.test(props.commit.id, seed);
+        setState({
+            ...state,
+            generatedProblem: generatedProblem,
+        });
     };
 
     const classes = useStyles();
 
-    return (
-        <Box className={classes.root}>
-            <Container>
-                <IconButton
-                    onClick={onSave}
-                    disabled={disabled}
-                    color="primary"
-                    aria-label="Save">
-                    <SaveIcon />
-                </IconButton>
-                <IconButton
-                    onClick={onEdit}
-                    color="primary"
-                    disabled={!disabled}
-                    aria-label="Edit">
-                    <EditIcon />
-                </IconButton>
-                <IconButton
-                    onClick={onCancel}
-                    disabled={disabled}
-                    color="primary"
-                    aria-label="Cancel">
-                    <CancelIcon />
-                </IconButton>
-            </Container>
-            <List
-                className={classes.list}>
-                <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <TextField
-                            label="Change description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            disabled={disabled} />
-                    </FormControl>
-                </ListItem>
-                <ListItem>
-                    <FormControl className={classes.formControl}>
-                        <TextField
-                            label="Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            disabled={disabled} />
-                    </FormControl>
-                </ListItem>
-                <ListItem>
-                    <ControllerEditor
-                        value={controller}
-                        onChange={(v) => setController(v)}
-                        disabled={disabled} />
-                </ListItem>
-                <ListItem>
-                    <ViewEditor
-                        value={view}
-                        onChange={(v) => setView(v)}
-                        disabled={disabled} />
-                </ListItem>
-                <ListItem>
-                    <ValidatorEditor
-                        value={validator}
-                        onChange={(v) => setValidator(v)}
-                        disabled={disabled} />
-                </ListItem>
-            </List>
-        </Box>
+    let testProblemDialog = state.generatedProblem === null ? null : (
+        <TestProblemDialog
+            open={state.testProblemDialogOpened}
+            commitId={props.commit.id}
+            onClose={onCloseTest}
+            onUpdate={onRefreshTest}
+            generatedProblem={state.generatedProblem}
+            problemsService={props.problemsService}
+            />
     );
+
+    if (state.problem)
+        return (
+            <Box className={classes.root}>
+                <Container>
+                    <IconButton
+                        onClick={onSave}
+                        disabled={state.disabled}
+                        color="primary"
+                        aria-label="Save">
+                        <SaveIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={onEdit}
+                        color="primary"
+                        disabled={!state.disabled}
+                        aria-label="Edit">
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={onTest}
+                        color="primary"
+                        disabled={!state.disabled}
+                        aria-label="Test">
+                        <BugReportIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={onCancel}
+                        disabled={state.disabled}
+                        color="primary"
+                        aria-label="Cancel">
+                        <CancelIcon />
+                    </IconButton>
+                </Container>
+                {testProblemDialog}
+                <List
+                    className={classes.list}>
+                    <ListItem>
+                        <FormControl className={classes.formControl}>
+                            <TextField
+                                label="Change description"
+                                value={state.description}
+                                onChange={(e) => setState({ ...state, description: e.target.value })}
+                                disabled={state.disabled} />
+                        </FormControl>
+                    </ListItem>
+                    <ListItem>
+
+                        <FormControl className={classes.formControl}>
+                            <TextField
+                                label="Title"
+                                value={state.problem.title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                disabled={state.disabled} />
+                        </FormControl>
+                    </ListItem>
+                    <ListItem>
+                        <ControllerEditor
+                            value={state.problem.controller}
+                            onChange={(v) => setController(v)}
+                            disabled={state.disabled} />
+                    </ListItem>
+                    <ListItem>
+                        <ViewEditor
+                            value={state.problem.view}
+                            onChange={(v) => setView(v)}
+                            disabled={state.disabled} />
+                    </ListItem>
+                    <ListItem>
+                        <ValidatorEditor
+                            value={state.problem.validator}
+                            onChange={(v) => setValidator(v)}
+                            disabled={state.disabled} />
+                    </ListItem>
+                </List>
+            </Box>
+        );
+    else
+        return <Box className={classes.root}/>
 };

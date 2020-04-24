@@ -39,6 +39,7 @@ type ProblemsController(foldersService: IFoldersService,
                         permissionsService: IPermissionsService,
                         versionControlService: IVersionControlService,
                         problemsService: IProblemsService,
+                        generatorService: IGeneratorService,
                         logger: ILogger<ProblemsController>) =
     inherit ControllerBase()
 
@@ -63,6 +64,70 @@ type ProblemsController(foldersService: IFoldersService,
                         | Ok(model) -> return (JsonResult(model) :> IActionResult)
                         | Error(ex) -> 
                             logger.LogError(ex, "Cannot get problem")
+                            return (BadRequestResult() :> IActionResult)
+                    | _ ->
+                        logger.LogError("Invalid type")
+                        return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("test")>]
+    member this.Test([<FromQuery(Name = "id")>] id: string,
+                     [<FromQuery(Name = "seed")>] seed: int) =
+        async {
+            let userId = this.GetUserId()
+            let commitId = CommitId(id)
+            let problemSeed = ProblemSeed(seed)
+            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
+            | Ok() ->
+                match! versionControlService.Get(commitId) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get commit for problem")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(commit) ->
+                    match commit.Target.ConcreteId with
+                    | Problem(problemId) ->
+                        match! generatorService.TestGenerate(problemId, problemSeed) with
+                        | Ok(model) -> return (JsonResult(model) :> IActionResult)
+                        | Error(ex) -> 
+                            logger.LogError(ex, "Cannot generate problem")
+                            return (BadRequestResult() :> IActionResult)
+                    | _ ->
+                        logger.LogError("Invalid type")
+                        return (BadRequestResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("validate")>]
+    member this.Validate([<FromQuery(Name = "id")>] id: string,
+                         [<FromQuery(Name = "actual")>] actual: string,
+                         [<FromQuery(Name = "expected")>] expected: string) =
+        async {
+            let userId = this.GetUserId()
+            let commitId = CommitId(id)
+            let actualAnswer = ProblemAnswer(actual)
+            let expectedAnswer = ProblemAnswer(expected)
+            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
+            | Ok() ->
+                match! versionControlService.Get(commitId) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get commit for problem")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(commit) ->
+                    match commit.Target.ConcreteId with
+                    | Problem(problemId) ->
+                        match! generatorService.TestValidate(problemId, expectedAnswer, actualAnswer) with
+                        | Ok(model) -> return (JsonResult(model) :> IActionResult)
+                        | Error(ex) ->
+                            logger.LogError(ex, "Cannot generate problem")
                             return (BadRequestResult() :> IActionResult)
                     | _ ->
                         logger.LogError("Invalid type")
