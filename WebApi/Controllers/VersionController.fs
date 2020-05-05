@@ -45,15 +45,17 @@ type VersionController(foldersService: IFoldersService,
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
-            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(commitId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get commit")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+
+            match! versionControlService.Get(commitId) with
             | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
+                logger.LogError(ex, "Cannot get commit")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanRead) with
+                | Ok() ->
+                    return (JsonResult(commit) :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask

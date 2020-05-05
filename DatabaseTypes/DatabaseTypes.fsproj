@@ -22,5 +22,6 @@
     <Compile Include="Submission.fs" />
     <Compile Include="Report.fs" />
     <Compile Include="UserGroups.fs" />
+    <Compile Include="ProtectedItems.fs" />
   </ItemGroup>
 </Project>

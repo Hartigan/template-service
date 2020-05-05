@@ -26,15 +26,6 @@ type IUserRoleContext =
     inherit IContext<UserRole>
     abstract member GetByName : string -> Async<Result<UserRole, Exception>>
 
-type ISubmissionContext =
-    inherit IContext<Submission>
-    abstract member GetByUser : string -> Async<Result<List<Submission>, Exception>>
-
-type IReportContext =
-    inherit IContext<Report>
-    abstract member GetByUser : string -> Async<Result<List<Report>, Exception>>
-
 type IGroupContext =
     inherit IContext<UserGroup>
-    abstract member GetByUser : string -> Async<Result<List<UserGroup>, Exception>>
     abstract member SearchByContainsInName : string -> Async<Result<List<UserGroup>, Exception>>

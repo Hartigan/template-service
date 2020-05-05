@@ -292,7 +292,7 @@ type PermissionsController(permissionsService: IPermissionsService,
             | Ok(protectedId) ->
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
-                    match! permissionsService.Update(protectedId, req.GroupId, Some(req.Access)) with
+                    match! permissionsService.Update(protectedId, req.GroupId, req.Access) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
                     | Error(ex) ->
@@ -321,7 +321,7 @@ type PermissionsController(permissionsService: IPermissionsService,
             | Ok(protectedId) ->
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
-                    match! permissionsService.Update(protectedId, req.GroupId, None) with
+                    match! permissionsService.Remove(protectedId, req.GroupId) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
                     | Error(ex) ->
@@ -379,7 +379,7 @@ type PermissionsController(permissionsService: IPermissionsService,
             | Ok(protectedId) ->
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
-                    match! permissionsService.Update(protectedId, req.UserId, Some(req.Access)) with
+                    match! permissionsService.Update(protectedId, req.UserId, req.Access) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
                     | Error(ex) ->
@@ -407,7 +407,7 @@ type PermissionsController(permissionsService: IPermissionsService,
             | Ok(protectedId) ->
                 match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
                 | Ok() ->
-                    match! permissionsService.Update(protectedId, req.UserId, None) with
+                    match! permissionsService.Remove(protectedId, req.UserId) with
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)
                     | Error(ex) ->

@@ -32,27 +32,6 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
         member this.Update(key: IDocumentKey, updater: UserGroup -> UserGroup) =
             commonContext.Update(key, updater)
 
-        member this.GetByUser(userId) =
-            async {
-                try
-                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
-                    let! bucket = this.GetBucket()
-                    let queryOptions = 
-                        QueryOptions()
-                        |> fun x -> x.Parameter("type", UserGroup.TypeName)
-                        |> fun x -> x.Parameter("owner_id", userId)
-                    let! result = cluster.QueryAsync<UserGroup>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND owner_id = $owner_id" bucket.Name bucket.Name,
-                                       queryOptions)
-                    let (groupsAsync : IQueryResult<UserGroup>) = result
-                    let groups =
-                        groupsAsync
-                        |> AsyncSeq.ofAsyncEnum
-                        |> AsyncSeq.toBlockingSeq
-                    return Ok(groups |> Seq.toList)
-                with ex -> return Result.Error(ex)
-            }
-
         member this.SearchByContainsInName(pattern) =
             async {
                 try
@@ -74,93 +53,9 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                 with ex -> return Result.Error(ex)
             }
 
-type SubmissionContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
-    let commonContext =  CommonContext<Submission>(couchbaseBuckets) :> IContext<Submission>
+type SubmissionContext = CommonContext<Submission>
 
-    member internal this.GetBucket() =
-        async {
-            let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
-            return bucket
-        }
-
-    interface ISubmissionContext with
-        member this.Exists(key) =
-            commonContext.Exists(key)
-        member this.Get(key) = 
-            commonContext.Get(key)
-        member this.Insert(key, entity) =
-            commonContext.Insert(key, entity)
-        member this.Remove(key) =
-            commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: Submission -> Result<Submission, Exception>) =
-            commonContext.Update(key, updater)
-        member this.Update(key: IDocumentKey, updater: Submission -> Submission) =
-            commonContext.Update(key, updater)
-
-        member this.GetByUser(userId) =
-            async {
-                try
-                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
-                    let! bucket = this.GetBucket()
-                    let queryOptions = 
-                        QueryOptions()
-                        |> fun x -> x.Parameter("type", Submission.TypeName)
-                        |> fun x -> x.Parameter("owner_id", userId)
-                    let! result = cluster.QueryAsync<Submission>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
-                                       queryOptions)
-                    let (submissionsAsync : IQueryResult<Submission>) = result
-                    let submissions =
-                        submissionsAsync
-                        |> AsyncSeq.ofAsyncEnum
-                        |> AsyncSeq.toBlockingSeq
-                    return Ok(submissions |> Seq.toList)
-                with ex -> return Result.Error(ex)
-            }
-
-type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
-    let commonContext = CommonContext<Report>(couchbaseBuckets) :> IContext<Report>
-
-    member internal this.GetBucket() =
-        async {
-            let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
-            return bucket
-        }
-
-    interface IReportContext with
-        member this.Exists(key) =
-            commonContext.Exists(key)
-        member this.Get(key) = 
-            commonContext.Get(key)
-        member this.Insert(key, entity) =
-            commonContext.Insert(key, entity)
-        member this.Remove(key) =
-            commonContext.Remove(key)
-        member this.Update(key: IDocumentKey, updater: Report -> Result<Report, Exception>) =
-            commonContext.Update(key, updater)
-        member this.Update(key: IDocumentKey, updater: Report -> Report) =
-            commonContext.Update(key, updater)
-
-        member this.GetByUser(userId) =
-            async {
-                try
-                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
-                    let! bucket = this.GetBucket()
-                    let queryOptions = 
-                        QueryOptions()
-                        |> fun x -> x.Parameter("type", Report.TypeName)
-                        |> fun x -> x.Parameter("owner_id", userId)
-                    let! result = cluster.QueryAsync<Report>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `permissions`.`owner_id` = $owner_id" bucket.Name bucket.Name,
-                                       queryOptions)
-                    let (reportsAsync : IQueryResult<Report>) = result
-                    let reports =
-                        reportsAsync
-                        |> AsyncSeq.ofAsyncEnum
-                        |> AsyncSeq.toBlockingSeq
-                    return Ok(reports |> Seq.toList)
-                with ex -> return Result.Error(ex)
-            }
+type ReportContext = CommonContext<Report>
 
 type GeneratedProblemSetContext = CommonContext<GeneratedProblemSet>
 
@@ -175,6 +70,8 @@ type HeadContext = CommonContext<Head>
 type ProblemContext = CommonContext<Problem>
 
 type ProblemSetContext = CommonContext<ProblemSet>
+
+type GroupItemsContext = CommonContext<GroupItems>
 
 type UserGroupsContext(couchbaseBuckets: CouchbaseBuckets) =
     let commonContext = CommonContext<UserGroups>(couchbaseBuckets) :> IContext<UserGroups>
@@ -191,6 +88,23 @@ type UserGroupsContext(couchbaseBuckets: CouchbaseBuckets) =
         member this.Update(key: IDocumentKey, updater: UserGroups -> Result<UserGroups, Exception>) =
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: UserGroups -> UserGroups) =
+            commonContext.Update(key, updater)
+
+type UserItemsContext(couchbaseBuckets: CouchbaseBuckets) =
+    let commonContext = CommonContext<UserItems>(couchbaseBuckets) :> IContext<UserItems>
+
+    interface IContext<UserItems> with
+        member this.Exists(key) =
+            commonContext.Exists(key)
+        member this.Get(key) = 
+            commonContext.Get(key)
+        member this.Insert(key, entity) =
+            commonContext.Insert(key, entity)
+        member this.Remove(key) =
+            commonContext.Remove(key)
+        member this.Update(key: IDocumentKey, updater: UserItems -> Result<UserItems, Exception>) =
+            commonContext.Update(key, updater)
+        member this.Update(key: IDocumentKey, updater: UserItems -> UserItems) =
             commonContext.Update(key, updater)
 
 

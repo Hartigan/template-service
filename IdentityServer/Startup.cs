@@ -38,6 +38,7 @@ namespace IdentityServer
                     .AddSingleton<CouchbaseBuckets>()
                     .AddSingleton<IUserContext, UserContext>()
                     .AddSingleton<IContext<UserGroups>, UserGroupsContext>()
+                    .AddSingleton<IContext<UserItems>, UserItemsContext>()
                     .AddSingleton<IUserRoleContext, UserRoleContext>();
 
             services.AddOidcStateDataFormatterCache();

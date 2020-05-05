@@ -13,6 +13,7 @@ open Utils.ResultHelper
 
 type UserStore(context: IUserContext,
                userGroupsContext: IContext<UserGroups>,
+               userItemsContext: IContext<UserItems>,
                logger: ILogger<UserStore>) =
 
     interface IUserPasswordStore<UserIdentity> with
@@ -130,12 +131,22 @@ type UserStore(context: IUserContext,
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
                 let! result = context.Insert(entity, entity)
+
                 let userGroups =
                     {
                         UserGroups.UserId = entity.Id
-                        Groups = []
+                        Allowed = []
+                        Owned = []
                     }
                 let! userGroupsResult = userGroupsContext.Insert(userGroups, userGroups)
+
+                let userItems =
+                    {
+                        UserItems.UserId = entity.Id
+                        Allowed = []
+                        Owned = []
+                    }
+                let! userItemsResult = userItemsContext.Insert(userItems, userItems)
 
                 match (result, userGroupsResult) with
                 | (Ok(u), Ok(ug)) ->

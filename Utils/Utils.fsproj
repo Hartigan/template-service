@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Control.AsyncSeq" Version="2.0.23" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
+    <PackageReference Include="FSharpx.Async" Version="1.14.1" />
     <Compile Include="AsyncBuilder.fs" />
     <Compile Include="TaskBuilder.fs" />
     <Compile Include="ReflectionHelper.fs" />

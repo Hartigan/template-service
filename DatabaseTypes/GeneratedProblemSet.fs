@@ -8,7 +8,7 @@ type GeneratedProblemSet =
         [<field: DataMember(Name = "id")>]
         Id : string
         [<field: DataMember(Name = "problems")>]
-        Problems : System.Collections.Generic.List<string>
+        Problems : List<string>
         [<field: DataMember(Name = "title")>]
         Title : string
         [<field: DataMember(Name = "view")>]

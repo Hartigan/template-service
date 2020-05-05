@@ -50,13 +50,14 @@ type ProblemSetController(foldersService: IFoldersService,
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
-            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(commitId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get commit for problem set")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(commit) ->
+
+            match! versionControlService.Get(commitId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get commit for problem set")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanRead) with
+                | Ok() ->
                     match commit.Target.ConcreteId with
                     | ProblemSet(problemSetId) ->
                         match! problemsService.Get(problemSetId) with
@@ -67,9 +68,9 @@ type ProblemSetController(foldersService: IFoldersService,
                     | _ ->
                         logger.LogError("Invalid type")
                         return (BadRequestResult() :> IActionResult)
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 

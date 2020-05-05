@@ -51,13 +51,17 @@ type ProblemsController(foldersService: IFoldersService,
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
-            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(commitId) with
+
+            match! versionControlService.Get(commitId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get commit for problem")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanRead) with
                 | Error(ex) ->
-                    logger.LogError(ex, "Cannot get commit for problem")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(commit) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
+                | Ok() ->
                     match commit.Target.ConcreteId with
                     | Problem(problemId) ->
                         match! problemsService.Get(problemId) with
@@ -68,9 +72,6 @@ type ProblemsController(foldersService: IFoldersService,
                     | _ ->
                         logger.LogError("Invalid type")
                         return (BadRequestResult() :> IActionResult)
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -82,13 +83,14 @@ type ProblemsController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             let commitId = CommitId(id)
             let problemSeed = ProblemSeed(seed)
-            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(commitId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get commit for problem")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(commit) ->
+
+            match! versionControlService.Get(commitId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get commit for problem")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanRead) with
+                | Ok() ->
                     match commit.Target.ConcreteId with
                     | Problem(problemId) ->
                         match! generatorService.TestGenerate(problemId, problemSeed) with
@@ -99,9 +101,9 @@ type ProblemsController(foldersService: IFoldersService,
                     | _ ->
                         logger.LogError("Invalid type")
                         return (BadRequestResult() :> IActionResult)
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -115,13 +117,14 @@ type ProblemsController(foldersService: IFoldersService,
             let commitId = CommitId(id)
             let actualAnswer = ProblemAnswer(actual)
             let expectedAnswer = ProblemAnswer(expected)
-            match! permissionsService.CheckPermissions(ProtectedId.Commit(commitId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(commitId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get commit for problem")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(commit) ->
+
+            match! versionControlService.Get(commitId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get commit for problem")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanRead) with
+                | Ok() ->
                     match commit.Target.ConcreteId with
                     | Problem(problemId) ->
                         match! generatorService.TestValidate(problemId, expectedAnswer, actualAnswer) with
@@ -132,9 +135,9 @@ type ProblemsController(foldersService: IFoldersService,
                     | _ ->
                         logger.LogError("Invalid type")
                         return (BadRequestResult() :> IActionResult)
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 

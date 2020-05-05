@@ -7,8 +7,10 @@ type UserGroups =
     {
         [<field: DataMember(Name = "user_id")>]
         UserId : string
-        [<field: DataMember(Name = "groups")>]
-        Groups: List<string>
+        [<field: DataMember(Name = "owned")>]
+        Owned: List<string>
+        [<field: DataMember(Name = "allowed")>]
+        Allowed: List<string>
     }
 
     static member TypeName = "user_groups"

@@ -10,12 +10,15 @@ type UserGroupsModel =
     {
         [<JsonPropertyName("id")>]
         UserId: UserId
-        [<JsonPropertyName("Groups")>]
-        Groups: List<GroupId>
+        [<JsonPropertyName("allowed")>]
+        Allowed: List<GroupId>
+        [<JsonPropertyName("owned")>]
+        Owned: List<GroupId>
     }
 
     static member Create(userGroups: UserGroups) : Result<UserGroupsModel, Exception> =
         Ok({
             UserGroupsModel.UserId  = UserId(userGroups.UserId)
-            Groups                  = userGroups.Groups |> Seq.map(fun id -> GroupId(id)) |> List.ofSeq
+            Allowed                 = userGroups.Allowed |> Seq.map(fun id -> GroupId(id)) |> List.ofSeq
+            Owned                   = userGroups.Owned |> Seq.map(fun id -> GroupId(id)) |> List.ofSeq
         })

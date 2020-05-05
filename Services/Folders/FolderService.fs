@@ -5,35 +5,39 @@ open Models.Heads
 open Models.Folders
 open Models.Permissions
 open Models.Identificators
+open Services.Permissions
 open DatabaseTypes
 open Contexts
+open Utils.ResultHelper
+open FSharp.Control
+open FSharpx.Control
 
 type FoldersService(folderContext: IContext<Folder>,
-                    headContext: IContext<Head>) =
+                    headContext: IContext<Head>,
+                    permissionsService: IPermissionsService) =
 
     interface IFoldersService with
         member this.AddFolder(folderId, parentId) =
-            async {
-                let folderDocId = Folder.CreateDocumentKey(folderId.Value)
-                match! folderContext.Get(folderDocId) with
-                | Error(ex) -> return Error(ex)
-                | Ok(folder) ->
-                    return! folderContext.Update(Folder.CreateDocumentKey(parentId.Value), fun parent ->
+            folderContext.Get(Folder.CreateDocumentKey(folderId.Value))
+            |> Async.BindResult(fun folder ->
+                folderContext.Update
+                    (Folder.CreateDocumentKey(parentId.Value),
+                    fun parent ->
                         let contains =
                             parent.Folders
                             |> Seq.exists(fun link -> FolderId(link.Id) = folderId)
                         if not contains then
                             Ok({parent with Folders = parent.Folders @ [{ FolderLink.Id = folderId.Value; Name = folder.Name }] })
                         else
-                            Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value) :> Exception))
-            }
+                            Result.Error(InvalidOperationException(sprintf "Folder link %s already exists" folderId.Value) :> Exception))
+            )
 
         member this.AddHead(headId, parentId) =
-            async {
-                match! headContext.Get(Head.CreateDocumentKey(headId.Value)) with
-                | Error(ex) -> return Error(ex)
-                | Ok(head) ->
-                    return! folderContext.Update(Folder.CreateDocumentKey(parentId.Value), fun parent ->
+            headContext.Get(Head.CreateDocumentKey(headId.Value))
+            |> Async.BindResult(fun head ->
+                folderContext.Update
+                    (Folder.CreateDocumentKey(parentId.Value),
+                    fun parent ->
                         let exists =
                             parent.Heads
                             |> Seq.exists(fun link -> HeadId(link.Id) = headId)
@@ -48,37 +52,37 @@ type FoldersService(folderContext: IContext<Folder>,
                                         }]
                             })
                         else
-                            Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value) :> Exception))
-            }
+                            Result.Error(InvalidOperationException(sprintf "Head link %s already exists" headId.Value) :> Exception)
+                    )
+            )
 
         member this.CreateFolder(name, userId) = 
-            async {
-                let folder = { 
-                    Folder.Id = Guid.NewGuid().ToString()
-                    Name = name.Value
-                    Permissions = {
-                        Permissions.OwnerId = userId.Value
-                        Groups = []
-                        Members = []
-                    }
-                    Heads = []
-                    Folders = []
+            let folder = { 
+                Folder.Id = Guid.NewGuid().ToString()
+                Name = name.Value
+                Permissions = {
+                    Permissions.OwnerId = userId.Value
+                    Groups = []
+                    Members = []
                 }
-
-                let! result = folderContext.Insert(folder, folder)
-
-                match result with
-                | Error(ex) -> return Error(ex)
-                | Ok(ok) -> return Ok(FolderId(folder.Id))
+                Heads = []
+                Folders = []
             }
+            let folderId = FolderId(folder.Id)
+
+            folderContext.Insert(folder, folder)
+            |> Async.BindResult(fun _ -> permissionsService.UserItemsAppend(ProtectedId.Folder(folderId), userId))
+            |> Async.MapResult(fun _ -> folderId)
 
         member this.GetRoot(userId) =
-            async {
-                match! (this :> IFoldersService).Get(FolderId(userId.Value)) with
-                | Ok(model) -> return Ok(model)
-                | Error(fail) ->
+            let folderId = FolderId(userId.Value)
+            (this :> IFoldersService).Get(folderId)
+            |> Async.bind(fun r ->
+                match r with
+                | Ok(model) -> async.Return(Ok(model))
+                | Result.Error(_) ->
                     let folder = {
-                        Folder.Id = userId.Value
+                        Folder.Id = folderId.Value
                         Name = "root"
                         Permissions = {
                             Permissions.OwnerId = userId.Value
@@ -88,12 +92,10 @@ type FoldersService(folderContext: IContext<Folder>,
                         Folders = []
                         Heads = []
                     }
-
-                    match! folderContext.Insert(folder, folder) with
-                    | Error(ex) -> return Error(ex)
-                    | Ok() -> return FolderModel.Create(folder)
-            }
-            
+                    folderContext.Insert(folder, folder)
+                    |> Async.BindResult(fun _ -> permissionsService.UserItemsAppend(ProtectedId.Folder(folderId), userId))
+                    |> Async.map(fun _ -> FolderModel.Create(folder))
+            )
 
         member this.MoveFolderToTrash(folderId, userId) = 
             failwith "Not Implemented"
@@ -138,11 +140,5 @@ type FoldersService(folderContext: IContext<Folder>,
             )
 
         member this.Get(folderId) =
-            async {
-                let docId = Folder.CreateDocumentKey(folderId.Value)
-                let! result = folderContext.Get(docId)
-
-                match result with
-                | Ok(folder) -> return FolderModel.Create(folder)
-                | Error(ex) -> return Error(ex)
-            }
+            folderContext.Get(Folder.CreateDocumentKey(folderId.Value))
+            |> Async.TryMapResult FolderModel.Create

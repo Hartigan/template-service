@@ -78,7 +78,7 @@ type ExaminationController(permissionsService: IPermissionsService,
             let submissionId = SubmissionId(id)
             match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                match! examinationService.Complete(submissionId) with
+                match! examinationService.Complete(submissionId, userId) with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot complete")
                     return (BadRequestResult() :> IActionResult)
