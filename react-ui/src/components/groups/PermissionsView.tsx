@@ -36,6 +36,7 @@ const useStyles = makeStyles(theme => ({
 
 interface IState {
     permissions: Permissions | null;
+    protectedItem : Protected | null;
     newUserId: UserId | null;
     newGroupId: GroupId | null;
 }
@@ -49,6 +50,7 @@ export interface IPermissionsViewProps {
 export default function PermissionsView(props: IPermissionsViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
+        protectedItem: null,
         permissions: null,
         newUserId: null,
         newGroupId: null
@@ -60,16 +62,16 @@ export default function PermissionsView(props: IPermissionsViewProps) {
             .then(permissions => {
                 setState({
                     ...state,
-                    permissions: permissions
+                    permissions: permissions,
+                    protectedItem: props.protectedItem
                 });
             });
     };
 
     useEffect(() => {
-        if (state.permissions) {
-            return;
+        if (state.protectedItem === null || state.protectedItem.id !== props.protectedItem.id) {
+            refresh();
         }
-        refresh();
     });
 
     const setNewUserId = (userId: UserId | null) => {

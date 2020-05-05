@@ -53,9 +53,6 @@ export default function GroupView(props: IGroupViewProps) {
     });
 
     const refresh = () => {
-        if (state.group != null && state.group.id === props.groupId) {
-            return;
-        }
         props.permissionsService
             .getGroup(props.groupId)
             .then(group => {
@@ -67,7 +64,9 @@ export default function GroupView(props: IGroupViewProps) {
     };
 
     useEffect(() => {
-        refresh();
+        if (state.group === null || state.group.id !== props.groupId) {
+            refresh();
+        }
     });
 
     const setNewUserId = (userId: UserId | null) => {

@@ -5,7 +5,7 @@ import { Id, GroupId, FolderId, CommitId, HeadId, SubmissionId, ReportId, UserId
 import { Group, Permissions, Access } from '../models/Permissions';
 
 export type ProtectedType = "folder" | "head" | "commit" | "submission" | "report";
-export type ProtectedId = FolderId | HeadId | CommitId | SubmissionId | ReportId;
+export type ProtectedId = FolderId | HeadId | SubmissionId | ReportId;
 export interface Protected {
     id: ProtectedId;
     type: ProtectedType;
