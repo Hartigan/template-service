@@ -1,9 +1,11 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { Submission, ProblemAnswer } from '../models/Submission';
-import { SubmissionId, ReportId, Id, HeadId } from '../models/Identificators';
+import { SubmissionId, ReportId, Id, HeadId, CommitId } from '../models/Identificators';
 import { Report } from '../models/Report';
 import { HttpServiceFactory } from './HttpServiceFactory';
+import { ProblemSetPreview } from '../models/ProblemSetPreview';
+import { Head } from '../models/Head';
 
 export class ExaminationService {
     private http : HttpService;
@@ -38,5 +40,13 @@ export class ExaminationService {
 
     getReports() {
         return this.http.get<Array<Report>>(`reports`);
+    }
+
+    getProblemSets() {
+        return this.http.get<Array<Head>>(`problem_sets`);
+    }
+
+    getProblemSetPreview(id: CommitId) {
+        return this.http.get<ProblemSetPreview>(`problem_set_preview?id=${id}`);
     }
 }

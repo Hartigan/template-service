@@ -4,6 +4,7 @@ open Contexts
 open DatabaseTypes
 open Models.Identificators
 open Models.Reports
+open Models.Problems
 open Services.Problems
 open Services.Permissions
 open System
@@ -18,6 +19,7 @@ type ExaminationService(reportContext: IContext<Report>,
                         versionControlService: IVersionControlService,
                         problemsService: IProblemsService,
                         permissionsService: IPermissionsService,
+                        userService: IUserService,
                         generatorService: IGeneratorService) =
 
     member this.GetGeneratedProblemModels(generatedProblemSetId: GeneratedProblemSetId) =
@@ -28,7 +30,7 @@ type ExaminationService(reportContext: IContext<Report>,
             |> ResultOfAsyncSeq
         )
 
-    member this.UpdateSubmission(answer: ProblemAnswer) : Submission -> Result<Submission, Exception> =
+    member this.UpdateSubmission(answer: DatabaseTypes.ProblemAnswer) : Submission -> Result<Submission, Exception> =
         fun submission ->
             if submission.Deadline > DateTimeOffset.UtcNow then
                 Ok({
@@ -43,6 +45,22 @@ type ExaminationService(reportContext: IContext<Report>,
                 Error(InvalidOperationException("Out of time") :> Exception)
 
     interface IExaminationService with
+
+        member this.GetProblemSetPreview(commitId) = 
+            versionControlService.Get(commitId)
+            |> Async.BindResult(fun commit ->
+                match commit.Target.ConcreteId with
+                | Problem(id) ->
+                    async.Return(Error(InvalidOperationException(sprintf "It's not problem set %s" commitId.Value) :> Exception))
+                | ProblemSet(id) ->
+                    problemsService.Get(id)
+                    |> Async.MapResult(fun problemSet -> (problemSet, commit.AuthorId))
+            )
+            |> Async.BindResult(fun (problemSet, authorId) ->
+                userService.Get(authorId)
+                |> Async.TryMapResult(fun author -> ProblemSetPreviewModel.Create(problemSet, author))
+            )
+
         member this.ApplyAnswer(answer, submissionId) =
             let problemAnswer = {
                 ProblemAnswer.GeneratedProblemId = answer.GeneratedProblemId.Value

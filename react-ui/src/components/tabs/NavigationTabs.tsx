@@ -14,6 +14,8 @@ import GroupsTab from './GroupsTab';
 import { PermissionsService } from '../../services/PermissionsService';
 import { UserService } from '../../services/UserService';
 import PermissionsTab from './PermissionsTab';
+import TrainTab from './TrainTab';
+import { ExaminationService } from '../../services/ExaminationService';
 
 interface ITabPanelProps {
     children: Array<React.ReactNode> | React.ReactNode;
@@ -49,6 +51,7 @@ export interface INavigationTabsProps {
     problemSetService: ProblemSetService;
     permissionsService: PermissionsService;
     userService: UserService;
+    examinationService: ExaminationService;
 }
 
 export default function NavigationTabs(props: INavigationTabsProps) {
@@ -96,7 +99,9 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        Train
+        <TrainTab
+          examinationService={props.examinationService}
+          />
       </TabPanel>
     </div>
   );

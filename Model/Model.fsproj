@@ -36,6 +36,7 @@
     <Compile Include="Problem/GeneratedProblemModel.fs" />
     <Compile Include="Problem/ProblemSetModel.fs" />
     <Compile Include="Problem/GeneratedProblemSetModel.fs" />
+    <Compile Include="Problem/ProblemSetPreviewModel.fs" />
     <Compile Include="Reports/SubmissionModel.fs" />
     <Compile Include="Reports/ReportModel.fs" />
   </ItemGroup>

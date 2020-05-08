@@ -162,3 +162,41 @@ type ExaminationController(permissionsService: IPermissionsService,
             | Ok(models) -> return (JsonResult(models) :> IActionResult)
         }
         |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("problem_sets")>]
+    member this.GetProblemSets() =
+        async {
+            let userId = this.GetUserId()
+            match! examinationService.GetProblemSets(userId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get problem sets")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(models) -> return (JsonResult(models) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("problem_set_preview")>]
+    member this.GetProblemSets([<FromQuery(Name = "id")>] id: string) =
+        async {
+            let userId = this.GetUserId()
+            let commitId = CommitId(id)
+
+            match! versionControlService.Get(commitId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get commit for problem set preview")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(commit) ->
+                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanGenerate) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
+                | Ok(_) ->
+                    match! examinationService.GetProblemSetPreview(commitId) with
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot get problem set preview")
+                        return (BadRequestResult() :> IActionResult)
+                    | Ok(models) -> return (JsonResult(models) :> IActionResult)
+        }
+        |> Async.StartAsTask
