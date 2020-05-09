@@ -197,6 +197,26 @@ type ExaminationController(permissionsService: IPermissionsService,
                     | Error(ex) ->
                         logger.LogError(ex, "Cannot get problem set preview")
                         return (BadRequestResult() :> IActionResult)
-                    | Ok(models) -> return (JsonResult(models) :> IActionResult)
+                    | Ok(model) -> return (JsonResult(model) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("submission_preview")>]
+    member this.GetSubmissionPreview([<FromQuery(Name = "id")>] id: string) =
+        async {
+            let userId = this.GetUserId()
+            let submissionId = SubmissionId(id)
+
+            match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanRead) with
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+            | Ok(_) ->
+                match! examinationService.GetPreview(submissionId) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get submission preview")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask

@@ -39,6 +39,7 @@
     <Compile Include="Problem/ProblemSetPreviewModel.fs" />
     <Compile Include="Reports/SubmissionModel.fs" />
     <Compile Include="Reports/ReportModel.fs" />
+    <Compile Include="Reports/SubmissionPreviewModel.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />

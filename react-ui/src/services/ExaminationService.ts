@@ -6,6 +6,7 @@ import { Report } from '../models/Report';
 import { HttpServiceFactory } from './HttpServiceFactory';
 import { ProblemSetPreview } from '../models/ProblemSetPreview';
 import { Head } from '../models/Head';
+import { SubmissionPreview } from '../models/SubmissionPreview';
 
 export class ExaminationService {
     private http : HttpService;
@@ -35,11 +36,11 @@ export class ExaminationService {
     }
 
     getSubmissions() {
-        return this.http.get<Array<Submission>>(`submissions`);
+        return this.http.get<Array<SubmissionId>>(`submissions`);
     }
 
     getReports() {
-        return this.http.get<Array<Report>>(`reports`);
+        return this.http.get<Array<ReportId>>(`reports`);
     }
 
     getProblemSets() {
@@ -48,5 +49,9 @@ export class ExaminationService {
 
     getProblemSetPreview(id: CommitId) {
         return this.http.get<ProblemSetPreview>(`problem_set_preview?id=${id}`);
+    }
+
+    getSubmissionPreview(id: SubmissionId) {
+        return this.http.get<SubmissionPreview>(`submission_preview?id=${id}`);
     }
 }

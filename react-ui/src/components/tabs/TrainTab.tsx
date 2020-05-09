@@ -1,16 +1,21 @@
 import { makeStyles, Grid, Box } from "@material-ui/core";
 import React from "react";
-import { FileExplorerState } from "../../states/FileExplorerState";
-import ExplorerView from "../files/ExplorerView";
 import { ExaminationService } from "../../services/ExaminationService";
-import { CommitId, HeadId } from "../../models/Identificators";
-import { Head } from "../../models/Head";
 import ProblemSetsListView from "../train/ProblemSetsListView";
+import SubmissionsListView from "../train/SubmissionsListView";
 
 const useStyles = makeStyles(theme => ({
     root: {
         width: "100%",
         height: "100%",
+    },
+    problemSets: {
+        width: "50%",
+        height: "100%"
+    },
+    submissions: {
+        width: "50%",
+        height: "100%"
     },
     list: {
         margin: "auto",
@@ -34,11 +39,20 @@ export default function TrainTab(props: ITrainTabProps) {
 
     return (
         <Grid container className={classes.root}>
-            <Box className={classes.list}>
-                <ProblemSetsListView
-                    examinationService={props.examinationService}
-                    />
-            </Box>
+            <Grid item className={classes.problemSets}>
+                <Box className={classes.list}>
+                    <ProblemSetsListView
+                        examinationService={props.examinationService}
+                        />
+                </Box>
+            </Grid>
+            <Grid item className={classes.submissions}>
+                <Box className={classes.list}>
+                    <SubmissionsListView
+                        examinationService={props.examinationService}
+                        />
+                </Box>
+            </Grid>
         </Grid>
     );
 };
