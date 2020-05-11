@@ -11,53 +11,36 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface IState {
-    submissionsIds: Array<SubmissionId> | null;
 }
 
 export interface ISubmissionsListViewProps {
     examinationService: ExaminationService;
+    onShowSubmission: (submissionId: SubmissionId) => void;
+    submissionsIds: Array<SubmissionId>;
 }
 
 export default function SubmissionsListView(props: ISubmissionsListViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
-        submissionsIds: null
     });
 
     const classes = useStyles();
 
-    const fetchSubmissionsIds = async () => {
-        let submissionsIds = await props.examinationService.getSubmissions();
-        setState({
-            ...state,
-            submissionsIds: submissionsIds
-        });
-    };
-
-    React.useEffect(() => {
-        if (state.submissionsIds === null) {
-            fetchSubmissionsIds();
-        }
-    });
-
-    if (state.submissionsIds) {
-        return (
-            <List className={classes.root}>
-                {
-                    state.submissionsIds.map(submissionId => (
-                        <ListItem
-                            key={"submission_" + submissionId}
-                            >
-                            <SubmissionPreviewView
-                                submissionId={submissionId}
-                                examinationService={props.examinationService}
-                                />
-                        </ListItem>
-                    ))
-                }
-            </List>
-        );
-    }
-
-    return (<div/>);
+    return (
+        <List className={classes.root}>
+            {
+                props.submissionsIds.map(submissionId => (
+                    <ListItem
+                        key={"submission_" + submissionId}
+                        >
+                        <SubmissionPreviewView
+                            submissionId={submissionId}
+                            examinationService={props.examinationService}
+                            onShowSubmission={props.onShowSubmission}
+                            />
+                    </ListItem>
+                ))
+            }
+        </List>
+    );
 }

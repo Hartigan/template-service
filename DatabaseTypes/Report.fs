@@ -1,38 +1,39 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
 open System
+open System.Text.Json.Serialization
+open Utils
 
-[<DataContract>]
 type ProblemReport = {
-    [<field: DataMember(Name = "generated_problem_id")>]
+    [<JsonPropertyName("generated_problem_id")>]
     GeneratedProblemId : string
-    [<field: DataMember(Name = "answer")>]
+    [<JsonPropertyName("answer")>]
+    [<JsonConverter(typeof<OptionValueConverter<string>>)>]
     Answer : string option
-    [<field: DataMember(Name = "expected_answer")>]
+    [<JsonPropertyName("expected_answer")>]
     ExpectedAnswer : string
-    [<field: DataMember(Name = "is_correct")>]
+    [<JsonPropertyName("is_correct")>]
     IsCorrect : bool
-    [<field: DataMember(Name = "timestamp")>]
+    [<JsonPropertyName("timestamp")>]
+    [<JsonConverter(typeof<OptionValueConverter<DateTimeOffset>>)>]
     Timestamp : DateTimeOffset option
 }
 
-[<DataContract>]
 type Report =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "generated_problem_set_id")>]
+        [<JsonPropertyName("generated_problem_set_id")>]
         GeneratedProblemSetId : string
-        [<field: DataMember(Name = "submission_id")>]
+        [<JsonPropertyName("submission_id")>]
         SubmissionId : string
-        [<field: DataMember(Name = "permissions")>]
+        [<JsonPropertyName("permissions")>]
         Permissions : Permissions
-        [<field: DataMember(Name = "started_at")>]
+        [<JsonPropertyName("started_at")>]
         StartedAt : DateTimeOffset
-        [<field: DataMember(Name = "finished_at")>]
+        [<JsonPropertyName("finished_at")>]
         FinishedAt : DateTimeOffset
-        [<field: DataMember(Name = "answers")>]
+        [<JsonPropertyName("answers")>]
         Answers : List<ProblemReport>
     }
 
@@ -41,7 +42,7 @@ type Report =
         DocumentKey.Create(id, Report.TypeName)
     member private this.DocKey = Report.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

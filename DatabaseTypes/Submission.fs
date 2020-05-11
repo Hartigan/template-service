@@ -1,34 +1,34 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 open System
+open Utils
 
-[<DataContract>]
 type ProblemAnswer = {
-    [<field: DataMember(Name = "generated_problem_id")>]
+    [<JsonPropertyName("generated_problem_id")>]
     GeneratedProblemId : string
-    [<field: DataMember(Name = "answer")>]
+    [<JsonPropertyName("answer")>]
     Answer : string
-    [<field: DataMember(Name = "timestamp")>]
+    [<JsonPropertyName("timestamp")>]
     Timestamp : DateTimeOffset
 }
 
-[<DataContract>]
 type Submission =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "generated_problem_set_id")>]
+        [<JsonPropertyName("generated_problem_set_id")>]
         GeneratedProblemSetId : string
-        [<field: DataMember(Name = "permissions")>]
+        [<JsonPropertyName("permissions")>]
         Permissions : Permissions
-        [<field: DataMember(Name = "started_at")>]
+        [<JsonPropertyName("started_at")>]
         StartedAt : DateTimeOffset
-        [<field: DataMember(Name = "deadline")>]
+        [<JsonPropertyName("deadline")>]
         Deadline : DateTimeOffset
-        [<field: DataMember(Name = "answers")>]
+        [<JsonPropertyName("answers")>]
         Answers : List<ProblemAnswer>
-        [<field: DataMember(Name = "report_id")>]
+        [<JsonPropertyName("report_id")>]
+        [<JsonConverter(typeof<OptionValueConverter<string>>)>]
         ReportId : string option
     }
 
@@ -37,7 +37,7 @@ type Submission =
         DocumentKey.Create(id, Submission.TypeName)
     member private this.DocKey = Submission.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

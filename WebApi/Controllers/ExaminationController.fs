@@ -14,12 +14,15 @@ open Models.Reports
 open System.Text.Json.Serialization
 open Models.Permissions
 open Microsoft.Extensions.Logging
+open Models.Problems
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
-    Id: SubmissionId
-    [<JsonPropertyName("problem_answer")>]
-    ProblemAnswer: ProblemAnswerModel
+    Id                  : SubmissionId
+    [<JsonPropertyName("generated_problem_id")>]
+    GeneratedProblemId  : GeneratedProblemId
+    [<JsonPropertyName("answer")>]
+    Answer              : ProblemAnswer
 }
 
 [<Authorize>]
@@ -59,7 +62,7 @@ type ExaminationController(permissionsService: IPermissionsService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Submission(req.Id), userId, AccessModel.CanWrite) with
             | Ok() ->
-                match! examinationService.ApplyAnswer(req.ProblemAnswer, req.Id) with
+                match! examinationService.ApplyAnswer(req.GeneratedProblemId, req.Answer, req.Id) with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot apply answer")
                     return (BadRequestResult() :> IActionResult)

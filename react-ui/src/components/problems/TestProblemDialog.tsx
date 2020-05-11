@@ -5,8 +5,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { GeneratedProblem } from "../../models/GeneratedProblem";
-import TestProblemView from "./TestProblemView";
 import { CommitId } from "../../models/Identificators";
+import ProblemView from "../train/ProblemView";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -103,7 +103,7 @@ export default function TestProblemDialog(props: ITestProblemDialogProps) {
                         </IconButton>
                     </ListItem>
                 <ListItem>
-                    <TestProblemView view={props.generatedProblem.view} />
+                    <ProblemView view={props.generatedProblem.view} />
                 </ListItem>
                 <ListItem>
                     <Typography variant="body1">

@@ -4,6 +4,7 @@ open Models.Identificators
 open System.Text.Json.Serialization
 open System
 open Models.Problems
+open DatabaseTypes
 
 type SubmissionPreviewModel =
     {
@@ -21,12 +22,13 @@ type SubmissionPreviewModel =
         ReportId    : option<ReportId>
 
     }
-    static member Create(submission: SubmissionModel) : Result<SubmissionPreviewModel, Exception> =
+    static member Create(entity: Submission,
+                         title: ProblemSetTitle) : Result<SubmissionPreviewModel, Exception> =
         Ok({
-            SubmissionPreviewModel.Id       = submission.Id
-            StartedAt                       = submission.StartedAt
-            Deadline                        = submission.Deadline
-            Title                           = submission.GeneratedProblemSet.Title
-            Completed                       = submission.Completed
-            ReportId                        = submission.ReportId
+            SubmissionPreviewModel.Id       = SubmissionId(entity.Id)
+            StartedAt                       = entity.StartedAt
+            Deadline                        = entity.Deadline
+            Title                           = title
+            Completed                       = entity.ReportId.IsSome
+            ReportId                        = entity.ReportId |> Option.map ReportId
         })

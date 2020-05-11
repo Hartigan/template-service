@@ -27,6 +27,7 @@ interface IState {
 export interface ISubmissionPreviewViewProps {
     submissionId: SubmissionId;
     examinationService: ExaminationService;
+    onShowSubmission: (submissionId: SubmissionId) => void;
 }
 
 export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps) {
@@ -87,7 +88,11 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                             </Button>
                         )
                         : (
-                            <Button size="small" color="primary">
+                            <Button
+                                size="small"
+                                color="primary"
+                                onClick={() => props.onShowSubmission(props.submissionId)}
+                                >
                                 Continue
                             </Button>
                         )

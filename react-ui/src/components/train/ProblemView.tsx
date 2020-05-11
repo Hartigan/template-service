@@ -3,11 +3,11 @@ import { GeneratedView } from "../../models/GeneratedView";
 import { Typography } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 
-export interface ITestProblemViewProps {
+export interface IProblemViewProps {
     view: GeneratedView;
 }
 
-export default function TestProblemView(props: ITestProblemViewProps) {
+export default function ProblemView(props: IProblemViewProps) {
     switch(props.view.language) {
         case "markdown":
             return (

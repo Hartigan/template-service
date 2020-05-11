@@ -1,15 +1,27 @@
-import { GeneratedProblemId, ReportId, SubmissionId } from "./Identificators";
+import { GeneratedProblemId, ReportId, SubmissionId, GeneratedProblemSetId } from "./Identificators";
 import { GeneratedProblemSet } from "./GeneratedProblemSet";
+import { GeneratedView } from "./GeneratedView";
 
 export interface ProblemAnswer {
     generated_problem_id: GeneratedProblemId;
     answer: string;
-    timestamp: Date;
+}
+
+export interface SubmissionProblem {
+    id: GeneratedProblemId;
+    title: string;
+    view: GeneratedView;
+}
+
+export interface SubmissionProblemSet {
+    id: GeneratedProblemSetId;
+    title: string;
+    problems: Array<SubmissionProblem>;
 }
 
 export interface Submission {
     id: SubmissionId;
-    generated_problem_set: GeneratedProblemSet;
+    problem_set: SubmissionProblemSet;
     started_at: Date;
     deadline: Date;
     answers: Array<ProblemAnswer>;

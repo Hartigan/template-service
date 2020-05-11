@@ -1,8 +1,9 @@
 import { makeStyles, Box, Card, CardActionArea, CardContent, Typography, CardActions, Button } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { CommitId } from "../../models/Identificators";
+import { CommitId, SubmissionId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";
 import { ExaminationService } from "../../services/ExaminationService";
+import { Head } from "../../models/Head";
 
 
 
@@ -28,8 +29,9 @@ interface IState {
 }
 
 export interface IProblemSetPreviewViewProps {
-    commitId: CommitId;
+    head: Head;
     examinationService: ExaminationService;
+    onShowSubmission: (submissionId: SubmissionId) => void;
 }
 
 export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps) {
@@ -40,7 +42,7 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
     });
 
     const refresh = () => {
-        const commitId = props.commitId;
+        const commitId = props.head.commit.id;
         props.examinationService
             .getProblemSetPreview(commitId)
             .then(preview => {
@@ -53,10 +55,15 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
     };
 
     useEffect(() => {
-        if (state.commitId === null || state.commitId !== props.commitId) {
+        if (state.commitId === null || state.commitId !== props.head.commit.id) {
             refresh();
         }
     });
+
+    const onStart = async () => {
+        let submissionId = await props.examinationService.start(props.head.id);
+        props.onShowSubmission(submissionId.id);
+    };
 
     const classes = useStyles();
 
@@ -89,7 +96,11 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                     </CardContent>
                 </CardActionArea>
                 <CardActions>
-                    <Button size="small" color="primary">
+                    <Button
+                        size="small"
+                        color="primary"
+                        onClick={onStart}
+                        >
                         Start
                     </Button>
                 </CardActions>

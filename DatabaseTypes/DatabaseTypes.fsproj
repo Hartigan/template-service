@@ -3,6 +3,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <ProjectReference Include="../Utils/Utils.fsproj" />
     <Compile Include="IDocumentKey.fs" />
     <Compile Include="DocumentKey.fs" />
     <Compile Include="Member.fs" />

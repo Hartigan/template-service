@@ -129,6 +129,10 @@ type PermissionsService(userService: IUserService,
 
 
     interface IPermissionsService with
+        member this.GetOwner(protectedId) = 
+            this.GetPermissions(protectedId)
+            |> Async.MapResult(fun p -> UserId(p.OwnerId))
+
 
         member this.SearchByContains(pattern) =
             groupContext.SearchByContainsInName(pattern)

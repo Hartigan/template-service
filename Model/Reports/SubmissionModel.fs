@@ -27,12 +27,54 @@ type ProblemAnswerModel =
             Timestamp           = entity.Timestamp
         })
 
+type SubmissionProblemModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id           : GeneratedProblemId
+        [<JsonPropertyName("title")>]
+        Title        : ProblemTitle
+        [<JsonPropertyName("view")>]
+        View         : GeneratedViewModel
+    }
+
+    static member Create(model: GeneratedProblemModel) : Result<SubmissionProblemModel, Exception> =
+        Ok({
+            Id      = model.Id
+            Title   = model.Title
+            View    = model.View
+        })
+
+type SubmissionProblemSetModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id           : GeneratedProblemSetId
+        [<JsonPropertyName("title")>]
+        Title        : ProblemSetTitle
+        [<JsonPropertyName("problems")>]
+        Problems     : List<SubmissionProblemModel>
+    }
+
+    static member Create(model: GeneratedProblemSetModel,
+                         problems: List<GeneratedProblemModel>) : Result<SubmissionProblemSetModel, Exception> =
+        problems
+        |> Seq.map SubmissionProblemModel.Create
+        |> ResultOfSeq
+        |> fun r ->
+            match r with
+            | Error(error) -> Error(error)
+            | Ok(submissionProblems) ->
+                Ok({
+                    Id          = model.Id
+                    Title       = model.Title
+                    Problems    = submissionProblems
+                })
+
 type SubmissionModel = 
     {
         [<JsonPropertyName("id")>]
         Id                      : SubmissionId
-        [<JsonPropertyName("generated_problem_set")>]
-        GeneratedProblemSet     : GeneratedProblemSetModel
+        [<JsonPropertyName("problem_set")>]
+        ProblemSet              : SubmissionProblemSetModel
         [<JsonPropertyName("started_at")>]
         StartedAt               : DateTimeOffset
         [<JsonPropertyName("deadline")>]
@@ -46,7 +88,7 @@ type SubmissionModel =
     }
 
     static member Create(entity: Submission,
-                         generatedProblemSet: GeneratedProblemSetModel) : Result<SubmissionModel, Exception> =
+                         submissionProblemSetModel: SubmissionProblemSetModel) : Result<SubmissionModel, Exception> =
         let answersResult =
             entity.Answers
             |> Seq.map ProblemAnswerModel.Create
@@ -57,7 +99,7 @@ type SubmissionModel =
         | Ok(answers) ->
             Ok({
                 Id                      = SubmissionId(entity.Id)
-                GeneratedProblemSet     = generatedProblemSet
+                ProblemSet              = submissionProblemSetModel
                 StartedAt               = entity.StartedAt
                 Deadline                = entity.Deadline
                 Answers                 = answers

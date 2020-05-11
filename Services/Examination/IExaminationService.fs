@@ -9,7 +9,7 @@ open Models.Heads
 type IExaminationService =
     abstract member CreateSubmission : ProblemSetId * UserId -> Async<Result<SubmissionId, Exception>>
     
-    abstract member ApplyAnswer : ProblemAnswerModel * SubmissionId -> Async<Result<unit, Exception>>
+    abstract member ApplyAnswer : GeneratedProblemId * ProblemAnswer * SubmissionId -> Async<Result<unit, Exception>>
     abstract member Complete : SubmissionId * UserId -> Async<Result<ReportId, Exception>>
     
     abstract member GetSubmissions : UserId -> Async<Result<List<SubmissionId>, Exception>>

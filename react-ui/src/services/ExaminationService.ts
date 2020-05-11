@@ -20,7 +20,7 @@ export class ExaminationService {
     }
 
     applyAnswer(submissionId: SubmissionId, problemAnswer: ProblemAnswer) {
-        return this.http.post<void>(`answer`, { id: submissionId, problem_answer: problemAnswer });
+        return this.http.post<void>(`answer`, { id: submissionId, answer: problemAnswer.answer, generated_problem_id: problemAnswer.generated_problem_id });
     }
 
     complete(id: SubmissionId) {
