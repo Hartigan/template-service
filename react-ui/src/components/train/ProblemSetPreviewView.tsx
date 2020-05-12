@@ -41,22 +41,26 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
         commitId: null
     });
 
-    const refresh = () => {
-        const commitId = props.head.commit.id;
-        props.examinationService
-            .getProblemSetPreview(commitId)
-            .then(preview => {
-                setState({
-                    ...state,
-                    preview: preview,
-                    commitId: commitId
-                });
-            });
-    };
-
     useEffect(() => {
+        let isCancelled = false;
         if (state.commitId === null || state.commitId !== props.head.commit.id) {
-            refresh();
+            const commitId = props.head.commit.id;
+            props.examinationService
+                .getProblemSetPreview(commitId)
+                .then(preview => {
+                    if (isCancelled) {
+                        return;
+                    }
+                    setState({
+                        ...state,
+                        preview: preview,
+                        commitId: commitId
+                    });
+                });
+        }
+
+        return () => {
+            isCancelled = true;
         }
     });
 

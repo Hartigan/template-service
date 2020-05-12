@@ -85,10 +85,13 @@ type SubmissionModel =
         Completed               : bool
         [<JsonPropertyName("report_id")>]
         ReportId                : option<ReportId>
+        [<JsonPropertyName("author")>]
+        Author                  : UserModel
     }
 
     static member Create(entity: Submission,
-                         submissionProblemSetModel: SubmissionProblemSetModel) : Result<SubmissionModel, Exception> =
+                         submissionProblemSetModel: SubmissionProblemSetModel,
+                         author: UserModel) : Result<SubmissionModel, Exception> =
         let answersResult =
             entity.Answers
             |> Seq.map ProblemAnswerModel.Create
@@ -105,4 +108,5 @@ type SubmissionModel =
                 Answers                 = answers
                 Completed               = entity.ReportId.IsSome
                 ReportId                = entity.ReportId |> Option.map(ReportId)
+                Author                  = author
             })

@@ -2,7 +2,7 @@ import { makeStyles, Box, Card, CardActionArea, CardContent, Typography, CardAct
 import React, { useEffect } from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { SubmissionPreview } from "../../models/SubmissionPreview";
-import { SubmissionId } from "../../models/Identificators";
+import { SubmissionId, ReportId } from "../../models/Identificators";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -28,6 +28,7 @@ export interface ISubmissionPreviewViewProps {
     submissionId: SubmissionId;
     examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
+    onShowReport: (reportId: ReportId) => void;
 }
 
 export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps) {
@@ -36,19 +37,32 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
         preview: null,
     });
 
-    const refresh = async () => {
-        let submission = await props.examinationService.getSubmissionPreview(props.submissionId);
-        setState({
-            ...state,
-            preview: submission
-        });
-    };
-
     useEffect(() => {
+        let isCancelled = false;
         if (state.preview === null || state.preview.id !== props.submissionId) {
-            refresh();
+            props.examinationService
+                .getSubmissionPreview(props.submissionId)
+                .then(submission => {
+                    if (isCancelled) {
+                        return;
+                    }
+                    setState({
+                        ...state,
+                        preview: submission
+                    });
+                });
+        }
+
+        return () => {
+            isCancelled = true;
         }
     });
+
+    const onShowReport = () => {
+        if (state.preview?.report_id) {
+            props.onShowReport(state.preview.report_id);
+        }
+    }
 
     const classes = useStyles();
 
@@ -59,6 +73,12 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="h2">
                             {state.preview.title}
+                        </Typography>
+                        <Typography className={classes.title} color="textSecondary" gutterBottom>
+                            Author
+                        </Typography>
+                        <Typography variant="body2" component="p">
+                            {state.preview.author.username}
                         </Typography>
                         <Typography className={classes.title} color="textSecondary" gutterBottom>
                             Started at
@@ -83,7 +103,11 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                 <CardActions>
                     {state.preview.report_id
                         ? (
-                            <Button size="small" color="primary">
+                            <Button
+                                size="small"
+                                color="primary"
+                                onClick={onShowReport}
+                                >
                                 View report
                             </Button>
                         )

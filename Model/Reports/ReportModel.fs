@@ -7,31 +7,79 @@ open Models.Permissions
 open Models.Problems
 open System.Runtime.Serialization
 open System.Text.Json.Serialization
+open System
 
 
-type ProblemReportModel(entity: ProblemReport) =
-    [<JsonPropertyName("generated_problem_id")>]
-    member val GeneratedProblemId = GeneratedProblemId(entity.GeneratedProblemId) with get
-    [<JsonPropertyName("answer")>]
-    member val Answer = entity.Answer |> Option.map(ProblemAnswer) with get
-    [<JsonPropertyName("expected_answer")>]
-    member val ExpectedAnswer = ProblemAnswer(entity.ExpectedAnswer) with get
-    [<JsonPropertyName("is_correct")>]
-    member val IsCorrect = entity.IsCorrect with get
-    [<JsonPropertyName("timestamp")>]
-    member val Timestamp = entity.Timestamp with get
+type ProblemReportModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id              : GeneratedProblemId
+        [<JsonPropertyName("title")>]
+        Title           : ProblemTitle
+        [<JsonPropertyName("view")>]
+        View            : GeneratedViewModel
+        [<JsonPropertyName("answer")>]
+        Answer          : ProblemAnswer option
+        [<JsonPropertyName("expected_answer")>]
+        ExpectedAnswer  : ProblemAnswer
+        [<JsonPropertyName("is_correct")>]
+        IsCorrect       : bool
+        [<JsonPropertyName("timestamp")>]
+        Timespan        : DateTimeOffset option
+    }
 
+    static member Create(entity: ProblemReport,
+                         problem: GeneratedProblemModel) : Result<ProblemReportModel, Exception> =
+        Ok({
+            Id              = GeneratedProblemId(entity.GeneratedProblemId)
+            Title           = problem.Title
+            View            = problem.View
+            Answer          = entity.Answer |> Option.map ProblemAnswer
+            ExpectedAnswer  = ProblemAnswer(entity.ExpectedAnswer)
+            IsCorrect       = entity.IsCorrect
+            Timespan        = entity.Timestamp
+        })
 
-type ReportModel(entity: Report) =
-    [<JsonPropertyName("id")>]
-    member val Id = ReportId(entity.Id) with get
-    [<JsonPropertyName("generated_problem_set_id")>]
-    member val GeneratedProblemSetId = GeneratedProblemSetId(entity.GeneratedProblemSetId) with get
-    [<JsonPropertyName("submission_id")>]
-    member val SubmissionId = SubmissionId(entity.SubmissionId) with get
-    [<JsonPropertyName("started_at")>]
-    member val StartedAt = entity.StartedAt with get
-    [<JsonPropertyName("finished_at")>]
-    member val FinishedAt = entity.FinishedAt with get
-    [<JsonPropertyName("answers")>]
-    member val Answers = entity.Answers |> Seq.map(fun x -> ProblemReportModel(x)) |> Seq.toList with get
+type ProblemSetReportModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id           : GeneratedProblemSetId
+        [<JsonPropertyName("title")>]
+        Title        : ProblemSetTitle
+        [<JsonPropertyName("problems")>]
+        Problems     : List<ProblemReportModel>
+    }
+
+    static member Create(model: GeneratedProblemSetModel,
+                         problems: List<ProblemReportModel>) : Result<ProblemSetReportModel, Exception> =
+
+        Ok({
+            Id          = model.Id
+            Title       = model.Title
+            Problems    = problems
+        })
+
+type ReportModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id                      : ReportId
+        [<JsonPropertyName("problem_set")>]
+        ProblemSet              : ProblemSetReportModel
+        [<JsonPropertyName("started_at")>]
+        StartedAt               : DateTimeOffset
+        [<JsonPropertyName("finished_at")>]
+        FinishedAt              : DateTimeOffset
+        [<JsonPropertyName("author")>]
+        Author                  : UserModel
+    }
+
+    static member Create(entity: Report,
+                         problemSet: ProblemSetReportModel,
+                         author: UserModel) : Result<ReportModel, Exception> =
+        Ok({
+            Id              = ReportId(entity.Id)
+            ProblemSet      = problemSet
+            StartedAt       = entity.StartedAt
+            FinishedAt      = entity.FinishedAt
+            Author          = author
+        })

@@ -3,10 +3,12 @@ import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
 import SubmissionsListView from "../train/SubmissionsListView";
-import { SubmissionId } from "../../models/Identificators";
+import { SubmissionId, ReportId } from "../../models/Identificators";
 import { Submission } from "../../models/Submission";
 import SubmissionDialog from "../train/SubmissionDialog";
 import { Head } from "../../models/Head";
+import { Report } from "../../models/Report";
+import ReportDialog from "../train/ReportDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -29,6 +31,7 @@ const useStyles = makeStyles(theme => ({
 
 interface IState {
     submission: Submission | null;
+    report: Report | null;
     submissionsIds: Array<SubmissionId> | null;
     problemSets: Array<Head> | null;
 }
@@ -42,7 +45,8 @@ export default function TrainTab(props: ITrainTabProps) {
     const [ state, setState ] = React.useState<IState>({
         submission: null,
         submissionsIds: null,
-        problemSets: null
+        problemSets: null,
+        report: null
     });
 
     const fetchProblemSets = async () => {
@@ -81,23 +85,51 @@ export default function TrainTab(props: ITrainTabProps) {
         });
     };
 
-    const onCloseSubmission = () => {
+    const onShowReport = async (reportId: ReportId) => {
+        let report = await props.examinationService.getReport(reportId);
+        setState({
+            ...state,
+            report: report
+        });
+    };
+
+    const onCloseDialog = () => {
         setState({
             ...state,
             submissionsIds: null,
             problemSets: null,
-            submission: null
+            submission: null,
+            report: null
         })
     };
 
-    let submissionDialog = state.submission === null ? null : (
-        <SubmissionDialog
-            open={true}
-            onClose={onCloseSubmission}
-            submission={state.submission}
-            examinationService={props.examinationService}
-            />
-    );
+    const getSubmissionDialog = () => {
+        if (state.submission) {
+            return <SubmissionDialog
+                        open={true}
+                        onClose={onCloseDialog}
+                        submission={state.submission}
+                        examinationService={props.examinationService}
+                        />;
+        }
+        else {
+            return <div/>;
+        }
+    };
+
+    const getReportDialog = () => {
+        if (state.report) {
+            return <ReportDialog
+                        open={true}
+                        onClose={onCloseDialog}
+                        report={state.report}
+                        />;
+        }
+        else {
+            return <div/>;
+        }
+    };
+
 
     const getSubmissionsList = () => {
         if (state.submissionsIds) {
@@ -106,6 +138,7 @@ export default function TrainTab(props: ITrainTabProps) {
                     examinationService={props.examinationService}
                     submissionsIds={state.submissionsIds}
                     onShowSubmission={onShowSubmission}
+                    onShowReport={onShowReport}
                     />
             );
         }
@@ -131,7 +164,8 @@ export default function TrainTab(props: ITrainTabProps) {
 
     return (
         <Grid container className={classes.root}>
-            {submissionDialog}
+            {getSubmissionDialog()}
+            {getReportDialog()}
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>
                     {getProblemSets()}

@@ -1,18 +1,27 @@
 import { GeneratedProblemId, GeneratedProblemSetId, SubmissionId } from "./Identificators";
+import { GeneratedView } from "./GeneratedView";
+import { User } from "./User";
 
 export interface ProblemReport {
-    generated_problem_id: GeneratedProblemId;
+    id: GeneratedProblemId;
+    title: string;
+    view: GeneratedView;
     answer?: string;
     expected_answer: string;
     is_correct: boolean;
-    timestamp: Date;
+    timestamp?: Date;
+}
+
+export interface ProblemSetReport {
+    id: GeneratedProblemSetId;
+    title: string;
+    problems: Array<ProblemReport>;
 }
 
 export interface Report {
     id: string;
-    generated_problem_set_id: GeneratedProblemSetId;
-    submission_id: SubmissionId;
+    problem_set: ProblemSetReport;
     started_at: Date;
     finished_at: Date;
-    answers: Array<ProblemReport>;
+    author: User;
 }

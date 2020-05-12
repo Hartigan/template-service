@@ -56,8 +56,12 @@ type ExaminationService(reportContext: IContext<Report>,
             this.TryComplete(submissionId)
             |> Async.BindResult(fun submission ->
                 generatorService.Get(GeneratedProblemSetId(submission.GeneratedProblemSetId))
-                |> Async.TryMapResult(fun generatedProblemSet ->
-                    SubmissionPreviewModel.Create(submission, generatedProblemSet.Title)
+                |> Async.BindResult(fun generatedProblemSet ->
+                    permissionsService.GetOwner(ProtectedId.Submission(submissionId))
+                    |> Async.BindResult userService.Get
+                    |> Async.TryMapResult(fun author ->
+                        SubmissionPreviewModel.Create(submission, generatedProblemSet.Title, author)
+                    )
                 )
             )
 
@@ -180,7 +184,29 @@ type ExaminationService(reportContext: IContext<Report>,
 
         member this.Get(id: ReportId) =
             reportContext.Get(Report.CreateDocumentKey(id.Value))
-            |> Async.MapResult ReportModel
+            |> Async.BindResult(fun report ->
+                generatorService.Get(GeneratedProblemSetId(report.GeneratedProblemSetId))
+                |> Async.BindResult(fun problemSet ->
+                    report.Answers
+                    |> Seq.map(fun ans ->
+                        generatorService.Get(GeneratedProblemId(ans.GeneratedProblemId))
+                        |> Async.TryMapResult(fun problem ->
+                            ProblemReportModel.Create(ans, problem)
+                        )
+                    )
+                    |> ResultOfAsyncSeq
+                    |> Async.TryMapResult(fun problems ->
+                        ProblemSetReportModel.Create(problemSet, problems)
+                    )
+                )
+                |> Async.BindResult(fun problemSetReport ->
+                    permissionsService.GetOwner(ProtectedId.Report(id))
+                    |> Async.BindResult userService.Get
+                    |> Async.TryMapResult(fun author ->
+                        ReportModel.Create(report, problemSetReport, author)
+                    )
+                )
+            )
 
         member this.GetReports(userId: UserId) =
             permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
@@ -252,7 +278,11 @@ type ExaminationService(reportContext: IContext<Report>,
                         SubmissionProblemSetModel.Create(generatedProblemSet, generatedProblems)
                     )
                 )
-                |> Async.TryMapResult(fun submissionProblemSet ->
-                    SubmissionModel.Create(submission, submissionProblemSet)
+                |> Async.BindResult(fun submissionProblemSet ->
+                    permissionsService.GetOwner(ProtectedId.Submission(id))
+                    |> Async.BindResult userService.Get
+                    |> Async.TryMapResult(fun author ->
+                        SubmissionModel.Create(submission, submissionProblemSet, author)
+                    )
                 )
             )

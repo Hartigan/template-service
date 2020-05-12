@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { makeStyles, List, ListItem } from '@material-ui/core';
 import { ExaminationService } from '../../services/ExaminationService';
-import { SubmissionId } from '../../models/Identificators';
+import { SubmissionId, ReportId } from '../../models/Identificators';
 import SubmissionPreviewView from './SubmissionPreviewView';
 
 const useStyles = makeStyles(theme => ({
@@ -16,6 +16,7 @@ interface IState {
 export interface ISubmissionsListViewProps {
     examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
+    onShowReport: (reportId: ReportId) => void;
     submissionsIds: Array<SubmissionId>;
 }
 
@@ -37,6 +38,7 @@ export default function SubmissionsListView(props: ISubmissionsListViewProps) {
                             submissionId={submissionId}
                             examinationService={props.examinationService}
                             onShowSubmission={props.onShowSubmission}
+                            onShowReport={props.onShowReport}
                             />
                     </ListItem>
                 ))

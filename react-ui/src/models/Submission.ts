@@ -1,6 +1,6 @@
 import { GeneratedProblemId, ReportId, SubmissionId, GeneratedProblemSetId } from "./Identificators";
-import { GeneratedProblemSet } from "./GeneratedProblemSet";
 import { GeneratedView } from "./GeneratedView";
+import { User } from "./User";
 
 export interface ProblemAnswer {
     generated_problem_id: GeneratedProblemId;
@@ -27,4 +27,5 @@ export interface Submission {
     answers: Array<ProblemAnswer>;
     completed: boolean;
     report_id?: ReportId;
+    author: User;
 }
