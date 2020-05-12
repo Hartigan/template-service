@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { SubmissionPreview } from "../../models/SubmissionPreview";
 import { SubmissionId, ReportId } from "../../models/Identificators";
+import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -84,13 +85,13 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                             Started at
                         </Typography>
                         <Typography variant="body2" component="p">
-                            {state.preview.started_at}
+                            <DateView date={state.preview.started_at} />
                         </Typography>
                         <Typography className={classes.title} color="textSecondary" gutterBottom>
                             Deadline
                         </Typography>
                         <Typography variant="body2" component="p">
-                            {state.preview.deadline}
+                            <DateView date={state.preview.deadline} />
                         </Typography>
                         <Typography className={classes.title} color="textSecondary" gutterBottom>
                             Status

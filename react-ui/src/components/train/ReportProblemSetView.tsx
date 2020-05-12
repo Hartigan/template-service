@@ -1,6 +1,7 @@
 import { makeStyles, Typography, Card, CardActionArea, CardContent } from "@material-ui/core";
 import React from "react";
 import { Report } from "../../models/Report";
+import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -49,13 +50,13 @@ export default function ReportProblemSetView(props: IReportProblemSetViewProps) 
                         Started at
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.report.started_at}
+                        <DateView date={props.report.started_at} />
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Finished at
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.report.finished_at}
+                        <DateView date={props.report.finished_at} />
                     </Typography>
                 </CardContent>
             </CardActionArea>
