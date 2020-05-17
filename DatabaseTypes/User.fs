@@ -1,29 +1,28 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type User =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "first_name")>]
+        [<JsonPropertyName("first_name")>]
         FirstName : string
-        [<field: DataMember(Name = "last_name")>]
+        [<JsonPropertyName("last_name")>]
         LastName : string
-        [<field: DataMember(Name = "name")>]
+        [<JsonPropertyName("name")>]
         Name : string
-        [<field: DataMember(Name = "normalized_name")>]
+        [<JsonPropertyName("normalized_name")>]
         NormalizedName : string
-        [<field: DataMember(Name = "email")>]
+        [<JsonPropertyName("email")>]
         Email : string
-        [<field: DataMember(Name = "email_confirmed")>]
+        [<JsonPropertyName("email_confirmed")>]
         EmailConfirmed : bool
-        [<field: DataMember(Name = "password_hash")>]
+        [<JsonPropertyName("password_hash")>]
         PasswordHash : string
-        [<field: DataMember(Name = "is_authenticated")>]
+        [<JsonPropertyName("is_authenticated")>]
         IsAuthenticated : bool
-        [<field: DataMember(Name = "authentication_type")>]
+        [<JsonPropertyName("authentication_type")>]
         AuthenticationType : string
     }
 
@@ -32,7 +31,7 @@ type User =
         DocumentKey.Create(id, User.TypeName)
     member private this.DocKey = User.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

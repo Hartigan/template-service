@@ -1,17 +1,16 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type Head =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "name")>]
+        [<JsonPropertyName("name")>]
         Name : string
-        [<field: DataMember(Name = "commit")>]
+        [<JsonPropertyName("commit")>]
         Commit : Commit
-        [<field: DataMember(Name = "permissions")>]
+        [<JsonPropertyName("permissions")>]
         Permissions : Permissions
     }
 
@@ -20,7 +19,7 @@ type Head =
         DocumentKey.Create(id, Head.TypeName)
     member private this.DocKey = Head.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

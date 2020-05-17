@@ -5,7 +5,6 @@ open Models.Identificators
 open Models.Converters
 open Models.Permissions
 open Models.Problems
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
 open System
 open Utils.ResultHelper

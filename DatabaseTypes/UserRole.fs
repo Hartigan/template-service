@@ -1,13 +1,12 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type UserRole =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "name")>]
+        [<JsonPropertyName("name")>]
         Name : string
     }
 
@@ -16,7 +15,7 @@ type UserRole =
         DocumentKey.Create(id, UserRole.TypeName)
     member private this.DocKey = UserRole.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

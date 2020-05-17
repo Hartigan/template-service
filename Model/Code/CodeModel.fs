@@ -4,7 +4,6 @@ open DatabaseTypes
 open Models.Identificators
 open Models.Converters
 open Models.Permissions
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
 open System
 

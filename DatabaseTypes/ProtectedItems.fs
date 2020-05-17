@@ -1,22 +1,20 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type ProtectedItem =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "type")>]
+        [<JsonPropertyName("type")>]
         Type : string
     }
 
-[<DataContract>]
 type GroupItems = 
     {
-        [<field: DataMember(Name = "user_id")>]
+        [<JsonPropertyName("user_id")>]
         GroupId : string
-        [<field: DataMember(Name = "allowed")>]
+        [<JsonPropertyName("allowed")>]
         Allowed: List<ProtectedItem>
     }
 
@@ -25,7 +23,7 @@ type GroupItems =
         DocumentKey.Create(id, GroupItems.TypeName)
     member private this.DocKey = GroupItems.CreateDocumentKey(this.GroupId)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()
@@ -36,14 +34,13 @@ type GroupItems =
         member this.Key
             with get() = this.DocKey.Key
 
-[<DataContract>]
 type UserItems = 
     {
-        [<field: DataMember(Name = "user_id")>]
+        [<JsonPropertyName("user_id")>]
         UserId : string
-        [<field: DataMember(Name = "owned")>]
+        [<JsonPropertyName("owned")>]
         Owned: List<ProtectedItem>
-        [<field: DataMember(Name = "allowed")>]
+        [<JsonPropertyName("allowed")>]
         Allowed: List<ProtectedItem>
     }
 
@@ -52,7 +49,7 @@ type UserItems =
         DocumentKey.Create(id, UserItems.TypeName)
     member private this.DocKey = UserItems.CreateDocumentKey(this.UserId)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

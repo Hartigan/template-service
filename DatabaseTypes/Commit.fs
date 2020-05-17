@@ -1,33 +1,31 @@
 namespace DatabaseTypes
 
 open System
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type Target =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "type")>]
+        [<JsonPropertyName("type")>]
         Type : string
     }
 
-[<DataContract>]
 type Commit =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "head_id")>]
+        [<JsonPropertyName("head_id")>]
         HeadId : string
-        [<field: DataMember(Name = "author_id")>]
+        [<JsonPropertyName("author_id")>]
         AuthorId : string
-        [<field: DataMember(Name = "target")>]
+        [<JsonPropertyName("target")>]
         Target : Target
-        [<field: DataMember(Name = "timestamp")>]
+        [<JsonPropertyName("timestamp")>]
         Timestamp : DateTimeOffset
-        [<field: DataMember(Name = "parent_id")>]
+        [<JsonPropertyName("parent_id")>]
         ParentId : string
-        [<field: DataMember(Name = "description")>]
+        [<JsonPropertyName("description")>]
         Description : string
     }
 
@@ -36,7 +34,7 @@ type Commit =
         DocumentKey.Create(id, Commit.TypeName)
     member private this.DocKey = Commit.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

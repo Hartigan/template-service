@@ -11,7 +11,6 @@
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <Compile Include="AsyncBuilder.fs" />
     <Compile Include="TaskBuilder.fs" />
-    <Compile Include="ReflectionHelper.fs" />
     <Compile Include="ResultHelper.fs" />
     <Compile Include="OptionConverter.fs" />
   </ItemGroup>

@@ -1,19 +1,18 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type UserGroup =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "owner_id")>]
+        [<JsonPropertyName("owner_id")>]
         OwnerId : string
-        [<field: DataMember(Name = "name")>]
+        [<JsonPropertyName("name")>]
         Name : string
-        [<field: DataMember(Name = "description")>]
+        [<JsonPropertyName("description")>]
         Description : string
-        [<field: DataMember(Name = "members")>]                
+        [<JsonPropertyName("members")>]                
         Members : List<Member>
     }
 
@@ -22,7 +21,7 @@ type UserGroup =
         DocumentKey.Create(id, UserGroup.TypeName)
     member private this.DocKey = UserGroup.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

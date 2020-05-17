@@ -2,7 +2,6 @@ namespace Models.Problems
 
 open Models.Converters
 open Models.Code
-open System.Runtime.Serialization
 open System.Text.Json.Serialization
 open System
 

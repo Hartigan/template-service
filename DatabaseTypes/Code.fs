@@ -1,12 +1,11 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization;
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type Code =
     {
-        [<field: DataMember(Name = "language")>]
+        [<JsonPropertyName("language")>]
         Language : string
-        [<field: DataMember(Name = "content")>]
+        [<JsonPropertyName("content")>]
         Content : string
     }

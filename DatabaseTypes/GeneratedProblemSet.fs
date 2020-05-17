@@ -1,17 +1,16 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type GeneratedProblemSet =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "problems")>]
+        [<JsonPropertyName("problems")>]
         Problems : List<string>
-        [<field: DataMember(Name = "title")>]
+        [<JsonPropertyName("title")>]
         Title : string
-        [<field: DataMember(Name = "view")>]
+        [<JsonPropertyName("view")>]
         Duration : int32
     }
 
@@ -20,7 +19,7 @@ type GeneratedProblemSet =
         DocumentKey.Create(id, GeneratedProblemSet.TypeName)
     member private this.DocKey = GeneratedProblemSet.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()

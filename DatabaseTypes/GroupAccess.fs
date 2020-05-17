@@ -1,13 +1,12 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization;
+open System.Text.Json.Serialization;
 
 
-[<DataContract>]
 type GroupAccess =
     {
-        [<field: DataMember(Name = "group_id")>]
+        [<JsonPropertyName("group_id")>]
         GroupId : string
-        [<field: DataMember(Name = "access")>]
+        [<JsonPropertyName("access")>]
         Access : uint64
     }

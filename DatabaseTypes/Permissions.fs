@@ -1,13 +1,12 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
-[<DataContract>]
 type Permissions = {
-    [<field: DataMember(Name = "owner_id")>]
+    [<JsonPropertyName("owner_id")>]
     OwnerId : string
-    [<field: DataMember(Name = "groups")>]
+    [<JsonPropertyName("groups")>]
     Groups: List<GroupAccess>
-    [<field: DataMember(Name = "members")>]
+    [<JsonPropertyName("members")>]
     Members: List<Member>
 }

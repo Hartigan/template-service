@@ -1,13 +1,12 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization;
+open System.Text.Json.Serialization;
 
 
-[<DataContract>]
 type Member =
     {
-        [<field: DataMember(Name = "user_id")>]
+        [<JsonPropertyName("user_id")>]
         UserId : string
-        [<field: DataMember(Name = "access")>]
+        [<JsonPropertyName("access")>]
         Access : uint64
     }

@@ -1,38 +1,35 @@
 namespace DatabaseTypes
 
-open System.Runtime.Serialization
+open System.Text.Json.Serialization
 
 
-[<DataContract>]
 type FolderLink = {
-    [<field: DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     Id : string
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name : string
 }
 
-[<DataContract>]
 type HeadLink = {
-    [<field: DataMember(Name = "id")>]
+    [<JsonPropertyName("id")>]
     Id : string
-    [<field: DataMember(Name = "name")>]
+    [<JsonPropertyName("name")>]
     Name : string
-    [<field: DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     Type: string
 }
 
-[<DataContract>]
 type Folder =
     {
-        [<field: DataMember(Name = "id")>]
+        [<JsonPropertyName("id")>]
         Id : string
-        [<field: DataMember(Name = "name")>]
+        [<JsonPropertyName("name")>]
         Name : string
-        [<field: DataMember(Name = "permissions")>]
+        [<JsonPropertyName("permissions")>]
         Permissions : Permissions
-        [<field: DataMember(Name = "folders")>]
+        [<JsonPropertyName("folders")>]
         Folders : List<FolderLink>
-        [<field: DataMember(Name = "heads")>]
+        [<JsonPropertyName("heads")>]
         Heads : List<HeadLink>
     }
 
@@ -41,7 +38,7 @@ type Folder =
         DocumentKey.Create(id, Folder.TypeName)
     member private this.DocKey = Folder.CreateDocumentKey(this.Id)
 
-    [<DataMember(Name = "type")>]
+    [<JsonPropertyName("type")>]
     member private this.Type
         with get() = this.DocKey.Type
         and set(value: string) = ()
