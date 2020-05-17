@@ -7,7 +7,7 @@ open Contexts
 open CodeGeneratorContext
 open System.Linq
 open Services.VersionControl
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Heads
 open Utils.ResultHelper
 

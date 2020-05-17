@@ -1,9 +1,9 @@
 namespace Models.Heads
 
 open DatabaseTypes
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Text.Json.Serialization
-open Models.Converters
+open Utils.Converters
 open System
 
 [<JsonConverter(typeof<ModelTypeConverter>)>]

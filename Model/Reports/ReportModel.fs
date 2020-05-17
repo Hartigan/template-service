@@ -1,8 +1,8 @@
 namespace Models.Reports
 
 open DatabaseTypes
-open Models.Identificators
-open Models.Converters
+open DatabaseTypes.Identificators
+open Utils.Converters
 open Models.Permissions
 open Models.Problems
 open System.Text.Json.Serialization

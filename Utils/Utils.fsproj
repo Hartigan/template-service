@@ -9,6 +9,7 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
     <PackageReference Include="FSharpx.Async" Version="1.14.1" />
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <Compile Include="Converters.fs" />
     <Compile Include="AsyncBuilder.fs" />
     <Compile Include="TaskBuilder.fs" />
     <Compile Include="ResultHelper.fs" />

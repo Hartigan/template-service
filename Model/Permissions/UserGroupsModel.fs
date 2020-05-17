@@ -1,8 +1,8 @@
 namespace Models.Permissions
 
 open DatabaseTypes
-open Models.Identificators
-open Models.Converters
+open DatabaseTypes.Identificators
+open Utils.Converters
 open System.Text.Json.Serialization
 open System
 

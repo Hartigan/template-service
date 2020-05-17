@@ -1,7 +1,7 @@
 namespace Services.Permissions
 
 open Models.Permissions
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Services.Permissions
 open Contexts
 open DatabaseTypes

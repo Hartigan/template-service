@@ -2,7 +2,7 @@ namespace Services.Problems
 
 open CodeGeneratorContext
 open Models.Problems
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System
 
 type IGeneratorService =

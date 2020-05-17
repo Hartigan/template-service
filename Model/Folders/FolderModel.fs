@@ -2,10 +2,10 @@ namespace Models.Folders
 
 open System
 open DatabaseTypes
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Heads
 open Models.Permissions
-open Models.Converters
+open Utils.Converters
 open System.Text.Json.Serialization
 open Utils.ResultHelper
 

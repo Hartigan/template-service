@@ -1,4 +1,4 @@
-namespace Models.Converters
+namespace Utils.Converters
 
 open System
 open System.Text.Json.Serialization

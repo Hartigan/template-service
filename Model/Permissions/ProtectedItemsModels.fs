@@ -1,7 +1,7 @@
 namespace Models.Permissions
 
 open DatabaseTypes
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Text.Json.Serialization
 open System
 open Utils.ResultHelper

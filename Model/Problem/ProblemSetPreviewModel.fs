@@ -1,6 +1,6 @@
 namespace Models.Problems
 
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Text.Json.Serialization
 open System
 open Models.Permissions

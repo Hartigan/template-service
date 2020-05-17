@@ -2,7 +2,7 @@ namespace Services.VersionControl
 
 open Contexts
 open DatabaseTypes
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Heads
 open System
 open Services.Permissions

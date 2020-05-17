@@ -1,6 +1,6 @@
 namespace Models.Permissions
 
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Text.Json.Serialization
 
 type GroupAccessModel =

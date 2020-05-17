@@ -3,7 +3,7 @@ namespace Services.Folders
 open System
 open Models.Heads
 open Models.Folders
-open Models.Identificators
+open DatabaseTypes.Identificators
 
 type IFoldersService =
     abstract member Get : FolderId -> Async<Result<FolderModel, Exception>>

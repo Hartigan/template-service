@@ -1,7 +1,7 @@
 namespace Services.Permissions
 
 open System
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Permissions
 
 

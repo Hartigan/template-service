@@ -2,8 +2,8 @@ namespace Services.Permissions
 
 open System
 open Models.Permissions
-open Models.Identificators
-open Models.Converters
+open DatabaseTypes.Identificators
+open Utils.Converters
 open DatabaseTypes
 
 type IPermissionsService =

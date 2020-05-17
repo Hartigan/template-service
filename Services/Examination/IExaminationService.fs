@@ -1,6 +1,6 @@
 namespace Services.Examination
 
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System
 open Models.Reports
 open Models.Problems

@@ -2,7 +2,7 @@ namespace Services.Examination
 
 open Contexts
 open DatabaseTypes
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Reports
 open Models.Problems
 open Services.Problems

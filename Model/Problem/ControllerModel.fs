@@ -1,6 +1,6 @@
 namespace Models.Problems
 
-open Models.Converters
+open Utils.Converters
 open Models.Code
 open System.Text.Json.Serialization
 open System

@@ -1,7 +1,7 @@
-namespace Models.Identificators
+namespace DatabaseTypes.Identificators
 
 open System
-open Models.Converters
+open Utils.Converters
 open System.Text.Json.Serialization
 
 [<JsonConverter(typeof<FolderIdConverter>)>]

@@ -1,6 +1,6 @@
 namespace Models.Reports
 
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Text.Json.Serialization
 open System
 open Models.Problems

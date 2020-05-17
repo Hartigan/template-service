@@ -3,7 +3,7 @@ namespace WebApi
 open Microsoft.AspNetCore.Mvc
 open Microsoft.AspNetCore.Authorization
 open Services.Permissions
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System.Security.Claims
 open System
 open Microsoft.Extensions.Logging

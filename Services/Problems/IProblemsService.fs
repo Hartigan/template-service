@@ -1,7 +1,7 @@
 namespace Services.Problems
 
 open Models.Problems
-open Models.Identificators
+open DatabaseTypes.Identificators
 open System
 
 type IProblemsService =

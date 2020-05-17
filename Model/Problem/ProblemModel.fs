@@ -1,8 +1,8 @@
 namespace Models.Problems
 
 open DatabaseTypes
-open Models.Identificators
-open Models.Converters
+open DatabaseTypes.Identificators
+open Utils.Converters
 open Models.Code
 open System.Text.Json.Serialization
 open System

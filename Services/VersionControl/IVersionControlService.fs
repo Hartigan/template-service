@@ -1,6 +1,6 @@
 namespace Services.VersionControl
 
-open Models.Identificators
+open DatabaseTypes.Identificators
 open Models.Heads
 open System
 

@@ -1,7 +1,7 @@
 namespace Models.Permissions
 
-open Models.Identificators
-open Models.Converters
+open DatabaseTypes.Identificators
+open Utils.Converters
 open System.Text.Json.Serialization
 
 [<JsonConverter(typeof<GroupNameConverter>)>]
