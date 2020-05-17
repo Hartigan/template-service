@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import AuthContent from './components/auth/AuthContent'
 import './App.css';
@@ -13,23 +13,24 @@ import NavigationTabs from './components/tabs/NavigationTabs';
 import { PermissionsService } from './services/PermissionsService';
 import { UserService } from './services/UserService';
 import { ExaminationService } from './services/ExaminationService';
+import { User } from 'oidc-client';
 
 const useStyles = makeStyles(theme => ({
-  offset: theme.mixins.toolbar,
-  main: {
-    width: "100%",
-    height: "100%",
-  },
-  contentCell: {
-    marginTop: 64,
-    width: "100%",
-    height: "100%",
-  },
-  title: {
-    align: "left",
-    minWidth: 200,
-    flexGrow: 1,
-  },
+    offset: theme.mixins.toolbar,
+    main: {
+        width: "100%",
+        height: "100%",
+    },
+    contentCell: {
+        marginTop: 64,
+        width: "100%",
+        height: "100%",
+    },
+    title: {
+        align: "left",
+        minWidth: 200,
+        flexGrow: 1,
+    },
 }));
 
 const authService = new AuthService();
@@ -42,35 +43,73 @@ const permissionsService = new PermissionsService(httpServiceFactory);
 const userService = new UserService(httpServiceFactory);
 const examinationService = new ExaminationService(httpServiceFactory);
 
+interface IState {
+    isLoaded: boolean;
+    user: User | null;
+}
+
 const App: React.FC = () => {
-  const classes = useStyles();
-  return (
-    <div className="App">
-      <Grid container className={classes.main}>
-        <Grid item>
-          <AppBar>
-            <Toolbar>
-              <Typography variant="h6" noWrap={true} className={classes.title}>
-                Testing service
+    const [ state, setState ] = React.useState<IState>({
+        isLoaded: false,
+        user: null
+    })
+
+    const classes = useStyles();
+
+    useEffect(() => {
+        if (state.isLoaded) {
+            return;
+        }
+
+        authService.getUser().then(user => {
+            setState({
+                ...state,
+                isLoaded: true,
+                user: user
+            })
+        });
+    });
+
+    const getMainView = () => {
+        if (state.user === null) {
+            return (
+                <div />
+            );
+        }
+        else {
+            return (
+                <NavigationTabs
+                    versionService={versionService}
+                    foldersService={foldersService}
+                    problemsService={problemsService}
+                    problemSetService={problemSetService}
+                    permissionsService={permissionsService}
+                    userService={userService}
+                    examinationService={examinationService}
+                    />
+            );
+        }
+    }
+
+    return (
+        <div className="App">
+            <Grid container className={classes.main}>
+                <Grid item>
+                    <AppBar>
+                        <Toolbar>
+                            <Typography variant="h6" noWrap={true} className={classes.title}>
+                                Testing service
               </Typography>
-              <AuthContent authService={authService} />
-            </Toolbar>
-          </AppBar>
-        </Grid>
-        <Grid item className={classes.contentCell}>
-          <NavigationTabs
-              versionService={versionService}
-              foldersService={foldersService}
-              problemsService={problemsService}
-              problemSetService={problemSetService}
-              permissionsService={permissionsService}
-              userService={userService}
-              examinationService={examinationService}
-            />
-        </Grid>
-      </Grid>
-    </div>
-  );
+                            <AuthContent authService={authService} />
+                        </Toolbar>
+                    </AppBar>
+                </Grid>
+                <Grid item className={classes.contentCell}>
+                    {getMainView()}
+                </Grid>
+            </Grid>
+        </div>
+    );
 }
 
 export default App;
