@@ -7,7 +7,6 @@ open Models.Heads
 open Models.Permissions
 open Models.Converters
 open System.Text.Json.Serialization
-open System.Text.Json.Serialization
 open Utils.ResultHelper
 
 [<JsonConverter(typeof<FolderNameConverter>)>]
