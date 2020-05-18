@@ -30,7 +30,7 @@ type ProblemReportModel =
     static member Create(entity: ProblemReport,
                          problem: GeneratedProblemModel) : Result<ProblemReportModel, Exception> =
         Ok({
-            Id              = GeneratedProblemId(entity.GeneratedProblemId)
+            Id              = entity.GeneratedProblemId
             Title           = problem.Title
             View            = problem.View
             Answer          = entity.Answer |> Option.map ProblemAnswer
@@ -76,7 +76,7 @@ type ReportModel =
                          problemSet: ProblemSetReportModel,
                          author: UserModel) : Result<ReportModel, Exception> =
         Ok({
-            Id              = ReportId(entity.Id)
+            Id              = entity.Id
             ProblemSet      = problemSet
             StartedAt       = entity.StartedAt
             FinishedAt      = entity.FinishedAt

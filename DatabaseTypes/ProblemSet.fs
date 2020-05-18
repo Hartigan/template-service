@@ -1,28 +1,33 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<ProblemSetTypeConverter>)>]
+type ProblemSetType private () =
+    inherit BaseType("problem_set")
+    static member Instance = ProblemSetType()
+and ProblemSetTypeConverter() =
+    inherit StringConverter<ProblemSetType>((fun m -> m.Value), (fun _ -> ProblemSetType.Instance))
 
 type ProblemSet =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : ProblemSetId
         [<JsonPropertyName("title")>]
         Title : string
         [<JsonPropertyName("head_ids")>]
-        Heads : System.Collections.Generic.List<string>
+        Heads : List<HeadId>
         [<JsonPropertyName("duration")>]
         Duration : int32
+        [<JsonPropertyName("type")>]
+        Type : ProblemSetType
     }
 
-    static member TypeName = "problem_set"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, ProblemSet.TypeName)
+    static member CreateDocumentKey(id: ProblemSetId): DocumentKey =
+        DocumentKey.Create(id.Value, ProblemSetType.Instance.Value)
     member private this.DocKey = ProblemSet.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

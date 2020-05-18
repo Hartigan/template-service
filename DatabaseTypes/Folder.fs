@@ -1,18 +1,27 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<FolderTypeConverter>)>]
+type FolderType private () =
+    inherit BaseType("folder")
+    static member Instance = FolderType()
+and FolderTypeConverter() =
+    inherit StringConverter<FolderType>((fun m -> m.Value), (fun _ -> FolderType.Instance))
 
 
 type FolderLink = {
     [<JsonPropertyName("id")>]
-    Id : string
+    Id : FolderId
     [<JsonPropertyName("name")>]
     Name : string
 }
 
 type HeadLink = {
     [<JsonPropertyName("id")>]
-    Id : string
+    Id : HeadId
     [<JsonPropertyName("name")>]
     Name : string
     [<JsonPropertyName("type")>]
@@ -22,7 +31,7 @@ type HeadLink = {
 type Folder =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : FolderId
         [<JsonPropertyName("name")>]
         Name : string
         [<JsonPropertyName("permissions")>]
@@ -31,17 +40,13 @@ type Folder =
         Folders : List<FolderLink>
         [<JsonPropertyName("heads")>]
         Heads : List<HeadLink>
+        [<JsonPropertyName("type")>]
+        Type : FolderType
     }
 
-    static member TypeName = "folder"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, Folder.TypeName)
+    static member CreateDocumentKey(id: FolderId): DocumentKey =
+        DocumentKey.Create(id.Value, FolderType.Instance.Value)
     member private this.DocKey = Folder.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

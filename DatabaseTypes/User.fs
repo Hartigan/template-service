@@ -1,11 +1,20 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<UserTypeConverter>)>]
+type UserType private () =
+    inherit BaseType("user")
+    static member Instance = UserType()
+and UserTypeConverter() =
+    inherit StringConverter<UserType>((fun m -> m.Value), (fun _ -> UserType.Instance))
 
 type User =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : UserId
         [<JsonPropertyName("first_name")>]
         FirstName : string
         [<JsonPropertyName("last_name")>]
@@ -24,17 +33,13 @@ type User =
         IsAuthenticated : bool
         [<JsonPropertyName("authentication_type")>]
         AuthenticationType : string
+        [<JsonPropertyName("type")>]
+        Type : UserType
     }
 
-    static member TypeName = "user"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, User.TypeName)
+    static member CreateDocumentKey(id: UserId): DocumentKey =
+        DocumentKey.Create(id.Value, UserType.Instance.Value)
     member private this.DocKey = User.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

@@ -26,7 +26,7 @@ type FolderLinkModel =
 
     static member Create(link: FolderLink) : Result<FolderLinkModel, Exception> =
         Ok({
-            FolderLinkModel.Id      = FolderId(link.Id)
+            FolderLinkModel.Id      = link.Id
             Name                    = FolderName(link.Name)
         })
 
@@ -45,7 +45,7 @@ type HeadLinkModel =
         match ModelTypeConverter.Create(link.Type) with
         | Ok(modelType) ->
             Ok({
-                HeadLinkModel.Id    = HeadId(link.Id)
+                HeadLinkModel.Id    = link.Id
                 Name                = HeadName(link.Name)
                 Type                = modelType
             })
@@ -77,7 +77,7 @@ type FolderModel =
         match (folderLinks, headLinks) with
         | (Ok(folders), Ok(heads)) ->
             Ok({
-                FolderModel.Id      = FolderId(folder.Id)
+                FolderModel.Id      = folder.Id
                 Name                = FolderName(folder.Name)
                 Folders             = folders
                 Heads               = heads

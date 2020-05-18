@@ -37,7 +37,7 @@ type ProblemModel =
             match codeModels with
             | (Ok(viewModel), Ok(controllerModel), Ok(validatorModel)) ->
                 Ok({
-                    ProblemModel.Id = ProblemId(problem.Id)
+                    ProblemModel.Id = problem.Id
                     Title = ProblemTitle(problem.Title)
                     View = viewModel
                     Controller = controllerModel

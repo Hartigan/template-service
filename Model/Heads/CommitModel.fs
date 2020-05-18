@@ -20,8 +20,8 @@ and ConcreteId =
 and ModelTypeConverter() =
     inherit StringConverter<ModelType>((fun m ->
                                             match m with
-                                            | ModelType.Problem -> Problem.TypeName
-                                            | ModelType.ProblemSet -> ProblemSet.TypeName
+                                            | ModelType.Problem -> ProblemType.Instance.Value
+                                            | ModelType.ProblemSet -> ProblemSetType.Instance.Value
                                             | _ -> failwith "Invalid model type"),
                                        (fun s ->
                                             match ModelTypeConverter.Create(s) with
@@ -29,9 +29,9 @@ and ModelTypeConverter() =
                                             | Error(ex) -> failwith ex.Message
                                        ))
     static member Create(typeName: string) : Result<ModelType, Exception> =
-        if typeName = Problem.TypeName then
+        if typeName = ProblemType.Instance.Value then
             Ok(ModelType.Problem)
-        elif typeName = ProblemSet.TypeName then
+        elif typeName = ProblemSetType.Instance.Value then
             Ok(ModelType.ProblemSet)
         else
             Error(InvalidOperationException("cannot create ModelType") :> Exception)
@@ -49,10 +49,10 @@ type TargetModel private (targetId: TargetId, concreteId: ConcreteId) =
     member val Type = concreteId.Type
 
     static member Create(target: Target): Result<TargetModel, Exception> =
-        if target.Type = Problem.TypeName then
-            Ok(TargetModel(TargetId(target.Id), ConcreteId.Problem(ProblemId(target.Id))))
-        elif target.Type = ProblemSet.TypeName then
-            Ok(TargetModel(TargetId(target.Id), ConcreteId.ProblemSet(ProblemSetId(target.Id))))
+        if target.Type = ProblemType.Instance.Value then
+            Ok(TargetModel(target.Id, ConcreteId.Problem(ProblemId(target.Id.Value))))
+        elif target.Type = ProblemSetType.Instance.Value then
+            Ok(TargetModel(target.Id, ConcreteId.ProblemSet(ProblemSetId(target.Id.Value))))
         else Error(InvalidOperationException("cannot create TargetModel") :> Exception)
 
 [<JsonConverter(typeof<CommitDescriptionConverter>)>]
@@ -62,35 +62,40 @@ type CommitDescription(description: string) =
 and CommitDescriptionConverter() =
     inherit StringConverter<CommitDescription>((fun m -> m.Value), (fun s -> CommitDescription(s)))
 
-type CommitModel private (id: CommitId, authorId: UserId, headId: HeadId, target: TargetModel, timestamp: DateTimeOffset, parentId: CommitId, description: CommitDescription) =
+type CommitModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id          : CommitId
 
+        [<JsonPropertyName("author_id")>]
+        AuthorId    : UserId
 
-    [<JsonPropertyName("id")>]
-    member val Id = id
+        [<JsonPropertyName("head_id")>]
+        HeadId      : HeadId
 
-    [<JsonPropertyName("author_id")>]
-    member val AuthorId = authorId
+        [<JsonPropertyName("target")>]
+        Target      : TargetModel
 
-    [<JsonPropertyName("head_id")>]
-    member val HeadId = headId
+        [<JsonPropertyName("timestamp")>]
+        Timestamp   : DateTimeOffset
 
-    [<JsonPropertyName("target")>]
-    member val Target = target
+        [<JsonPropertyName("parent_id")>]
+        ParentId    : CommitId option
 
-    [<JsonPropertyName("timestamp")>]
-    member val Timestamp = timestamp
-
-    [<JsonPropertyName("parent_id")>]
-    member val ParentId = parentId
-
-    [<JsonPropertyName("description")>]
-    member val Description = description
+        [<JsonPropertyName("description")>]
+        Description : CommitDescription
+    }
 
     static member Create(commit: Commit): Result<CommitModel, Exception> =
         match TargetModel.Create(commit.Target) with
         | Error(ex) -> Error(InvalidOperationException("cannot create CommitModel", ex) :> Exception)
         | Ok(target) ->
-            Ok
-                (CommitModel
-                    (CommitId(commit.Id), UserId(commit.AuthorId), HeadId(commit.HeadId), target, commit.Timestamp, CommitId(commit.ParentId),
-                     CommitDescription(commit.Description)))
+            Ok({
+                Id          = commit.Id
+                AuthorId    = commit.AuthorId
+                HeadId      = commit.HeadId
+                Target      = target
+                Timestamp   = commit.Timestamp
+                ParentId    = commit.ParentId
+                Description = CommitDescription(commit.Description)
+            })

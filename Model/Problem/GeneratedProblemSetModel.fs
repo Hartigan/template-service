@@ -4,26 +4,27 @@ open DatabaseTypes
 open DatabaseTypes.Identificators
 open Utils.Converters
 open System.Text.Json.Serialization
-open System.Collections.Generic
-open System.Linq
 open System
 
 
-type GeneratedProblemSetModel private (id: GeneratedProblemSetId,
-                                       title: ProblemSetTitle,
-                                       problems: List<GeneratedProblemId>,
-                                       duration: TimeSpan) =
-    [<JsonPropertyName("id")>]
-    member val Id           = id with get
-    [<JsonPropertyName("title")>]
-    member val Title        = title with get
-    [<JsonPropertyName("problems")>]
-    member val Problems     = problems with get
-    [<JsonPropertyName("duration")>]
-    member val Duration     = duration with get
+type GeneratedProblemSetModel =
+
+    {
+        [<JsonPropertyName("id")>]
+        Id          : GeneratedProblemSetId
+        [<JsonPropertyName("title")>]
+        Title       : ProblemSetTitle
+        [<JsonPropertyName("problems")>]
+        Problems    : List<GeneratedProblemId>
+        [<JsonPropertyName("duration")>]
+        Duration    : TimeSpan
+    }
+    
 
     static member Create(generatedProblemSet: GeneratedProblemSet) : Result<GeneratedProblemSetModel, Exception> =
-        Ok(GeneratedProblemSetModel(GeneratedProblemSetId(generatedProblemSet.Id),
-                                    ProblemSetTitle(generatedProblemSet.Title),
-                                    generatedProblemSet.Problems.Select(fun x -> GeneratedProblemId(x)).ToList(),
-                                    TimeSpan(0, 0, generatedProblemSet.Duration)))
+        Ok({
+            Id          = generatedProblemSet.Id
+            Title       = ProblemSetTitle(generatedProblemSet.Title)
+            Problems    = generatedProblemSet.Problems
+            Duration    = TimeSpan(0, 0, generatedProblemSet.Duration)
+        })

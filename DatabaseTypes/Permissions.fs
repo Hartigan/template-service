@@ -1,10 +1,11 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
 
 type Permissions = {
     [<JsonPropertyName("owner_id")>]
-    OwnerId : string
+    OwnerId : UserId
     [<JsonPropertyName("groups")>]
     Groups: List<GroupAccess>
     [<JsonPropertyName("members")>]

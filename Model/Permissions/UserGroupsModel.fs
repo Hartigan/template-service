@@ -18,7 +18,7 @@ type UserGroupsModel =
 
     static member Create(userGroups: UserGroups) : Result<UserGroupsModel, Exception> =
         Ok({
-            UserGroupsModel.UserId  = UserId(userGroups.UserId)
-            Allowed                 = userGroups.Allowed |> Seq.map(fun id -> GroupId(id)) |> List.ofSeq
-            Owned                   = userGroups.Owned |> Seq.map(fun id -> GroupId(id)) |> List.ofSeq
+            UserGroupsModel.UserId  = userGroups.UserId
+            Allowed                 = userGroups.Allowed
+            Owned                   = userGroups.Owned
         })

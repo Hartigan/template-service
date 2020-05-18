@@ -5,6 +5,7 @@
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
+    <Compile Include="Types.fs" />
     <Compile Include="Identificators.fs" />
     <Compile Include="IDocumentKey.fs" />
     <Compile Include="DocumentKey.fs" />

@@ -1,30 +1,35 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<UserGroupTypeConverter>)>]
+type UserGroupType private () =
+    inherit BaseType("user_group")
+    static member Instance = UserGroupType()
+and UserGroupTypeConverter() =
+    inherit StringConverter<UserGroupType>((fun m -> m.Value), (fun _ -> UserGroupType.Instance))
 
 type UserGroup =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : GroupId
         [<JsonPropertyName("owner_id")>]
-        OwnerId : string
+        OwnerId : UserId
         [<JsonPropertyName("name")>]
         Name : string
         [<JsonPropertyName("description")>]
         Description : string
         [<JsonPropertyName("members")>]                
         Members : List<Member>
+        [<JsonPropertyName("type")>]
+        Type : UserGroupType
     }
 
-    static member TypeName = "user_group"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, UserGroup.TypeName)
+    static member CreateDocumentKey(id: GroupId): DocumentKey =
+        DocumentKey.Create(id.Value, UserGroupType.Instance.Value)
     member private this.DocKey = UserGroup.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

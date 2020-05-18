@@ -34,8 +34,9 @@ type GeneratorService(viewFormatter: IViewFormatter,
             )
             |> Async.MapResult(fun (formattedView, result) ->
                 {
-                    GeneratedProblem.Id = Guid.NewGuid().ToString()
-                    ProblemId = problem.Id.Value
+                    GeneratedProblem.Id = GeneratedProblemId(Guid.NewGuid().ToString())
+                    Type = GeneratedProblemType.Instance
+                    ProblemId = problem.Id
                     Seed = seed.Value
                     Title = problem.Title.Value
                     View =
@@ -79,11 +80,11 @@ type GeneratorService(viewFormatter: IViewFormatter,
             )
 
         member this.Get(id: GeneratedProblemId): Async<Result<GeneratedProblemModel, Exception>> =
-            generatedProblemContext.Get(GeneratedProblem.CreateDocumentKey(id.Value))
+            generatedProblemContext.Get(GeneratedProblem.CreateDocumentKey(id))
             |> Async.TryMapResult GeneratedProblemModel.Create
 
         member this.Get(id: GeneratedProblemSetId): Async<Result<GeneratedProblemSetModel, Exception>> =
-            generatedProblemSetContext.Get(GeneratedProblemSet.CreateDocumentKey(id.Value))
+            generatedProblemSetContext.Get(GeneratedProblemSet.CreateDocumentKey(id))
             |> Async.TryMapResult GeneratedProblemSetModel.Create
 
         member this.Generate(problemSetId: ProblemSetId): Async<Result<GeneratedProblemSetId, Exception>> =
@@ -111,7 +112,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 generatedProblems
                 |> Seq.map(fun generatedProblem ->
                     generatedProblemContext.Insert(generatedProblem, generatedProblem)
-                    |> Async.MapResult(fun _ -> GeneratedProblemId(generatedProblem.Id))
+                    |> Async.MapResult(fun _ -> generatedProblem.Id)
                 )
                 |> ResultOfAsyncSeq
                 |> Async.MapResult(fun generatedProblemIds -> (generatedProblemIds, problemSet))
@@ -119,16 +120,14 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.BindResult(fun (generatedProblemIds, problemSet) ->
                 let generatedProblemSet =
                     {
-                        GeneratedProblemSet.Id = Guid.NewGuid().ToString()
+                        GeneratedProblemSet.Id = GeneratedProblemSetId(Guid.NewGuid().ToString())
+                        Type = GeneratedProblemSetType.Instance
                         Duration = Convert.ToInt32(problemSet.Duration.Value.TotalSeconds)
-                        Problems =
-                            generatedProblemIds
-                            |> Seq.map(fun id -> id.Value)
-                            |> List.ofSeq
+                        Problems = generatedProblemIds
                         Title = problemSet.Title.Value
                     }
                 generatedProblemSetContext.Insert(generatedProblemSet, generatedProblemSet)
-                |> Async.MapResult(fun _ -> GeneratedProblemSetId(generatedProblemSet.Id))
+                |> Async.MapResult(fun _ -> generatedProblemSet.Id)
             )
 
         member this.Generate(problemId: ProblemId) =
@@ -136,5 +135,5 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.BindResult(fun problem -> this.CreateGeneratedProblem(problem, ProblemSeed(random.Next())))
             |> Async.BindResult(fun generatedProblem ->
                 generatedProblemContext.Insert(generatedProblem, generatedProblem)
-                |> Async.MapResult(fun _ -> GeneratedProblemId(generatedProblem.Id))
+                |> Async.MapResult(fun _ -> generatedProblem.Id)
             )

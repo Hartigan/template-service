@@ -1,28 +1,33 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<HeadTypeConverter>)>]
+type HeadType private () =
+    inherit BaseType("head")
+    static member Instance = HeadType()
+and HeadTypeConverter() =
+    inherit StringConverter<HeadType>((fun m -> m.Value), (fun _ -> HeadType.Instance))
 
 type Head =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : HeadId
         [<JsonPropertyName("name")>]
         Name : string
         [<JsonPropertyName("commit")>]
         Commit : Commit
         [<JsonPropertyName("permissions")>]
         Permissions : Permissions
+        [<JsonPropertyName("type")>]
+        Type : HeadType
     }
 
-    static member TypeName = "head"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, Head.TypeName)
+    static member CreateDocumentKey(id: HeadId): DocumentKey =
+        DocumentKey.Create(id.Value, HeadType.Instance.Value)
     member private this.DocKey = Head.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

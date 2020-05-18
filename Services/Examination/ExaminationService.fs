@@ -37,7 +37,7 @@ type ExaminationService(reportContext: IContext<Report>,
                 Error(InvalidOperationException("Out of time") :> Exception)
 
     member this.TryComplete(submissionId: SubmissionId) : Async<Result<Submission, Exception>> =
-        submissionContext.Get(Submission.CreateDocumentKey(submissionId.Value))
+        submissionContext.Get(Submission.CreateDocumentKey(submissionId))
         |> Async.BindResult(fun s ->
             if s.Deadline < DateTimeOffset.UtcNow then
                 permissionsService.GetOwner(ProtectedId.Submission(submissionId))
@@ -45,7 +45,7 @@ type ExaminationService(reportContext: IContext<Report>,
                     (this :> IExaminationService).Complete(submissionId, userId)
                 )
                 |> Async.BindResult(fun _ ->
-                    submissionContext.Get(Submission.CreateDocumentKey(submissionId.Value))
+                    submissionContext.Get(Submission.CreateDocumentKey(submissionId))
                 )
             else
                 async.Return(Ok(s))
@@ -55,7 +55,7 @@ type ExaminationService(reportContext: IContext<Report>,
         member this.GetPreview(submissionId: SubmissionId) =
             this.TryComplete(submissionId)
             |> Async.BindResult(fun submission ->
-                generatorService.Get(GeneratedProblemSetId(submission.GeneratedProblemSetId))
+                generatorService.Get(submission.GeneratedProblemSetId)
                 |> Async.BindResult(fun generatedProblemSet ->
                     permissionsService.GetOwner(ProtectedId.Submission(submissionId))
                     |> Async.BindResult userService.Get
@@ -83,40 +83,40 @@ type ExaminationService(reportContext: IContext<Report>,
 
         member this.ApplyAnswer(generatedProblemId, answer, submissionId) =
             let problemAnswer = {
-                ProblemAnswer.GeneratedProblemId = generatedProblemId.Value
+                ProblemAnswer.GeneratedProblemId = generatedProblemId
                 Answer = answer.Value
                 Timestamp = DateTimeOffset.UtcNow
             }
 
-            submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
+            submissionContext.Update(Submission.CreateDocumentKey(submissionId),
                                      this.UpdateSubmission(problemAnswer))
 
         member this.Complete(submissionId, userId) =
-            submissionContext.Get(Submission.CreateDocumentKey(submissionId.Value))
+            submissionContext.Get(Submission.CreateDocumentKey(submissionId))
             |> Async.BindResult(fun entity ->
                 match entity.ReportId with
-                | Some(reportId) -> async.Return(Ok(ReportId(reportId)))
+                | Some(reportId) -> async.Return(Ok(reportId))
                 | None ->
-                    let generatedProblemSetId = GeneratedProblemSetId(entity.GeneratedProblemSetId)
+                    let generatedProblemSetId = entity.GeneratedProblemSetId
                     let reportId = ReportId(Guid.NewGuid().ToString())
 
                     generatorService.Get(generatedProblemSetId)
                     |> Async.BindResult(fun generatedProblemSet ->
                         generatedProblemSet.Problems
-                        |> Seq.map(fun x -> generatorService.Get(x))
+                        |> Seq.map generatorService.Get
                         |> ResultOfAsyncSeq
                     )
                     |> Async.BindResult(fun generatedProblems ->
                         let answersById =
                             entity.Answers
-                            |> Seq.map(fun x -> (GeneratedProblemId(x.GeneratedProblemId), x))
+                            |> Seq.map(fun x -> (x.GeneratedProblemId, x))
                             |> Map.ofSeq
                         generatedProblems
                         |> Seq.map(fun generatedProblem ->
                             match answersById.TryFind(generatedProblem.Id) with
                             | None ->
                                 async.Return(Ok({
-                                    ProblemReport.GeneratedProblemId = generatedProblem.Id.Value
+                                    ProblemReport.GeneratedProblemId = generatedProblem.Id
                                     Answer = None
                                     ExpectedAnswer = generatedProblem.Answer.Value
                                     IsCorrect = false
@@ -126,7 +126,7 @@ type ExaminationService(reportContext: IContext<Report>,
                                 generatorService.Validate(generatedProblem.Id, ProblemAnswer(actualAnswer.Answer))
                                 |> Async.MapResult(fun isCorrect ->
                                     {
-                                        ProblemReport.GeneratedProblemId = generatedProblem.Id.Value
+                                        ProblemReport.GeneratedProblemId = generatedProblem.Id
                                         Answer = Some(actualAnswer.Answer)
                                         ExpectedAnswer = generatedProblem.Answer.Value
                                         IsCorrect = isCorrect
@@ -139,9 +139,10 @@ type ExaminationService(reportContext: IContext<Report>,
                     |> Async.MapResult(fun answersReports ->
                         let now = DateTimeOffset.UtcNow
                         {
-                            Report.Id = reportId.Value
+                            Report.Id = reportId
+                            Type = ReportType.Instance
                             GeneratedProblemSetId = entity.GeneratedProblemSetId
-                            SubmissionId = submissionId.Value
+                            SubmissionId = submissionId
                             Permissions = entity.Permissions
                             StartedAt = entity.StartedAt
                             FinishedAt = if now < entity.Deadline then now else entity.Deadline
@@ -150,8 +151,8 @@ type ExaminationService(reportContext: IContext<Report>,
                     )
                     |> Async.BindResult(fun report -> reportContext.Insert(report, report))
                     |> Async.BindResult(fun _ ->
-                        submissionContext.Update(Submission.CreateDocumentKey(submissionId.Value),
-                                                 fun sub -> { sub with ReportId = Some(reportId.Value) })
+                        submissionContext.Update(Submission.CreateDocumentKey(submissionId),
+                                                 fun sub -> { sub with ReportId = Some(reportId) })
                     )
                     |> Async.BindResult(fun _ -> permissionsService.UserItemsAppend(ProtectedId.Report(reportId), userId))
                     |> Async.MapResult(fun _ -> reportId)
@@ -165,10 +166,11 @@ type ExaminationService(reportContext: IContext<Report>,
                 let startedAt = DateTimeOffset.UtcNow
                 let deadline = startedAt.Add(generatedProblemSet.Duration)
                 {
-                    Submission.Id = submissionId.Value
-                    GeneratedProblemSetId = generatedProblemSet.Id.Value
+                    Submission.Id = submissionId
+                    Type = SubmissionType.Instance
+                    GeneratedProblemSetId = generatedProblemSet.Id
                     Permissions = {
-                        Permissions.OwnerId = userId.Value
+                        Permissions.OwnerId = userId
                         Groups = []
                         Members = []
                     }
@@ -183,13 +185,13 @@ type ExaminationService(reportContext: IContext<Report>,
             |> Async.MapResult(fun _ -> submissionId)
 
         member this.Get(id: ReportId) =
-            reportContext.Get(Report.CreateDocumentKey(id.Value))
+            reportContext.Get(Report.CreateDocumentKey(id))
             |> Async.BindResult(fun report ->
-                generatorService.Get(GeneratedProblemSetId(report.GeneratedProblemSetId))
+                generatorService.Get(report.GeneratedProblemSetId)
                 |> Async.BindResult(fun problemSet ->
                     report.Answers
                     |> Seq.map(fun ans ->
-                        generatorService.Get(GeneratedProblemId(ans.GeneratedProblemId))
+                        generatorService.Get(ans.GeneratedProblemId)
                         |> Async.TryMapResult(fun problem ->
                             ProblemReportModel.Create(ans, problem)
                         )
@@ -269,7 +271,7 @@ type ExaminationService(reportContext: IContext<Report>,
         member this.Get(id: SubmissionId) =
             this.TryComplete(id)
             |> Async.BindResult(fun submission ->
-                generatorService.Get(GeneratedProblemSetId(submission.GeneratedProblemSetId))
+                generatorService.Get(submission.GeneratedProblemSetId)
                 |> Async.BindResult(fun generatedProblemSet ->
                     generatedProblemSet.Problems
                     |> Seq.map generatorService.Get

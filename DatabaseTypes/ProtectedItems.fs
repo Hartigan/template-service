@@ -1,6 +1,15 @@
 namespace DatabaseTypes
 
 open System.Text.Json.Serialization
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<GroupItemsTypeConverter>)>]
+type GroupItemsType private () =
+    inherit BaseType("group_items")
+    static member Instance = GroupItemsType()
+and GroupItemsTypeConverter() =
+    inherit StringConverter<GroupItemsType>((fun m -> m.Value), (fun _ -> GroupItemsType.Instance))
 
 type ProtectedItem =
     {
@@ -13,20 +22,16 @@ type ProtectedItem =
 type GroupItems = 
     {
         [<JsonPropertyName("user_id")>]
-        GroupId : string
+        GroupId : GroupId
         [<JsonPropertyName("allowed")>]
         Allowed: List<ProtectedItem>
+        [<JsonPropertyName("type")>]
+        Type : GroupItemsType
     }
 
-    static member TypeName = "group_items"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, GroupItems.TypeName)
+    static member CreateDocumentKey(id: GroupId): DocumentKey =
+        DocumentKey.Create(id.Value, GroupItemsType.Instance.Value)
     member private this.DocKey = GroupItems.CreateDocumentKey(this.GroupId)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type
@@ -34,25 +39,28 @@ type GroupItems =
         member this.Key
             with get() = this.DocKey.Key
 
+[<JsonConverter(typeof<UserItemsTypeConverter>)>]
+type UserItemsType private () =
+    inherit BaseType("user_items")
+    static member Instance = UserItemsType()
+and UserItemsTypeConverter() =
+    inherit StringConverter<UserItemsType>((fun m -> m.Value), (fun _ -> UserItemsType.Instance))
+
 type UserItems = 
     {
         [<JsonPropertyName("user_id")>]
-        UserId : string
+        UserId : UserId
         [<JsonPropertyName("owned")>]
         Owned: List<ProtectedItem>
         [<JsonPropertyName("allowed")>]
         Allowed: List<ProtectedItem>
+        [<JsonPropertyName("type")>]
+        Type : UserItemsType
     }
 
-    static member TypeName = "user_items"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, UserItems.TypeName)
+    static member CreateDocumentKey(id: UserId): DocumentKey =
+        DocumentKey.Create(id.Value, UserItemsType.Instance.Value)
     member private this.DocKey = UserItems.CreateDocumentKey(this.UserId)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

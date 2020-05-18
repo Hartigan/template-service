@@ -44,7 +44,7 @@ type UserModel =
 
     static member Create(user: User) : Result<UserModel, Exception> =
         Ok({
-            UserModel.Id    = UserId(user.Id)
+            UserModel.Id    = user.Id
             FirstName       = FirstName(user.FirstName)
             LastName        = LastName(user.LastName)
             Username        = Username(user.Name)

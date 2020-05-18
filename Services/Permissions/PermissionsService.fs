@@ -18,19 +18,19 @@ type PermissionsService(userService: IUserService,
                         groupItemsContext: IContext<GroupItems>) =
 
     member this.GetUserGroups(userId: UserId) =
-        userGroupsContext.Get(UserGroups.CreateDocumentKey(userId.Value))
+        userGroupsContext.Get(UserGroups.CreateDocumentKey(userId))
         |> Async.TryMapResult UserGroupsModel.Create
 
     member this.GetUserItems(userId: UserId) =
-        userItemsContext.Get(UserItems.CreateDocumentKey(userId.Value))
+        userItemsContext.Get(UserItems.CreateDocumentKey(userId))
         |> Async.TryMapResult UserItemsModel.Create
 
     member this.GetGroupItems(groupId: GroupId) =
-        groupItemsContext.Get(GroupItems.CreateDocumentKey(groupId.Value))
+        groupItemsContext.Get(GroupItems.CreateDocumentKey(groupId))
         |> Async.TryMapResult GroupItemsModel.Create
 
     member this.CreateMember(m: Member) =
-        userService.Get(UserId(m.UserId))
+        userService.Get(m.UserId)
         |> Async.MapResult(fun user ->
             {
                 MemberModel.UserId = user.Id
@@ -48,7 +48,7 @@ type PermissionsService(userService: IUserService,
         groupContext.Get(UserGroup.CreateDocumentKey(g.GroupId))
         |> Async.MapResult(fun group ->
             {
-                GroupAccessModel.GroupId = GroupId(g.GroupId)
+                GroupAccessModel.GroupId = g.GroupId
                 Name = GroupName(group.Name)
                 Access = AccessModel.Create(g.Access)
             }
@@ -60,7 +60,7 @@ type PermissionsService(userService: IUserService,
         |> ResultOfAsyncSeq
 
     member this.CheckPermissions(permissions: Permissions, userId: UserId, access: AccessModel): Async<Result<unit, Exception>> = 
-        let ownerId = UserId(permissions.OwnerId)
+        let ownerId = permissions.OwnerId
 
         if (ownerId = userId) then
             async.Return(Ok())
@@ -68,7 +68,7 @@ type PermissionsService(userService: IUserService,
             let isDirectAccess =
                 permissions.Members
                 |> Seq.exists(fun m ->
-                    let memberId = UserId(m.UserId)
+                    let memberId = m.UserId
                     let hasAccess = AccessModel.Create(m.Access).IsAllowed(access)
                     memberId = userId && hasAccess
                 )
@@ -85,7 +85,7 @@ type PermissionsService(userService: IUserService,
                         groupsResults
                         |> Seq.collect(fun group -> group.Members)
                         |> Seq.exists(fun m ->
-                            let memberId = UserId(m.UserId)
+                            let memberId = m.UserId
                             let hasAccess = AccessModel.Create(m.Access).IsAllowed(access)
                             memberId = userId && hasAccess
                         )
@@ -98,24 +98,24 @@ type PermissionsService(userService: IUserService,
 
     member this.GetPermissions(protectedId: ProtectedId) =
         match protectedId with
-        | ProtectedId.Folder(id) -> permissionsContext.Get(Folder.CreateDocumentKey(id.Value))
-        | ProtectedId.Head(id) -> permissionsContext.Get(Head.CreateDocumentKey(id.Value))
-        | ProtectedId.Submission(id) -> permissionsContext.Get(Submission.CreateDocumentKey(id.Value))
-        | ProtectedId.Report(id) -> permissionsContext.Get(Report.CreateDocumentKey(id.Value))
+        | ProtectedId.Folder(id) -> permissionsContext.Get(Folder.CreateDocumentKey(id))
+        | ProtectedId.Head(id) -> permissionsContext.Get(Head.CreateDocumentKey(id))
+        | ProtectedId.Submission(id) -> permissionsContext.Get(Submission.CreateDocumentKey(id))
+        | ProtectedId.Report(id) -> permissionsContext.Get(Report.CreateDocumentKey(id))
 
     member this.UpdatePermissions(protectedId: ProtectedId, updater: Permissions -> Permissions) =
         match protectedId with
-        | ProtectedId.Folder(id) -> permissionsContext.Update(Folder.CreateDocumentKey(id.Value), updater)
-        | ProtectedId.Head(id) -> permissionsContext.Update(Head.CreateDocumentKey(id.Value), updater)
-        | ProtectedId.Submission(id) -> permissionsContext.Update(Submission.CreateDocumentKey(id.Value), updater)
-        | ProtectedId.Report(id) -> permissionsContext.Update(Report.CreateDocumentKey(id.Value), updater)
+        | ProtectedId.Folder(id) -> permissionsContext.Update(Folder.CreateDocumentKey(id), updater)
+        | ProtectedId.Head(id) -> permissionsContext.Update(Head.CreateDocumentKey(id), updater)
+        | ProtectedId.Submission(id) -> permissionsContext.Update(Submission.CreateDocumentKey(id), updater)
+        | ProtectedId.Report(id) -> permissionsContext.Update(Report.CreateDocumentKey(id), updater)
 
     member this.CreateGroup(group: UserGroup) =
         this.CreateMembersList(group.Members)
         |> Async.MapResult(fun members ->
             {
-                GroupModel.Id = GroupId(group.Id)
-                OwnerId = UserId(group.OwnerId)
+                GroupModel.Id = group.Id
+                OwnerId = group.OwnerId
                 Name = GroupName(group.Name)
                 Description = GroupDescription(group.Description)
                 Members = members
@@ -131,7 +131,7 @@ type PermissionsService(userService: IUserService,
     interface IPermissionsService with
         member this.GetOwner(protectedId) = 
             this.GetPermissions(protectedId)
-            |> Async.MapResult(fun p -> UserId(p.OwnerId))
+            |> Async.MapResult(fun p -> p.OwnerId)
 
 
         member this.SearchByContains(pattern) =
@@ -149,10 +149,10 @@ type PermissionsService(userService: IUserService,
                     |> Seq.collect(fun x -> x.Allowed)
                     |> Seq.filter(fun id ->
                         match (id, protectedType) with
-                        | (ProtectedId.Folder(_), ProtectedType.Folder) -> true
-                        | (ProtectedId.Head(_), ProtectedType.Head) -> true
-                        | (ProtectedId.Submission(_), ProtectedType.Submission) -> true
-                        | (ProtectedId.Report(_), ProtectedType.Report) -> true
+                        | (ProtectedId.Folder(_), ProtectedType.Folder(_)) -> true
+                        | (ProtectedId.Head(_), ProtectedType.Head(_)) -> true
+                        | (ProtectedId.Submission(_), ProtectedType.Submission(_)) -> true
+                        | (ProtectedId.Report(_), ProtectedType.Report(_)) -> true
                         | _ -> false
                     )
                 )
@@ -224,13 +224,13 @@ type PermissionsService(userService: IUserService,
             )
 
         member this.Get(id: GroupId) =
-            groupContext.Get(UserGroup.CreateDocumentKey(id.Value))
+            groupContext.Get(UserGroup.CreateDocumentKey(id))
             |> Async.BindResult(fun group ->
                 this.CreateMembersList(group.Members)
                 |> Async.MapResult(fun membersList ->
                     {
                         GroupModel.Id = id
-                        OwnerId = UserId(group.OwnerId)
+                        OwnerId = group.OwnerId
                         Name = GroupName(group.Name)
                         Description = GroupDescription(group.Description)
                         Members = membersList
@@ -246,7 +246,7 @@ type PermissionsService(userService: IUserService,
                     this.CreateGroupsList(permissions.Groups)
                     |> Async.MapResult(fun groupsList ->
                         {
-                            PermissionsModel.OwnerId = UserId(permissions.OwnerId)
+                            PermissionsModel.OwnerId = permissions.OwnerId
                             Groups = groupsList
                             Members = membersList
                         }
@@ -262,15 +262,17 @@ type PermissionsService(userService: IUserService,
             let groupId = GroupId(Guid.NewGuid().ToString())
 
             let group = {
-                    UserGroup.Id = groupId.Value
-                    OwnerId = userId.Value
+                    UserGroup.Id = groupId
+                    Type = UserGroupType.Instance
+                    OwnerId = userId
                     Name = groupName.Value
                     Description = groupDescription.Value
                     Members = []
                 }
 
             let groupItems = {
-                    GroupItems.GroupId = groupId.Value
+                    GroupItems.GroupId = groupId
+                    Type = GroupItemsType.Instance
                     Allowed = []
                 }
 
@@ -278,11 +280,11 @@ type PermissionsService(userService: IUserService,
             |> Async.BindResult(fun _ -> groupItemsContext.Insert(groupItems, groupItems))
             |> Async.BindResult(fun _ ->
                 userGroupsContext.Update
-                    (UserGroups.CreateDocumentKey(userId.Value),
+                    (UserGroups.CreateDocumentKey(userId),
                     (fun userGroups ->
                         {
                             userGroups with
-                                Owned = groupId.Value :: userGroups.Owned
+                                Owned = groupId :: userGroups.Owned
                         }
                     ))
             )
@@ -290,7 +292,7 @@ type PermissionsService(userService: IUserService,
 
         member this.Update(id: GroupId, nameOpt: Option<GroupName>, descriptionOpt: Option<GroupDescription>) =
             groupContext.Update
-                (UserGroup.CreateDocumentKey(id.Value),
+                (UserGroup.CreateDocumentKey(id),
                 (fun group ->
                     match (nameOpt, descriptionOpt) with
                     | (Some(name), Some(description)) ->
@@ -305,25 +307,25 @@ type PermissionsService(userService: IUserService,
 
         member this.Remove(id: GroupId, userId: UserId) =
             groupContext.Update
-                (UserGroup.CreateDocumentKey(id.Value),
+                (UserGroup.CreateDocumentKey(id),
                 (fun group ->
                     {
                         group with
                             Members =
                                 group.Members
-                                |> Seq.filter(fun m -> m.UserId <> userId.Value)
+                                |> Seq.filter(fun m -> m.UserId <> userId)
                                 |> List.ofSeq
                     }
                 ))
             |> Async.BindResult(fun _ -> 
                 userGroupsContext.Update
-                        (UserGroups.CreateDocumentKey(userId.Value),
+                        (UserGroups.CreateDocumentKey(userId),
                         (fun userGroups ->
                             {
                                 userGroups with
                                     Allowed =
                                         userGroups.Allowed
-                                        |> Seq.filter(fun gid -> GroupId(gid) <> id)
+                                        |> Seq.filter(fun gid -> gid <> id)
                                         |> List.ofSeq
                             }
                         ))
@@ -332,14 +334,14 @@ type PermissionsService(userService: IUserService,
 
         member this.Update(id: GroupId, userId: UserId, access: AccessModel) =
             groupContext.Update
-                (UserGroup.CreateDocumentKey(id.Value),
+                (UserGroup.CreateDocumentKey(id),
                 (fun group ->
                     {
                         group with
                             Members =
                                 group.Members
                                 |> Seq.map(fun m ->
-                                    if m.UserId = userId.Value then
+                                    if m.UserId = userId then
                                         {
                                             m with
                                                 Access = access.ToFlags()
@@ -353,36 +355,36 @@ type PermissionsService(userService: IUserService,
 
         member this.Add(id: GroupId, userId: UserId) =
             groupContext.Update
-                (UserGroup.CreateDocumentKey(id.Value),
+                (UserGroup.CreateDocumentKey(id),
                 (fun group ->
                     let memberExists =
                         group.Members
-                            |> Seq.exists(fun m -> m.UserId = userId.Value)
+                            |> Seq.exists(fun m -> m.UserId = userId)
                     if memberExists then
                         group
                     else
                         let newMember = {
-                            Member.UserId = userId.Value
+                            Member.UserId = userId
                             Access = 0UL;
                         }
                         {
                             group with
-                                Members = group.Members @ [ newMember ]
+                                Members = newMember :: group.Members
                         }
                 ))
             |> Async.BindResult(fun _ ->
                 userGroupsContext.Update
-                    (UserGroups.CreateDocumentKey(userId.Value),
+                    (UserGroups.CreateDocumentKey(userId),
                     (fun userGroups ->
                         let groupExists =
                             userGroups.Allowed
-                                |> Seq.exists(fun gid -> GroupId(gid) = id)
+                                |> Seq.exists(fun gid -> gid = id)
                         if groupExists then
                             userGroups
                         else
                             {
                                 userGroups with
-                                    Allowed = userGroups.Allowed @ [ id.Value ]
+                                    Allowed = id :: userGroups.Allowed
                             }
                     ))
             )
@@ -395,12 +397,12 @@ type PermissionsService(userService: IUserService,
                 (fun permissions ->
                     let memberExists =
                         permissions.Members
-                        |> Seq.exists(fun m -> m.UserId = userId.Value)
+                        |> Seq.exists(fun m -> m.UserId = userId)
                     if memberExists then
                         permissions
                     else
                         let newMember = {
-                            Member.UserId = userId.Value
+                            Member.UserId = userId
                             Access = 0UL
                         }
                         {
@@ -410,7 +412,7 @@ type PermissionsService(userService: IUserService,
                 ))
             |> Async.BindResult(fun _ ->
                 userItemsContext.Update
-                    (UserItems.CreateDocumentKey(userId.Value),
+                    (UserItems.CreateDocumentKey(userId),
                     fun userItems ->
                         let itemExists =
                             userItems.Allowed
@@ -434,22 +436,22 @@ type PermissionsService(userService: IUserService,
                 (fun permissions ->
                     let groupExists =
                         permissions.Groups
-                            |> Seq.exists(fun g -> g.GroupId = groupId.Value)
+                            |> Seq.exists(fun g -> g.GroupId = groupId)
                     if groupExists then
                         permissions
                     else
                         let newGroup = {
-                            GroupAccess.GroupId = groupId.Value
+                            GroupAccess.GroupId = groupId
                             Access = 0UL
                         }
                         {
                             permissions with
-                                Groups = permissions.Groups @ [ newGroup ]
+                                Groups = newGroup :: permissions.Groups
                         }
                 ))
             |> Async.BindResult(fun _ ->
                 groupItemsContext.Update
-                    (GroupItems.CreateDocumentKey(groupId.Value),
+                    (GroupItems.CreateDocumentKey(groupId),
                     fun groupItems ->
                         let itemExists =
                             groupItems.Allowed
@@ -474,12 +476,12 @@ type PermissionsService(userService: IUserService,
                         perm with
                             Members =
                                 perm.Members
-                                |> Seq.filter(fun m -> m.UserId <> userId.Value)
+                                |> Seq.filter(fun m -> m.UserId <> userId)
                                 |> List.ofSeq
                     }
                 )
             |> Async.BindResult(fun _ ->
-                userItemsContext.Update(UserItems.CreateDocumentKey(userId.Value),
+                userItemsContext.Update(UserItems.CreateDocumentKey(userId),
                                         fun x ->
                                             {
                                                 x with
@@ -504,7 +506,7 @@ type PermissionsService(userService: IUserService,
                             Members =
                                 perm.Members
                                 |> Seq.map(fun m ->
-                                    if m.UserId = userId.Value then
+                                    if m.UserId = userId then
                                         {
                                             m with
                                                 Access = accessFlags
@@ -517,7 +519,7 @@ type PermissionsService(userService: IUserService,
                 )
 
         member this.UserItemsAppend(id, userId) =
-            userItemsContext.Update(UserItems.CreateDocumentKey(userId.Value),
+            userItemsContext.Update(UserItems.CreateDocumentKey(userId),
                                     fun x ->
                                         {
                                             x with
@@ -534,12 +536,12 @@ type PermissionsService(userService: IUserService,
                         perm with
                             Groups =
                                 perm.Groups
-                                |> Seq.filter(fun m -> m.GroupId <> groupId.Value)
+                                |> Seq.filter(fun m -> m.GroupId <> groupId)
                                 |> List.ofSeq
                     }
                 )
             |> Async.BindResult(fun _ ->
-                groupItemsContext.Update(GroupItems.CreateDocumentKey(groupId.Value),
+                groupItemsContext.Update(GroupItems.CreateDocumentKey(groupId),
                                          fun x ->
                                              {
                                                  x with
@@ -562,7 +564,7 @@ type PermissionsService(userService: IUserService,
                             Groups =
                                 perm.Groups
                                 |> Seq.map(fun m ->
-                                    if m.GroupId = groupId.Value then
+                                    if m.GroupId = groupId then
                                         {
                                             m with
                                                 Access = accessFlags

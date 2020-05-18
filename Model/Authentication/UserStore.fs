@@ -8,6 +8,7 @@ open System.Threading.Tasks
 open Utils.TaskHelper
 open Contexts
 open DatabaseTypes
+open DatabaseTypes.Identificators
 open System
 open Utils.ResultHelper
 
@@ -57,7 +58,7 @@ type UserStore(context: IUserContext,
         member this.FindByIdAsync(userId, cancellationToken) = 
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
-                let docKey = User.CreateDocumentKey(userId)
+                let docKey = User.CreateDocumentKey(UserId(userId))
                 let! result = context.Get(docKey)
                 match result with
                 | Ok(user) ->
@@ -135,6 +136,7 @@ type UserStore(context: IUserContext,
                 let userGroups =
                     {
                         UserGroups.UserId = entity.Id
+                        Type = UserGroupsType.Instance
                         Allowed = []
                         Owned = []
                     }
@@ -143,6 +145,7 @@ type UserStore(context: IUserContext,
                 let userItems =
                     {
                         UserItems.UserId = entity.Id
+                        Type = UserItemsType.Instance
                         Allowed = []
                         Owned = []
                     }

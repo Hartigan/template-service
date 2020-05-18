@@ -12,28 +12,30 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
     interface IProblemsService with
         member this.Create(model: ProblemSetModel) = 
             model.Heads
-            |> Seq.map(fun headId -> headContext.Exists(Head.CreateDocumentKey(headId.Value)))
+            |> Seq.map(fun headId -> headContext.Exists(Head.CreateDocumentKey(headId)))
             |> ResultOfAsyncSeq
             |> Async.BindResult(fun _ ->
                 let problemSet =
                     {
-                        ProblemSet.Id = Guid.NewGuid().ToString()
+                        ProblemSet.Id = ProblemSetId(Guid.NewGuid().ToString())
+                        Type = ProblemSetType.Instance
                         Title = model.Title.Value
-                        Heads = model.Heads.Select(fun id -> id.Value).ToList()
+                        Heads = model.Heads
                         Duration = Convert.ToInt32(model.Duration.Value.TotalSeconds)
                     }
 
                 problemSetContext.Insert(problemSet, problemSet)
-                |> Async.MapResult(fun _ -> ProblemSetId(problemSet.Id))
+                |> Async.MapResult(fun _ -> problemSet.Id)
             )
         member this.Get(id: ProblemSetId) =
-            problemSetContext.Get(ProblemSet.CreateDocumentKey(id.Value))
+            problemSetContext.Get(ProblemSet.CreateDocumentKey(id))
             |> Async.TryMapResult ProblemSetModel.Create
 
         member this.Create(model: ProblemModel) =
             let problem =
                 {
-                    Problem.Id = Guid.NewGuid().ToString()
+                    Problem.Id = ProblemId(Guid.NewGuid().ToString())
+                    Type = ProblemType.Instance
                     Title = model.Title.Value
                     View = {
                         Code.Language = model.View.Language.Name
@@ -50,8 +52,8 @@ type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: ICon
                 }
 
             problemsContext.Insert(problem, problem)
-            |> Async.MapResult(fun _ -> ProblemId(problem.Id))
+            |> Async.MapResult(fun _ -> problem.Id)
 
         member this.Get(id: ProblemId) =
-            problemsContext.Get(Problem.CreateDocumentKey(id.Value))
+            problemsContext.Get(Problem.CreateDocumentKey(id))
             |> Async.TryMapResult ProblemModel.Create

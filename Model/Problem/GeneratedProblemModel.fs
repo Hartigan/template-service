@@ -23,24 +23,22 @@ and ProblemAnswerConverter() =
     inherit StringConverter<ProblemAnswer>((fun m -> m.Value),
                                            (fun i -> ProblemAnswer(i)))
 
-type GeneratedProblemModel private (id: GeneratedProblemId,
-                                    problemId: ProblemId,
-                                    seed: ProblemSeed,
-                                    title: ProblemTitle,
-                                    view: GeneratedViewModel,
-                                    answer: ProblemAnswer) =
-    [<JsonPropertyName("id")>]
-    member val Id           = id with get
-    [<JsonPropertyName("problem_id")>]
-    member val ProblemId    = problemId with get
-    [<JsonPropertyName("seed")>]
-    member val Seed         = seed with get
-    [<JsonPropertyName("title")>]
-    member val Title        = title with get
-    [<JsonPropertyName("view")>]
-    member val View         = view with get
-    [<JsonPropertyName("answer")>]
-    member val Answer       = answer with get
+type GeneratedProblemModel =
+    {
+        [<JsonPropertyName("id")>]
+        Id              : GeneratedProblemId
+        [<JsonPropertyName("problem_id")>]
+        ProblemId       : ProblemId
+        [<JsonPropertyName("seed")>]
+        Seed            : ProblemSeed
+        [<JsonPropertyName("title")>]
+        Title           : ProblemTitle
+        [<JsonPropertyName("view")>]
+        View            : GeneratedViewModel
+        [<JsonPropertyName("answer")>]
+        Answer          : ProblemAnswer
+    }
+    
 
     static member Create(generatedProblem: GeneratedProblem) : Result<GeneratedProblemModel, Exception> =
         let codes = CodeModel.Create(generatedProblem.View)
@@ -49,11 +47,13 @@ type GeneratedProblemModel private (id: GeneratedProblemId,
             let codeModels = GeneratedViewModel.Create(viewCode)
             match codeModels with
             | Ok(viewModel) ->
-                Ok(GeneratedProblemModel(GeneratedProblemId(generatedProblem.Id),
-                                         ProblemId(generatedProblem.ProblemId),
-                                         ProblemSeed(generatedProblem.Seed),
-                                         ProblemTitle(generatedProblem.Title),
-                                         viewModel,
-                                         ProblemAnswer(generatedProblem.Answer)))
+                Ok({
+                    Id          = generatedProblem.Id
+                    ProblemId   = generatedProblem.ProblemId
+                    Seed        = ProblemSeed(generatedProblem.Seed)
+                    Title       = ProblemTitle(generatedProblem.Title)
+                    View        = viewModel
+                    Answer      = ProblemAnswer(generatedProblem.Answer)
+                })
             | Error(ex) -> Error(InvalidOperationException("cannot create GeneratedProblemModel", ex) :> Exception)
         | Error(ex) -> Error(InvalidOperationException("cannot create GeneratedProblemModel", ex) :> Exception)

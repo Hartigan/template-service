@@ -19,5 +19,5 @@ type UserService(userContext: IUserContext) =
             )
 
         member this.Get(id: UserId) =
-            userContext.Get(User.CreateDocumentKey(id.Value))
+            userContext.Get(User.CreateDocumentKey(id))
             |> Async.TryMapResult UserModel.Create

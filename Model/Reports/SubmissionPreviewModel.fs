@@ -29,11 +29,11 @@ type SubmissionPreviewModel =
                          title: ProblemSetTitle,
                          author: UserModel) : Result<SubmissionPreviewModel, Exception> =
         Ok({
-            SubmissionPreviewModel.Id       = SubmissionId(entity.Id)
+            SubmissionPreviewModel.Id       = entity.Id
             StartedAt                       = entity.StartedAt
             Deadline                        = entity.Deadline
             Title                           = title
             Completed                       = entity.ReportId.IsSome
-            ReportId                        = entity.ReportId |> Option.map ReportId
+            ReportId                        = entity.ReportId
             Author                          = author
         })

@@ -21,7 +21,7 @@ type ProblemAnswerModel =
 
     static member Create(entity: DatabaseTypes.ProblemAnswer) : Result<ProblemAnswerModel, Exception> =
         Ok({
-            GeneratedProblemId  = GeneratedProblemId(entity.GeneratedProblemId)
+            GeneratedProblemId  = entity.GeneratedProblemId
             Answer              = ProblemAnswer(entity.Answer)
             Timestamp           = entity.Timestamp
         })
@@ -100,12 +100,12 @@ type SubmissionModel =
         | Error(error) -> Error(error)
         | Ok(answers) ->
             Ok({
-                Id                      = SubmissionId(entity.Id)
+                Id                      = entity.Id
                 ProblemSet              = submissionProblemSetModel
                 StartedAt               = entity.StartedAt
                 Deadline                = entity.Deadline
                 Answers                 = answers
                 Completed               = entity.ReportId.IsSome
-                ReportId                = entity.ReportId |> Option.map(ReportId)
+                ReportId                = entity.ReportId
                 Author                  = author
             })

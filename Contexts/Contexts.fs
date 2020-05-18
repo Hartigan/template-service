@@ -39,7 +39,7 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", UserGroup.TypeName)
+                        |> fun x -> x.Parameter("type", UserGroupType.Instance.Value)
                         |> fun x -> x.Parameter("pattern", pattern.ToUpper())
                     let! result = cluster.QueryAsync<UserGroup>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(UPPER(`name`), $pattern)" bucket.Name bucket.Name,
@@ -139,7 +139,7 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", User.TypeName)
+                        |> fun x -> x.Parameter("type", UserType.Instance.Value)
                         |> fun x -> x.Parameter("normalized_name", name)
                     let! result = cluster.QueryAsync<User>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND `%s` = $normalized_name LIMIT 1" bucket.Name bucket.Name normalizedName,
@@ -164,7 +164,7 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", User.TypeName)
+                        |> fun x -> x.Parameter("type", UserType.Instance.Value)
                         |> fun x -> x.Parameter("pattern", pattern.ToUpper())
                     let! result = cluster.QueryAsync<User>
                                       (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(`%s`, $pattern)" bucket.Name bucket.Name normalizedName,
@@ -210,7 +210,7 @@ type UserRoleContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couch
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", UserRole.TypeName)
+                        |> fun x -> x.Parameter("type", UserRoleType.Instance.Value)
                         |> fun x -> x.Parameter("bucket", bucket.Name)
                         |> fun x -> x.Parameter("name_property", nameProperty)
                         |> fun x -> x.Parameter("name", name)

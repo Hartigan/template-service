@@ -3,10 +3,19 @@ namespace DatabaseTypes
 open System.Text.Json.Serialization
 open System
 open Utils
+open DatabaseTypes.Identificators
+open Utils.Converters
+
+[<JsonConverter(typeof<SubmissionTypeConverter>)>]
+type SubmissionType private () =
+    inherit BaseType("submission")
+    static member Instance = SubmissionType()
+and SubmissionTypeConverter() =
+    inherit StringConverter<SubmissionType>((fun m -> m.Value), (fun _ -> SubmissionType.Instance))
 
 type ProblemAnswer = {
     [<JsonPropertyName("generated_problem_id")>]
-    GeneratedProblemId : string
+    GeneratedProblemId : GeneratedProblemId
     [<JsonPropertyName("answer")>]
     Answer : string
     [<JsonPropertyName("timestamp")>]
@@ -16,9 +25,9 @@ type ProblemAnswer = {
 type Submission =
     {
         [<JsonPropertyName("id")>]
-        Id : string
+        Id : SubmissionId
         [<JsonPropertyName("generated_problem_set_id")>]
-        GeneratedProblemSetId : string
+        GeneratedProblemSetId : GeneratedProblemSetId
         [<JsonPropertyName("permissions")>]
         Permissions : Permissions
         [<JsonPropertyName("started_at")>]
@@ -28,19 +37,15 @@ type Submission =
         [<JsonPropertyName("answers")>]
         Answers : List<ProblemAnswer>
         [<JsonPropertyName("report_id")>]
-        [<JsonConverter(typeof<OptionValueConverter<string>>)>]
-        ReportId : string option
+        [<JsonConverter(typeof<OptionValueConverter<ReportId>>)>]
+        ReportId : ReportId option
+        [<JsonPropertyName("type")>]
+        Type : SubmissionType
     }
 
-    static member TypeName = "submission"
-    static member CreateDocumentKey(id: string): DocumentKey =
-        DocumentKey.Create(id, Submission.TypeName)
+    static member CreateDocumentKey(id: SubmissionId): DocumentKey =
+        DocumentKey.Create(id.Value, SubmissionType.Instance.Value)
     member private this.DocKey = Submission.CreateDocumentKey(this.Id)
-
-    [<JsonPropertyName("type")>]
-    member private this.Type
-        with get() = this.DocKey.Type
-        and set(value: string) = ()
 
     interface IDocumentKey with
         member this.Type

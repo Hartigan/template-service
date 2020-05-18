@@ -17,26 +17,28 @@ type VersionControlService(commitContext: IContext<Commit>,
             let target =
                 match concreteId with
                 | ConcreteId.Problem(problemId) ->
-                    { Target.Id = problemId.Value
-                      Type = Problem.TypeName }
+                    { Target.Id = TargetId(problemId.Value)
+                      Type = ProblemType.Instance.Value }
                 | ConcreteId.ProblemSet(problemSetId) ->
-                    { Target.Id = problemSetId.Value
-                      Type = ProblemSet.TypeName }
-            let headId = Guid.NewGuid().ToString()
+                    { Target.Id = TargetId(problemSetId.Value)
+                      Type = ProblemSetType.Instance.Value }
+            let headId = HeadId(Guid.NewGuid().ToString())
 
             let commit =
-                { Commit.Id = Guid.NewGuid().ToString()
-                  AuthorId = userId.Value
+                { Commit.Id = CommitId(Guid.NewGuid().ToString())
+                  Type = CommitType.Instance
+                  AuthorId = userId
                   HeadId = headId
                   Target = target
                   Timestamp = DateTimeOffset.UtcNow
-                  ParentId = Guid.Empty.ToString()
+                  ParentId = None
                   Description = description.Value }
 
             let head = {
-                    Head.Id = headId.ToString()
+                    Head.Id = headId
+                    Type = HeadType.Instance
                     Permissions = {
-                        OwnerId = userId.Value
+                        OwnerId = userId
                         Groups = []
                         Members = []
                     }
@@ -44,35 +46,34 @@ type VersionControlService(commitContext: IContext<Commit>,
                     Name = name.Value
                 }
 
-            let headId = HeadId(head.Id)
-
             commitContext.Insert(commit, commit)
             |> Async.BindResult(fun _ -> headContext.Insert(head, head))
             |> Async.BindResult(fun _ -> permissionsService.UserItemsAppend(ProtectedId.Head(headId), userId))
             |> Async.MapResult(fun _ -> headId)
 
         member this.Create(id: ConcreteId, description: CommitDescription, userId: UserId, headId: HeadId) =
-            headContext.Get(Head.CreateDocumentKey(headId.Value))
+            headContext.Get(Head.CreateDocumentKey(headId))
             |> Async.BindResult(fun head ->
                 let target =
                     match id with
                     | ConcreteId.Problem(problemId) ->
-                        { Target.Id = problemId.Value
-                          Type = Problem.TypeName }
+                        { Target.Id = TargetId(problemId.Value)
+                          Type = ProblemType.Instance.Value }
                     | ConcreteId.ProblemSet(problemSetId) ->
-                        { Target.Id = problemSetId.Value
-                          Type = ProblemSet.TypeName }
+                        { Target.Id = TargetId(problemSetId.Value)
+                          Type = ProblemSetType.Instance.Value }
 
                 let commit =
-                    { Commit.Id = Guid.NewGuid().ToString()
-                      AuthorId = userId.Value
-                      HeadId = headId.Value
+                    { Commit.Id = CommitId(Guid.NewGuid().ToString())
+                      Type = CommitType.Instance
+                      AuthorId = userId
+                      HeadId = headId
                       Target = target
                       Timestamp = DateTimeOffset.UtcNow
-                      ParentId = head.Commit.Id
+                      ParentId = Some(head.Commit.Id)
                       Description = description.Value }
                 headContext.Update
-                    (Head.CreateDocumentKey(headId.Value),
+                    (Head.CreateDocumentKey(headId),
                     fun head ->
                         if head.Commit.Target.Type = commit.Target.Type then
                             Ok({ head with Commit = commit })
@@ -80,13 +81,13 @@ type VersionControlService(commitContext: IContext<Commit>,
                             Error(InvalidOperationException("Wrong commit target type") :> Exception)
                     )
                 |> Async.BindResult(fun _ -> commitContext.Insert(commit, commit))
-                |> Async.MapResult(fun _ -> CommitId(commit.Id))
+                |> Async.MapResult(fun _ -> commit.Id)
             )
 
         member this.Get(headId: HeadId) =
-            headContext.Get(Head.CreateDocumentKey(headId.Value))
+            headContext.Get(Head.CreateDocumentKey(headId))
             |> Async.TryMapResult HeadModel.Create
 
         member this.Get(commitId: CommitId) =
-            commitContext.Get(Commit.CreateDocumentKey(commitId.Value))
+            commitContext.Get(Commit.CreateDocumentKey(commitId))
             |> Async.TryMapResult CommitModel.Create

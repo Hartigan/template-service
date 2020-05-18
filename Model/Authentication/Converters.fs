@@ -1,13 +1,14 @@
 namespace Models.Authentication
 
 open DatabaseTypes
+open DatabaseTypes.Identificators
 open System
 
 module Converters =
     type UserIdentity with
         member this.ToEntity() =
             {
-                User.Id              = this.Id.ToString()
+                User.Id              = UserId(this.Id.ToString())
                 FirstName            = this.FirstName
                 LastName             = this.LastName
                 Email                = this.Email
@@ -17,12 +18,13 @@ module Converters =
                 NormalizedName       = this.NormalizedName
                 IsAuthenticated      = this.IsAuthenticated
                 AuthenticationType   = this.AuthenticationType
+                Type                 = UserType.Instance
             }
 
     type User with
         member this.ToModel() =
             let result = UserIdentity()
-            result.Id                   <- Guid.Parse(this.Id)
+            result.Id                   <- Guid.Parse(this.Id.Value)
             result.FirstName            <- this.FirstName
             result.LastName             <- this.LastName
             result.Email                <- this.Email
@@ -39,6 +41,7 @@ module Converters =
             {
                 UserRole.Id             = this.Id.ToString()
                 Name                    = this.Name
+                Type                    = UserRoleType.Instance
             }
 
     type UserRole with

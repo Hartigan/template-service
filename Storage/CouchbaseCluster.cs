@@ -23,7 +23,9 @@ namespace Storage
         {
             if (_cluster == null)
             {
+                var serializer = new TypeSerializer();
                 var options = new ClusterOptions()
+                    .WithSerializer(serializer)
                     .WithCredentials(_config.Value.Username, _config.Value.Password)
                     .WithLogging(_loggerFactory)
                     .WithBuckets("main");

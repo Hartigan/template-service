@@ -35,8 +35,8 @@ type ProblemSetModel =
     }
     static member Create(problemSet: ProblemSet) : Result<ProblemSetModel, Exception> =
         Ok({
-            ProblemSetModel.Id      = ProblemSetId(problemSet.Id)
+            ProblemSetModel.Id      = problemSet.Id
             Title                   = ProblemSetTitle(problemSet.Title)
-            Heads                   = problemSet.Heads |> Seq.map(fun x -> HeadId(x)) |> List.ofSeq
+            Heads                   = problemSet.Heads
             Duration                = DurationModel(TimeSpan.FromSeconds(Convert.ToDouble(problemSet.Duration)))
         })
