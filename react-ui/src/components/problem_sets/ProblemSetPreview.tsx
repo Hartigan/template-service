@@ -10,7 +10,7 @@ import { CommitId, ProblemSetId } from "../../models/Identificators";
 import { HeadLink, fromHead } from "../../models/Folder";
 import { Problem } from "../../models/Problem";
 import { VersionService } from "../../services/VersionService";
-import ProblemsListView from "./ProblemsListView";
+import SlotsListView from "./SlotsListView";
 import ProblemPreview from "./ProblemPreview";
 import EditProblemSetDialog from "./EditProblemSetDialog";
 import { Head } from "../../models/Head";
@@ -40,9 +40,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface IState {
-    problemSet: ProblemSet;
-    problems: Array<HeadLink>;
-    selectedProblem: Problem | null;
+    problemSet: ProblemSet | null;
+    selectedSlot: number | null;
+    selectedProblemInSlot: number | null;
+    preview: Problem | null;
+    editOpened: boolean;
 }
 
 export interface IProblemSetPreviewProps {
@@ -56,57 +58,104 @@ export interface IProblemSetPreviewProps {
 
 export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
 
-    const [ data, setData ] = React.useState<IState | null>(null);
-    const [ editOpened, setEditOpened ] = React.useState(false);
-
-    const sync = async (commit: Commit) => {
-        const problemId : ProblemSetId = commit.target.id;
-        if (data && data.problemSet.id === problemId) {
-            return;
-        }
-        const problemSet = await props.problemSetService.get(commit.id);
-        const heads = await Promise.all(problemSet.head_ids.map(headId => props.versionService.getHead(headId)));
-        const headLinks = heads.map(fromHead);
-
-        setData({
-            problemSet: problemSet,
-            problems: headLinks,
-            selectedProblem: null,
-        });
-    };
+    const [ state, setState ] = React.useState<IState>({
+        problemSet: null,
+        selectedSlot: null,
+        selectedProblemInSlot: null,
+        preview: null,
+        editOpened: false
+    });
 
     useEffect(() => {
-        sync(props.commit);
+        let canUpdate = true;
+
+        const problemId : ProblemSetId = props.commit.target.id;
+
+        if (state.problemSet === null || state.problemSet.id !== problemId) {
+            props.problemSetService
+                .get(props.commit.id)
+                .then(problemSet => {
+                    if (canUpdate) {
+                        setState({
+                            ...state,
+                            problemSet: problemSet
+                        })
+                    }
+                });
+        }
+
+        if (state.problemSet !== null &&
+            state.selectedSlot !== null &&
+            state.selectedProblemInSlot !== null &&
+            state.preview === null) {
+
+            props.versionService
+                .getHead(state.problemSet.slots[state.selectedSlot].head_ids[state.selectedProblemInSlot])
+                .then(head => {
+                    props.problemsService
+                        .get(head.commit.id)
+                        .then(problem => {
+                            if (canUpdate) {
+                                setState({
+                                    ...state,
+                                    preview: problem
+                                })
+                            }
+                        });
+                });
+        }
+
+        return () => {
+            canUpdate = false;
+        };
     });
 
     const onEdit = () => { 
-        setEditOpened(true);
+        setState({
+            ...state,
+            editOpened: true
+        });
     };
 
-    const onSelectInList = async (index: number) => {
-        if (!data) {
-            return;
+    const onSelectSlot = (index: number) => {
+        if (index !== state.selectedSlot) {
+            setState({
+                ...state,
+                selectedSlot: index,
+                selectedProblemInSlot: null,
+                preview: null
+            });
         }
+    };
 
-        const link = data.problems[index];
-        const head = await props.versionService.getHead(link.id);
-        const problem = await props.problemsService.get(head.commit.id);
-        setData({
-            ...data,
-            selectedProblem: problem,
-        });
+    const onSelectInSlot = (slotIndex: number, index: number) => {
+        if (index !== state.selectedProblemInSlot || slotIndex !== state.selectedSlot) {
+            setState({
+                ...state,
+                selectedSlot: slotIndex,
+                selectedProblemInSlot: index,
+                preview: null
+            });
+        }
     };
 
     const classes = useStyles();
 
-    if (!data) {
+    if (!state.problemSet) {
         return (<div />);
     }
 
-    const listPreview = (data.selectedProblem) ? (
-        <ProblemPreview
-            problem={data.selectedProblem} />
-    ) : null;
+    const getPreview = () => {
+        if (state.preview) {
+            return (
+                <ProblemPreview
+                    problem={state.preview} />
+            );
+        }
+        else {
+            return (<div/>);
+        }
+    };
 
     return (
         <Box className={classes.root}>
@@ -119,9 +168,10 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                 </IconButton>
             </Container>
             <EditProblemSetDialog
-                open={editOpened}
-                commit={props.commit}
-                onClose={() => setEditOpened(false)}
+                open={state.editOpened}
+                headId={props.commit.head_id}
+                problemSet={state.problemSet}
+                onClose={() => setState({...state, editOpened: false})}
                 versionService={props.versionService}
                 foldersService={props.foldersService}
                 problemsService={props.problemsService}
@@ -146,7 +196,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             Title
                         </Typography>
                         <Typography variant="h5" component="h2">
-                            {data.problemSet.title}
+                            {state.problemSet.title}
                         </Typography>
                     </Box>
                 </ListItem>
@@ -156,18 +206,23 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             Diration
                         </Typography>
                         <Typography variant="h5" component="h2">
-                            {data.problemSet.duration / 60} min
+                            {state.problemSet.duration / 60} min
                         </Typography>
                     </Box>
                 </ListItem>
                 <Grid container className={classes.listContainer}>
                     <Grid item className={classes.problemsList}>
-                    <ProblemsListView
-                        links={data.problems} 
-                        onSelect={(index) => onSelectInList(index)} />
+                        <SlotsListView
+                            slots={state.problemSet.slots}
+                            selectedSlot={state.selectedSlot}
+                            selectedProblemInSlot={state.selectedProblemInSlot}
+                            versionService={props.versionService}
+                            onSelectSlot={onSelectSlot}
+                            onSelectProblemInSlot={onSelectInSlot}
+                            />
                     </Grid>
                     <Grid item className={classes.listPreview}>
-                        {listPreview}
+                        {getPreview()}
                     </Grid>
                 </Grid>
             </List>

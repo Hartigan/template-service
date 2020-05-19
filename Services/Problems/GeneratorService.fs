@@ -88,9 +88,18 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.TryMapResult GeneratedProblemSetModel.Create
 
         member this.Generate(problemSetId: ProblemSetId): Async<Result<GeneratedProblemSetId, Exception>> =
+            let seed = random.Next()
+            let rnd = Random(seed)
             problemsService.Get(problemSetId)
             |> Async.BindResult(fun problemSet ->
-                problemSet.Heads
+                problemSet.Slots
+                |> Seq.choose(fun slot ->
+                    if slot.Heads.IsEmpty then
+                        None
+                    else
+                        let index = rnd.Next(0, slot.Heads.Length)
+                        Some(slot.Heads.Item(index))
+                )
                 |> Seq.map versionControlService.Get
                 |> ResultOfAsyncSeq
                 |> Async.BindResult(fun heads ->
@@ -121,6 +130,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 let generatedProblemSet =
                     {
                         GeneratedProblemSet.Id = GeneratedProblemSetId(Guid.NewGuid().ToString())
+                        Seed = seed
                         Type = GeneratedProblemSetType.Instance
                         Duration = Convert.ToInt32(problemSet.Duration.Value.TotalSeconds)
                         Problems = generatedProblemIds

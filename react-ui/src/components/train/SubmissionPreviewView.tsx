@@ -70,37 +70,35 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
     if (state.preview) {
         return (
             <Card className={classes.root}>
-                <CardActionArea>
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="h2">
-                            {state.preview.title}
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Author
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            {state.preview.author.username}
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Started at
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            <DateView date={state.preview.started_at} />
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Deadline
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            <DateView date={state.preview.deadline} />
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Status
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            {state.preview.completed ? "Completed" : "In progress"}
-                        </Typography>
-                    </CardContent>
-                </CardActionArea>
+                <CardContent>
+                    <Typography gutterBottom variant="h5" component="h2">
+                        {state.preview.title}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Author
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.author.username}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Started at
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        <DateView date={state.preview.started_at} />
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Deadline
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        <DateView date={state.preview.deadline} />
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Status
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.completed ? "Completed" : "In progress"}
+                    </Typography>
+                </CardContent>
                 <CardActions>
                     {state.preview.report_id
                         ? (

@@ -15,6 +15,8 @@ type GeneratedProblemSet =
     {
         [<JsonPropertyName("id")>]
         Id : GeneratedProblemSetId
+        [<JsonPropertyName("seed")>]
+        Seed : int32
         [<JsonPropertyName("problems")>]
         Problems : List<GeneratedProblemId>
         [<JsonPropertyName("title")>]

@@ -74,31 +74,29 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
     if (state.preview) {
         return (
             <Card className={classes.root}>
-                <CardActionArea>
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="h2">
-                            {state.preview.title}
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Duration, s
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            {state.preview.duration}
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Problems count
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            {state.preview.problems_count}
-                        </Typography>
-                        <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Author
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            {state.preview.author.username}
-                        </Typography>
-                    </CardContent>
-                </CardActionArea>
+                <CardContent>
+                    <Typography gutterBottom variant="h5" component="h2">
+                        {state.preview.title}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Duration, s
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.duration}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Problems count
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.problems_count}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Author
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.author.username}
+                    </Typography>
+                </CardContent>
                 <CardActions>
                     <Button
                         size="small"

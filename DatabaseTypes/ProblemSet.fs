@@ -11,14 +11,20 @@ type ProblemSetType private () =
 and ProblemSetTypeConverter() =
     inherit StringConverter<ProblemSetType>((fun m -> m.Value), (fun _ -> ProblemSetType.Instance))
 
+type Slot =
+    {
+        [<JsonPropertyName("head_ids")>]
+        Heads : List<HeadId>
+    }
+
 type ProblemSet =
     {
         [<JsonPropertyName("id")>]
         Id : ProblemSetId
         [<JsonPropertyName("title")>]
         Title : string
-        [<JsonPropertyName("head_ids")>]
-        Heads : List<HeadId>
+        [<JsonPropertyName("slots")>]
+        Slots : List<Slot>
         [<JsonPropertyName("duration")>]
         Duration : int32
         [<JsonPropertyName("type")>]

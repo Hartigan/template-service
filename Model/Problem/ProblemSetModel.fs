@@ -22,14 +22,25 @@ and DurationModelConverter() =
     inherit UInt32Converter<DurationModel>((fun m -> Convert.ToUInt32(m.Value.TotalSeconds)),
                                            (fun u -> DurationModel(TimeSpan.FromSeconds(Convert.ToDouble(u)))))
 
+type ProblemSlotModel =
+    {
+        [<JsonPropertyName("head_ids")>]
+        Heads       : List<HeadId>
+    }
+
+    static member Create(slot: Slot) =
+        {
+            Heads = slot.Heads
+        }
+
 type ProblemSetModel =
     {
         [<JsonPropertyName("id")>]
         Id          : ProblemSetId
         [<JsonPropertyName("title")>]
         Title       : ProblemSetTitle
-        [<JsonPropertyName("head_ids")>]
-        Heads       : List<HeadId>
+        [<JsonPropertyName("slots")>]
+        Slots       : List<ProblemSlotModel>
         [<JsonPropertyName("duration")>]
         Duration    : DurationModel
     }
@@ -37,6 +48,6 @@ type ProblemSetModel =
         Ok({
             ProblemSetModel.Id      = problemSet.Id
             Title                   = ProblemSetTitle(problemSet.Title)
-            Heads                   = problemSet.Heads
+            Slots                   = problemSet.Slots |> Seq.map ProblemSlotModel.Create |> List.ofSeq
             Duration                = DurationModel(TimeSpan.FromSeconds(Convert.ToDouble(problemSet.Duration)))
         })

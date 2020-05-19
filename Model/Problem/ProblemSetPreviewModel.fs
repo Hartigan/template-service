@@ -22,7 +22,7 @@ type ProblemSetPreviewModel =
         Ok({
             ProblemSetPreviewModel.Id   = problemSet.Id
             Title                       = problemSet.Title
-            ProblemsCount               = uint32 problemSet.Heads.Length
+            ProblemsCount               = uint32 problemSet.Slots.Length
             Duration                    = problemSet.Duration
             Author                      = author
         })
