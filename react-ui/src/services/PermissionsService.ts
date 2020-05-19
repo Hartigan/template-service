@@ -1,7 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { HttpServiceFactory } from './HttpServiceFactory';
-import { Id, GroupId, FolderId, CommitId, HeadId, SubmissionId, ReportId, UserId } from '../models/Identificators';
+import { Id, GroupId, FolderId, HeadId, SubmissionId, ReportId, UserId } from '../models/Identificators';
 import { Group, Permissions, Access } from '../models/Permissions';
 
 export type ProtectedType = "folder" | "head" | "commit" | "submission" | "report";

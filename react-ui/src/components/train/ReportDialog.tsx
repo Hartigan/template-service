@@ -1,10 +1,6 @@
-import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, Container } from "@material-ui/core";
+import { makeStyles, Dialog, AppBar, Toolbar, IconButton, Typography, List, ListItem } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { Submission } from "../../models/Submission";
-import { ExaminationService } from "../../services/ExaminationService";
-import SubmissionProblemView from "./SubmissionProblemView";
-import { GeneratedProblemId } from "../../models/Identificators";
 import { Report } from "../../models/Report";
 import ReportProblemView from "./ReportProblemView";
 import ReportProblemSetView from "./ReportProblemSetView";
@@ -28,9 +24,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-interface IState {
-}
-
 export interface IReportDialogProps {
     open: boolean;
     onClose: () => void;
@@ -38,9 +31,6 @@ export interface IReportDialogProps {
 }
 
 export default function ReportDialog(props: IReportDialogProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-    }); 
 
     const onCancel = () => {
         props.onClose();

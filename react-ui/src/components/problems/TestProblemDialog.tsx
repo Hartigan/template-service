@@ -1,4 +1,4 @@
-import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, Container } from "@material-ui/core";
+import { makeStyles, Dialog, TextField, AppBar, Toolbar, IconButton, Typography, List, ListItem } from "@material-ui/core";
 import React from "react";
 import { ProblemsService } from "../../services/ProblemsService";
 import CloseIcon from '@material-ui/icons/Close';

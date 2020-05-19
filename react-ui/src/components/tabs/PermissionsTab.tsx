@@ -1,19 +1,14 @@
 import { makeStyles, Grid } from "@material-ui/core";
 import React, { useEffect } from "react";
-import GroupsListView from "../groups/GroupsListView";
 import { PermissionsService, Protected } from "../../services/PermissionsService";
-import GroupView from "../groups/GroupView";
 import { UserService } from "../../services/UserService";
-import { GroupId } from "../../models/Identificators";
-import { Folder } from "../../models/Folder";
-import { Head } from "../../models/Head";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { FoldersService } from "../../services/FoldersService";
 import ExplorerView from "../files/ExplorerView";
 import PermissionsView from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: "100%",

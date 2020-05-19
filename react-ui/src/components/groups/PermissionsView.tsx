@@ -1,8 +1,8 @@
-import { makeStyles, Paper, Toolbar, Grid, IconButton, List, ListItem } from "@material-ui/core";
+import { makeStyles, Paper, Grid, IconButton, List } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { PermissionsService, Protected } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
-import { Group, Access, Permissions } from "../../models/Permissions";
+import { Access, Permissions } from "../../models/Permissions";
 import UserSearchView from "./UserSearchView";
 import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';

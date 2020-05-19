@@ -1,4 +1,4 @@
-import { makeStyles, ListItem, ListItemText, Container, ListItemSecondaryAction, IconButton, FormControlLabel, Checkbox, Box, Toolbar } from "@material-ui/core";
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton, FormControlLabel, Checkbox, Toolbar } from "@material-ui/core";
 import React from "react";
 import { Member, Access } from "../../models/Permissions";
 import DeleteIcon from '@material-ui/icons/Delete';

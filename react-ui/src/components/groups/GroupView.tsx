@@ -1,4 +1,4 @@
-import { makeStyles, Paper, Toolbar, Grid, IconButton, List, ListItem } from "@material-ui/core";
+import { makeStyles, Paper, Grid, IconButton, List } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { PermissionsService } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";

@@ -19,17 +19,11 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-interface IState {
-}
-
 export interface IReportProblemSetViewProps {
     report: Report;
 }
 
 export default function ReportProblemSetView(props: IReportProblemSetViewProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-    }); 
 
     const classes = useStyles();
 

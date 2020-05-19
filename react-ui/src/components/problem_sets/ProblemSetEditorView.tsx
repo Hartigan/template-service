@@ -1,9 +1,8 @@
-import { makeStyles, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl, Grid, Box } from "@material-ui/core";
+import { makeStyles, TextField, Button, List, ListItem, FormControl, Grid, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { FoldersService } from "../../services/FoldersService";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
-import { ProblemSetService } from "../../services/ProblemSetService";
 import ExplorerView from "../files/ExplorerView";
 import { VersionService } from "../../services/VersionService";
 import ProblemPreview from "./ProblemPreview";
@@ -78,16 +77,6 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
         selectedSlot: null,
         selectedProblemInSlot: null,
     })
-
-    const clean = () => {
-        setState({
-            ...state,
-            addPreview: null,
-            removePreview: null,
-            selectedSlot: null,
-            selectedProblemInSlot: null,
-        });
-    };
 
     useEffect(() => {
         let canUpdate = true;

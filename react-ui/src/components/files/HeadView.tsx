@@ -28,18 +28,10 @@ export interface IHeadViewProperties {
 
 export default function HeadView(props: IHeadViewProperties) {
     const fileExplorerState = props.fileExplorerState;
-    const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
 
     const onClick = () => {
         fileExplorerState.setCurrentHead(props.head);
     };
-
-    React.useEffect(() => {
-        if (isLoaded) {
-            return;
-        }
-        setIsLoaded(true);
-    }); 
 
     const classes = useStyles();
 

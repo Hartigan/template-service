@@ -4,7 +4,6 @@ import { SubmissionProblem } from "../../models/Submission";
 import ProblemView from "./ProblemView";
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { GeneratedProblemId } from "../../models/Identificators";
-import ProblemSetPreview from "../problem_sets/ProblemSetPreview";
 
 const useStyles = makeStyles(theme => ({
     list: {

@@ -10,9 +10,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-interface IState {
-}
-
 export interface ISubmissionsListViewProps {
     examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
@@ -21,9 +18,6 @@ export interface ISubmissionsListViewProps {
 }
 
 export default function SubmissionsListView(props: ISubmissionsListViewProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-    });
 
     const classes = useStyles();
 

@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { makeStyles, List, ListItemText, ListItem } from '@material-ui/core';
-import { PermissionsService } from '../../services/PermissionsService';
 import { Group } from '../../models/Permissions';
-import { isNull } from 'util';
 import { GroupId } from '../../models/Identificators';
 
 const useStyles = makeStyles(theme => ({

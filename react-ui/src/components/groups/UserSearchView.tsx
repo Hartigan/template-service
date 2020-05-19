@@ -65,16 +65,6 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         };
     });
     
-    useEffect(() => {
-        if (!state.open) {
-            setState({
-                ...state,
-                users: [],
-                loaded: true
-            });
-        }
-    }, [state.open]);
-
     const classes = useStyles();
 
     const setOpen = (value: boolean) => {

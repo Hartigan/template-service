@@ -5,7 +5,7 @@ import { FolderLink, Folder } from '../../models/Folder';
 import { FoldersService } from '../../services/FoldersService';
 import HeadView from './HeadView';
 import { FileExplorerState } from '../../states/FileExplorerState';
-import { FolderId, HeadId } from '../../models/Identificators';
+import { FolderId } from '../../models/Identificators';
 import { TargetType } from '../../models/Commit';
 import { VersionService } from '../../services/VersionService';
 import FolderIcon from '@material-ui/icons/Folder';

@@ -6,7 +6,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { FoldersService } from '../../services/FoldersService';
 import FolderView from './FolderView';
 import { FileExplorerState } from '../../states/FileExplorerState';
-import { Folder, FolderLink } from '../../models/Folder';
+import { FolderLink } from '../../models/Folder';
 import { TargetType } from '../../models/Commit';
 import { VersionService } from '../../services/VersionService';
 
@@ -24,40 +24,51 @@ export interface IExplorerViewProps {
     filter?: Array<TargetType>;
 }
 
+interface IState {
+    root: FolderLink | null;
+    expanded: Array<string>;
+}
+
 export default function ExplorerView(props: IExplorerViewProps) {
 
-    const [ isLoaded, setIsLoaded ] = React.useState<boolean>(false);
-    const [ expanded, setExpanded] = React.useState<Array<string>>([]);
-    const [ root, setRoot ] = React.useState<FolderLink | null>(null);
+    const [ state, setState ] = React.useState<IState>({
+        root: null,
+        expanded: []
+    })
 
     React.useEffect(() => {
-        if (isLoaded) {
+        if (state.root) {
             return;
         }
-        setIsLoaded(true);
 
         props.foldersService
             .getRoot()
             .then(root => {
-                setRoot({
-                    id: root.id,
-                    name: root.name,
+                setState({
+                    ...state,
+                    root: {
+                        id: root.id,
+                        name: root.name,
+                    }
                 });
             });
     }); 
 
     const handleChange = (event: {}, nodes: Array<string>) => {
-        setExpanded(nodes);
+        setState({
+            ...state,
+            expanded: nodes
+        });
     };
 
-    const rootFolder = root ? (
+    const rootFolder = state.root ? (
         <FolderView
             versionService={props.versionService}
-            folder={root}
+            folder={state.root}
             foldersService={props.foldersService}
             filter={props.filter}
             fileExplorerState={props.state} />
-    ) : null;
+    ) : <div/>;
 
     const classes = useStyles();
 
@@ -67,7 +78,7 @@ export default function ExplorerView(props: IExplorerViewProps) {
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
                 onNodeToggle={handleChange}
-                expanded={expanded}>
+                expanded={state.expanded}>
                 {rootFolder}
             </TreeView>
         </Box>

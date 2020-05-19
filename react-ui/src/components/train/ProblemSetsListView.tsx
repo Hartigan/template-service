@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles, List, ListItem, ListItemText } from '@material-ui/core';
+import { makeStyles, List, ListItem } from '@material-ui/core';
 import { Head } from '../../models/Head';
 import { ExaminationService } from '../../services/ExaminationService';
 import ProblemSetPreviewView from './ProblemSetPreviewView';
@@ -11,9 +11,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-interface IState {
-}
-
 export interface IProblemSetsListViewProps {
     examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
@@ -21,9 +18,6 @@ export interface IProblemSetsListViewProps {
 }
 
 export default function ProblemSetsListView(props: IProblemSetsListViewProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-    });
 
     const classes = useStyles();
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles, Box, Container, Button, IconButton } from '@material-ui/core';
+import { makeStyles, Box, Container, IconButton } from '@material-ui/core';
 import { FoldersService } from '../../services/FoldersService';
 import { FileExplorerState } from '../../states/FileExplorerState';
 import CreateFolderDialog from './CreateFolderDialog';

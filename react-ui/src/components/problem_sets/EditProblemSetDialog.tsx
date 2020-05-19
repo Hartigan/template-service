@@ -1,5 +1,5 @@
-import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl, Grid } from "@material-ui/core";
-import React, { useEffect } from "react";
+import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
+import React from "react";
 import { FoldersService } from "../../services/FoldersService";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
@@ -58,13 +58,6 @@ export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) 
         });
     };
 
-    useEffect(() => {
-        let canUpdate = true;
-        return () => {
-            canUpdate = false;
-        };
-    });
-
     const onCancel = () => {
         clean();
         props.onClose();
@@ -79,12 +72,10 @@ export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) 
     };
 
     const setCommitDescription = (desc: string) => {
-        if (state) {
-            setState({
-                ...state,
-                commitDescription: desc,
-            });
-        }
+        setState({
+            ...state,
+            commitDescription: desc,
+        });
     };
 
     const onUpdate = (problemSet: ProblemSet) => {

@@ -62,16 +62,6 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
             active = false;
         };
     });
-    
-    useEffect(() => {
-        if (!state.open) {
-            setState({
-                ...state,
-                groups: [],
-                loaded: true
-            });
-        }
-    }, [state.open]);
 
     const classes = useStyles();
 

@@ -6,17 +6,15 @@ import { FileExplorerState } from "../../states/FileExplorerState";
 import EditIcon from '@material-ui/icons/Edit';
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { ProblemSet } from "../../models/ProblemSet";
-import { CommitId, ProblemSetId } from "../../models/Identificators";
-import { HeadLink, fromHead } from "../../models/Folder";
+import { ProblemSetId } from "../../models/Identificators";
 import { Problem } from "../../models/Problem";
 import { VersionService } from "../../services/VersionService";
 import SlotsListView from "./SlotsListView";
 import ProblemPreview from "./ProblemPreview";
 import EditProblemSetDialog from "./EditProblemSetDialog";
-import { Head } from "../../models/Head";
 import { FoldersService } from "../../services/FoldersService";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: "100%"

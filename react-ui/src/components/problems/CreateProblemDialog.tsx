@@ -91,8 +91,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
             validator: validator
         };
 
-        let ans = await props.problemsService.create(curFolder.id, title, problem);
-        let headId = ans.id;
+        await props.problemsService.create(curFolder.id, title, problem);
 
         props.fileExplorerState.syncFolder(curFolder.id);
 

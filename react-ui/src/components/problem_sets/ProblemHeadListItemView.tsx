@@ -1,4 +1,4 @@
-import { makeStyles, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from "@material-ui/core";
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { HeadId } from "../../models/Identificators";
 import { Head } from "../../models/Head";

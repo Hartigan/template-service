@@ -1,4 +1,4 @@
-import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, Container } from "@material-ui/core";
+import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
 import { Submission } from "../../models/Submission";
@@ -22,9 +22,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-interface IState {
-}
-
 export interface ISubmissionDialogProps {
     open: boolean;
     onClose: () => void;
@@ -33,9 +30,6 @@ export interface ISubmissionDialogProps {
 }
 
 export default function SubmissionDialog(props: ISubmissionDialogProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-    }); 
 
     const onCancel = () => {
         props.onClose();

@@ -61,7 +61,7 @@ export default function CreateGroupDialog(props: ICreateGroupDialogProps) {
             return;
         }
 
-        let ans = await props.permissionsService.createGroup(state.name, state.desc);
+        await props.permissionsService.createGroup(state.name, state.desc);
         clean();
         props.onClose();
     }

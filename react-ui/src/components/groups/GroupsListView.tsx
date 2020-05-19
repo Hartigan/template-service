@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles, Box, Container, Button, IconButton } from '@material-ui/core';
+import { makeStyles, Box, Container, IconButton } from '@material-ui/core';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import CreateGroupDialog from './CreateGroupDialog';
 import { PermissionsService } from '../../services/PermissionsService';

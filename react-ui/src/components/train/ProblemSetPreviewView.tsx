@@ -1,4 +1,4 @@
-import { makeStyles, Box, Card, CardActionArea, CardContent, Typography, CardActions, Button } from "@material-ui/core";
+import { makeStyles, Box, Card, CardContent, Typography, CardActions, Button } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { CommitId, SubmissionId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";

@@ -1,4 +1,4 @@
-import { makeStyles, List, ListItem, ListItemText, Card, CardActionArea, CardContent, Typography, CardActions, IconButton } from "@material-ui/core";
+import { makeStyles, List, ListItem, Card, CardContent, Typography, CardActions, IconButton } from "@material-ui/core";
 import React from "react";
 import { ProblemSlot } from "../../models/ProblemSet";
 import { VersionService } from "../../services/VersionService";
