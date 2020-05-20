@@ -18,53 +18,38 @@ open Utils.ResultHelper
 type CreateFolderRequest = {
     [<JsonPropertyName("name")>]
     Name: FolderName
-}
-
-type AddFolderRequest = {
-    [<JsonPropertyName("target_id")>]
-    TargetId: FolderId
-    [<JsonPropertyName("destination_id")>]
-    DestinationId: FolderId
-}
-
-type AddHeadRequest = {
-    [<JsonPropertyName("target_id")>]
-    TargetId: HeadId
     [<JsonPropertyName("destination_id")>]
     DestinationId: FolderId
 }
 
 type MoveHeadToTrashRequest = {
+    [<JsonPropertyName("parent_id")>]
+    ParentId: FolderId
     [<JsonPropertyName("target_id")>]
     TargetId: HeadId
 }
 
 type MoveFolderToTrashRequest = {
+    [<JsonPropertyName("parent_id")>]
+    ParentId: FolderId
     [<JsonPropertyName("target_id")>]
     TargetId: FolderId
 }
 
 type RenameFolderRequest = {
+    [<JsonPropertyName("parent_id")>]
+    ParentId: FolderId
     [<JsonPropertyName("target_id")>]
     TargetId: FolderId
     [<JsonPropertyName("name")>]
     Name: FolderName
 }
 
-type RenameFolderLinkRequest = {
+type RenameHeadRequest = {
     [<JsonPropertyName("parent_id")>]
     ParentId: FolderId
-    [<JsonPropertyName("link_id")>]
-    LinkId: FolderId
-    [<JsonPropertyName("name")>]
-    Name: FolderName
-}
-
-type RenameHeadLinkRequest = {
-    [<JsonPropertyName("parent_id")>]
-    ParentId: FolderId
-    [<JsonPropertyName("link_id")>]
-    LinkId: HeadId
+    [<JsonPropertyName("head_id")>]
+    HeadId: HeadId
     [<JsonPropertyName("name")>]
     Name: HeadName
 }
@@ -103,56 +88,16 @@ type FoldersController(foldersService: IFoldersService,
     member this.CreateFolder([<FromBody>] req: CreateFolderRequest) =
         async {
             let userId = this.GetUserId()
-            let! result = foldersService.CreateFolder(req.Name, userId)
+            let! result =
+                foldersService.CreateFolder(req.Name, userId)
+                |> Async.BindResult(fun folderId ->
+                    foldersService.AddFolder(folderId, req.DestinationId)
+                )
             match result with
             | Error(ex) ->
                 logger.LogError(ex, "Cannot create folder")
                 return (BadRequestResult() :> IActionResult)
             | Ok(model) -> return (JsonResult(Id(model)) :> IActionResult)
-        }
-        |> Async.StartAsTask
-
-    [<HttpPost>]
-    [<Route("add_folder")>]
-    member this.AddFolder([<FromBody>] req: AddFolderRequest) =
-        async {
-            let userId = this.GetUserId()
-            let! targetCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite)
-            let! destinationCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
-
-            match (targetCheck, destinationCheck) with
-            | (Ok(), Ok()) ->
-                let! result = foldersService.AddFolder(req.TargetId, req.DestinationId)
-                match result with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot add folder")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | errors ->
-                logger.LogError(ErrorOf2 errors, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
-        }
-        |> Async.StartAsTask
-
-    [<HttpPost>]
-    [<Route("add_head")>]
-    member this.AddHead([<FromBody>] req: AddHeadRequest) =
-        async {
-            let userId = this.GetUserId()
-            let! targetCheck = permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite)
-            let! destinationCheck = permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
-
-            match (targetCheck, destinationCheck) with
-            | (Ok(), Ok()) ->
-                let! result = foldersService.AddHead(req.TargetId, req.DestinationId)
-                match result with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot add head")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(model) -> return (JsonResult(model) :> IActionResult)
-            | errors ->
-                logger.LogError(ErrorOf2 errors, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask
 
@@ -177,7 +122,7 @@ type FoldersController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.MoveHeadToTrash(req.TargetId, userId)
+                let! result = foldersService.MoveHeadToTrash(req.ParentId, req.TargetId, userId)
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot move head to trash")
@@ -196,7 +141,7 @@ type FoldersController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.MoveFolderToTrash(req.TargetId, userId)
+                let! result = foldersService.MoveFolderToTrash(req.ParentId, req.TargetId, userId)
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot move folder to trash")
@@ -215,7 +160,11 @@ type FoldersController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.RenameFolder(req.TargetId, req.Name)
+                let! result =
+                    foldersService.RenameFolder(req.TargetId, req.Name)
+                    |> Async.BindResult(fun _ ->
+                        foldersService.RenameFolderLink(req.ParentId, req.TargetId, req.Name)
+                    )
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot rename folder")
@@ -228,32 +177,17 @@ type FoldersController(foldersService: IFoldersService,
         |> Async.StartAsTask
 
     [<HttpPost>]
-    [<Route("rename_folder_link")>]
-    member this.RenameFolderLink([<FromBody>] req: RenameFolderLinkRequest) =
+    [<Route("rename_head")>]
+    member this.RenameHeadLink([<FromBody>] req: RenameHeadRequest) =
         async {
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.ParentId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.RenameFolderLink(req.ParentId, req.LinkId, req.Name)
-                match result with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot rename folder link")
-                    return (BadRequestResult() :> IActionResult)
-                | Ok(model) -> return (OkResult() :> IActionResult)
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                return (UnauthorizedResult() :> IActionResult)
-        }
-        |> Async.StartAsTask
-
-    [<HttpPost>]
-    [<Route("rename_head_link")>]
-    member this.RenameHeadLink([<FromBody>] req: RenameHeadLinkRequest) =
-        async {
-            let userId = this.GetUserId()
-            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.ParentId), userId, AccessModel.CanWrite) with
-            | Ok() ->
-                let! result = foldersService.RenameHeadLink(req.ParentId, req.LinkId, req.Name)
+                let! result =
+                    foldersService.RenameHead(req.HeadId, req.Name)
+                    |> Async.BindResult(fun _ ->
+                        foldersService.RenameHeadLink(req.ParentId, req.HeadId, req.Name)
+                    )
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot rename head link")

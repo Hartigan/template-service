@@ -43,8 +43,7 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
         let curFolder = await props.fileExplorerState.currentFolderOrRoot();
 
         if (curFolder) {
-            let ans = await props.foldersService.createFolder(name);
-            await props.foldersService.addFolder(ans.id, curFolder.id);
+            await props.foldersService.createFolder(name, curFolder.id);
             props.fileExplorerState.syncFolder(curFolder.id);
             clean();
             props.onClose();

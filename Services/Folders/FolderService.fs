@@ -99,9 +99,9 @@ type FoldersService(folderContext: IContext<Folder>,
                     |> Async.map(fun _ -> FolderModel.Create(folder))
             )
 
-        member this.MoveFolderToTrash(folderId, userId) = 
+        member this.MoveFolderToTrash(parentId, folderId, userId) = 
             failwith "Not Implemented"
-        member this.MoveHeadToTrash(headId, userId) = 
+        member this.MoveHeadToTrash(parentId, headId, userId) = 
             failwith "Not Implemented"
 
         member this.RenameFolderLink(folderId, folderLinkId, folderName): Async<Result<unit, Exception>> = 
@@ -133,6 +133,14 @@ type FoldersService(folderContext: IContext<Folder>,
                                     x
                             )
                             |> List.ofSeq
+                }
+            )
+
+        member this.RenameHead(headId, headName) = 
+            headContext.Update(Head.CreateDocumentKey(headId), fun head ->
+                {
+                    head with
+                        Name = headName.Value
                 }
             )
 
