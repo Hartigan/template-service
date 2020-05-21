@@ -91,7 +91,7 @@ type ProblemSetController(foldersService: IFoldersService,
                         logger.LogError(ex, "Cannot commit problem set")
                         return (BadRequestResult() :> IActionResult)
                     | Ok(headId) ->
-                        match! foldersService.AddHead(headId, req.Folder) with
+                        match! foldersService.Add(headId, req.Folder) with
                         | Error(ex) ->
                             logger.LogError(ex, "Cannot add head for problem set")
                             return (BadRequestResult() :> IActionResult)

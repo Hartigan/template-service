@@ -39,6 +39,7 @@ namespace IdentityServer
                     .AddSingleton<IUserContext, UserContext>()
                     .AddSingleton<IContext<UserGroups>, UserGroupsContext>()
                     .AddSingleton<IContext<UserItems>, UserItemsContext>()
+                    .AddSingleton<IContext<Trash>, TrashContext>()
                     .AddSingleton<IUserRoleContext, UserRoleContext>();
 
             services.AddOidcStateDataFormatterCache();

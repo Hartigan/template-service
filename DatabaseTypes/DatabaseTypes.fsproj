@@ -27,5 +27,6 @@
     <Compile Include="Report.fs" />
     <Compile Include="UserGroups.fs" />
     <Compile Include="ProtectedItems.fs" />
+    <Compile Include="Trash.fs" />
   </ItemGroup>
 </Project>

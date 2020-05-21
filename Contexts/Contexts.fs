@@ -73,6 +73,23 @@ type ProblemSetContext = CommonContext<ProblemSet>
 
 type GroupItemsContext = CommonContext<GroupItems>
 
+type TrashContext(couchbaseBuckets: CouchbaseBuckets) =
+    let commonContext = CommonContext<Trash>(couchbaseBuckets) :> IContext<Trash>
+
+    interface IContext<Trash> with
+        member this.Exists(key) =
+            commonContext.Exists(key)
+        member this.Get(key) = 
+            commonContext.Get(key)
+        member this.Insert(key, entity) =
+            commonContext.Insert(key, entity)
+        member this.Remove(key) =
+            commonContext.Remove(key)
+        member this.Update(key: IDocumentKey, updater: Trash -> Result<Trash, Exception>) =
+            commonContext.Update(key, updater)
+        member this.Update(key: IDocumentKey, updater: Trash -> Trash) =
+            commonContext.Update(key, updater)
+
 type UserGroupsContext(couchbaseBuckets: CouchbaseBuckets) =
     let commonContext = CommonContext<UserGroups>(couchbaseBuckets) :> IContext<UserGroups>
 

@@ -36,6 +36,34 @@ type MoveFolderToTrashRequest = {
     TargetId: FolderId
 }
 
+type RestoreHeadRequest = {
+    [<JsonPropertyName("target_id")>]
+    TargetId: HeadId
+}
+
+type RestoreFolderRequest = {
+    [<JsonPropertyName("target_id")>]
+    TargetId: FolderId
+}
+
+type MoveHeadRequest = {
+    [<JsonPropertyName("head_id")>]
+    HeadId: HeadId
+    [<JsonPropertyName("source_id")>]
+    SourceId: FolderId
+    [<JsonPropertyName("destination_id")>]
+    DestinationId: FolderId
+}
+
+type MoveFolderRequest = {
+    [<JsonPropertyName("folder_id")>]
+    FolderId: FolderId
+    [<JsonPropertyName("source_id")>]
+    SourceId: FolderId
+    [<JsonPropertyName("destination_id")>]
+    DestinationId: FolderId
+}
+
 type RenameFolderRequest = {
     [<JsonPropertyName("parent_id")>]
     ParentId: FolderId
@@ -89,9 +117,9 @@ type FoldersController(foldersService: IFoldersService,
         async {
             let userId = this.GetUserId()
             let! result =
-                foldersService.CreateFolder(req.Name, userId)
+                foldersService.Create(req.Name, userId)
                 |> Async.BindResult(fun folderId ->
-                    foldersService.AddFolder(folderId, req.DestinationId)
+                    foldersService.Add(folderId, req.DestinationId)
                 )
             match result with
             | Error(ex) ->
@@ -115,6 +143,20 @@ type FoldersController(foldersService: IFoldersService,
         }
         |> Async.StartAsTask
 
+    [<HttpGet>]
+    [<Route("get_trash")>]
+    member this.GetTrash() =
+        async {
+            let userId = this.GetUserId()
+            let! result = foldersService.GetRoot(userId)
+            match result with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get trash")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
     [<HttpPost>]
     [<Route("move_head_to_trash")>]
     member this.MoveHeadToTrash([<FromBody>] req: MoveHeadToTrashRequest) =
@@ -122,7 +164,7 @@ type FoldersController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.MoveHeadToTrash(req.ParentId, req.TargetId, userId)
+                let! result = foldersService.MoveToTrash(req.ParentId, req.TargetId, userId)
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot move head to trash")
@@ -141,10 +183,100 @@ type FoldersController(foldersService: IFoldersService,
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
-                let! result = foldersService.MoveFolderToTrash(req.ParentId, req.TargetId, userId)
+                let! result = foldersService.MoveToTrash(req.ParentId, req.TargetId, userId)
                 match result with
                 | Error(ex) ->
                     logger.LogError(ex, "Cannot move folder to trash")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex,"Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("restore_folder")>]
+    member this.RestoreFolder([<FromBody>] req: RestoreFolderRequest) =
+        async {
+            let userId = this.GetUserId()
+            match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
+            | Ok() ->
+                let! result = foldersService.Restore(req.TargetId, userId)
+                match result with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot restore folder")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex,"Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("restore_head")>]
+    member this.RestoreHead([<FromBody>] req: RestoreHeadRequest) =
+        async {
+            let userId = this.GetUserId()
+            match! permissionsService.CheckPermissions(ProtectedId.Head(req.TargetId), userId, AccessModel.CanWrite) with
+            | Ok() ->
+                let! result = foldersService.Restore(req.TargetId, userId)
+                match result with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot restore head")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex,"Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("move_folder")>]
+    member this.MoveFolder([<FromBody>] req: MoveFolderRequest) =
+        async {
+            let userId = this.GetUserId()
+            let permissionsResult =
+                seq {
+                    permissionsService.CheckPermissions(ProtectedId.Folder(req.FolderId), userId, AccessModel.CanWrite)
+                    permissionsService.CheckPermissions(ProtectedId.Folder(req.SourceId), userId, AccessModel.CanWrite)
+                    permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
+                }
+                |> ResultOfAsyncSeq
+            match! permissionsResult with
+            | Ok(_) ->
+                let! result = foldersService.Move(req.FolderId, req.SourceId, req.DestinationId)
+                match result with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot move folder")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (OkResult() :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex,"Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("move_head")>]
+    member this.MoveHead([<FromBody>] req: MoveHeadRequest) =
+        async {
+            let userId = this.GetUserId()
+            let permissionsResult =
+                seq {
+                    permissionsService.CheckPermissions(ProtectedId.Head(req.HeadId), userId, AccessModel.CanWrite)
+                    permissionsService.CheckPermissions(ProtectedId.Folder(req.SourceId), userId, AccessModel.CanWrite)
+                    permissionsService.CheckPermissions(ProtectedId.Folder(req.DestinationId), userId, AccessModel.CanWrite)
+                }
+                |> ResultOfAsyncSeq
+            match! permissionsResult with
+            | Ok(_) ->
+                let! result = foldersService.Move(req.HeadId, req.SourceId, req.DestinationId)
+                match result with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot move head")
                     return (BadRequestResult() :> IActionResult)
                 | Ok(model) -> return (OkResult() :> IActionResult)
             | Error(ex) ->
@@ -161,9 +293,9 @@ type FoldersController(foldersService: IFoldersService,
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.TargetId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result =
-                    foldersService.RenameFolder(req.TargetId, req.Name)
+                    foldersService.Rename(req.TargetId, req.Name)
                     |> Async.BindResult(fun _ ->
-                        foldersService.RenameFolderLink(req.ParentId, req.TargetId, req.Name)
+                        foldersService.RenameLink(req.ParentId, req.TargetId, req.Name)
                     )
                 match result with
                 | Error(ex) ->
@@ -178,15 +310,15 @@ type FoldersController(foldersService: IFoldersService,
 
     [<HttpPost>]
     [<Route("rename_head")>]
-    member this.RenameHeadLink([<FromBody>] req: RenameHeadRequest) =
+    member this.RenameHead([<FromBody>] req: RenameHeadRequest) =
         async {
             let userId = this.GetUserId()
             match! permissionsService.CheckPermissions(ProtectedId.Folder(req.ParentId), userId, AccessModel.CanWrite) with
             | Ok() ->
                 let! result =
-                    foldersService.RenameHead(req.HeadId, req.Name)
+                    foldersService.Rename(req.HeadId, req.Name)
                     |> Async.BindResult(fun _ ->
-                        foldersService.RenameHeadLink(req.ParentId, req.HeadId, req.Name)
+                        foldersService.RenameLink(req.ParentId, req.HeadId, req.Name)
                     )
                 match result with
                 | Error(ex) ->

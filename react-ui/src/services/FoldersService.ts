@@ -3,6 +3,7 @@ import { HttpService } from './HttpService';
 import { Folder } from '../models/Folder';
 import { FolderId, Id, HeadId } from '../models/Identificators';
 import { HttpServiceFactory } from './HttpServiceFactory';
+import { Trash } from '../models/Trash';
 
 export class FoldersService {
     private http : HttpService;
@@ -23,12 +24,32 @@ export class FoldersService {
         return this.http.get<Folder>(`get_root`);
     }
 
+    getTrash() {
+        return this.http.get<Trash>(`get_trash`);
+    }
+
     moveHeadToTrash(parentId: FolderId, headId: HeadId) {
         return this.http.post<void>(`move_head_to_trash`, { parent_id: parentId, target_id: headId });
     }
 
     moveFolderToTrash(parentId: FolderId, folderId: FolderId) {
         return this.http.post<void>(`move_folder_to_trash`, { parent_id: parentId, target_id: folderId });
+    }
+
+    restoreHead(headId: HeadId) {
+        return this.http.post<void>(`restore_head`, { target_id: headId });
+    }
+
+    restoreFolder(folderId: FolderId) {
+        return this.http.post<void>(`restore_folder`, { target_id: folderId });
+    }
+
+    moveHead(headId: HeadId, sourceId: FolderId, destinationId: FolderId) {
+        return this.http.post<void>(`move_head`, { head_id: headId, source_id: sourceId, destination_id: destinationId });
+    }
+
+    moveFolder(folderId: FolderId, sourceId: FolderId, destinationId: FolderId) {
+        return this.http.post<void>(`move_folder`, { folder_id: folderId, source_id: sourceId, destination_id: destinationId });
     }
 
     renameFolder(parentId: FolderId, targetId: FolderId, name: string) {

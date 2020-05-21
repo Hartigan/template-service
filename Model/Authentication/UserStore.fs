@@ -15,6 +15,7 @@ open Utils.ResultHelper
 type UserStore(context: IUserContext,
                userGroupsContext: IContext<UserGroups>,
                userItemsContext: IContext<UserItems>,
+               trashContext: IContext<Trash>,
                logger: ILogger<UserStore>) =
 
     interface IUserPasswordStore<UserIdentity> with
@@ -131,7 +132,7 @@ type UserStore(context: IUserContext,
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
                 let entity = user.ToEntity()
-                let! result = context.Insert(entity, entity)
+                let entityResult = context.Insert(entity, entity)
 
                 let userGroups =
                     {
@@ -140,7 +141,7 @@ type UserStore(context: IUserContext,
                         Allowed = []
                         Owned = []
                     }
-                let! userGroupsResult = userGroupsContext.Insert(userGroups, userGroups)
+                let userGroupsResult = userGroupsContext.Insert(userGroups, userGroups)
 
                 let userItems =
                     {
@@ -149,14 +150,33 @@ type UserStore(context: IUserContext,
                         Allowed = []
                         Owned = []
                     }
-                let! userItemsResult = userItemsContext.Insert(userItems, userItems)
+                let userItemsResult = userItemsContext.Insert(userItems, userItems)
 
-                match (result, userGroupsResult) with
-                | (Ok(u), Ok(ug)) ->
+                let trash =
+                    {
+                        Trash.OwnerId = entity.Id
+                        Heads = []
+                        Folders = []
+                        Type = TrashType.Instance
+                    }
+
+                let trashResult = trashContext.Insert(trash, trash)
+
+                let! result =
+                    seq {
+                        entityResult
+                        userGroupsResult
+                        userItemsResult
+                        trashResult
+                    }
+                    |> ResultOfAsyncSeq
+
+
+                match result with
+                | Ok(_) ->
                     logger.LogInformation(sprintf "User %s successefuly added" user.Name)
                     return IdentityResult.Success
-                | errors ->
-                    let ex = ErrorOf2 errors
+                | Error(ex) ->
                     logger.LogError(ex, sprintf "User %s not added" user.Name)
                     return ex.ToIdentityResult()
             }

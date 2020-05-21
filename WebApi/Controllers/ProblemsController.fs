@@ -158,7 +158,7 @@ type ProblemsController(foldersService: IFoldersService,
                         logger.LogError(ex, "Cannot commit problem")
                         return (BadRequestResult() :> IActionResult)
                     | Ok(headId) ->
-                        match! foldersService.AddHead(headId, req.Folder) with
+                        match! foldersService.Add(headId, req.Folder) with
                         | Error(ex) ->
                             logger.LogError(ex, "Cannot create head for problem")
                             return (BadRequestResult() :> IActionResult)

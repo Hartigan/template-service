@@ -26,6 +26,7 @@
     <Compile Include="Heads/CommitModel.fs" />
     <Compile Include="Heads/HeadModel.fs" />
     <Compile Include="Folders/FolderModel.fs" />
+    <Compile Include="Trash/TrashModel.fs" />
     <Compile Include="Problem/ValidatorModel.fs" />
     <Compile Include="Problem/ControllerModel.fs" />
     <Compile Include="Problem/ViewModel.fs" />
