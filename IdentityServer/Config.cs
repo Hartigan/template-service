@@ -11,14 +11,15 @@ namespace IdentityServer
                 new ApiResource(
                     "web_api",
                     "My API Set #1",
-                    new[] { JwtClaimTypes.Subject }
-                )
+                    new[] { JwtClaimTypes.Subject, JwtClaimTypes.Role }
+                ),
             };
 
         public static IEnumerable<IdentityResource> IdentityResources { get; } = new List<IdentityResource>
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile()
+                new IdentityResources.Profile(),
+                new IdentityResource("role", new []{ JwtClaimTypes.Role })
             };
     }
 }

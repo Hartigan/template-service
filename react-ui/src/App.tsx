@@ -77,17 +77,27 @@ const App: React.FC = () => {
             );
         }
         else {
-            return (
-                <NavigationTabs
-                    versionService={versionService}
-                    foldersService={foldersService}
-                    problemsService={problemsService}
-                    problemSetService={problemSetService}
-                    permissionsService={permissionsService}
-                    userService={userService}
-                    examinationService={examinationService}
-                    />
-            );
+            console.log("role: " + state.user.profile.role);
+            if (state.user.profile.role === "admin") {
+                return (
+                    <NavigationTabs
+                        versionService={versionService}
+                        foldersService={foldersService}
+                        problemsService={problemsService}
+                        problemSetService={problemSetService}
+                        permissionsService={permissionsService}
+                        userService={userService}
+                        examinationService={examinationService}
+                        />
+                );
+            }
+            else {
+                return (
+                    <div/>
+                );
+            }
+
+            
         }
     }
 

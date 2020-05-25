@@ -33,6 +33,8 @@ type User =
         IsAuthenticated : bool
         [<JsonPropertyName("authentication_type")>]
         AuthenticationType : string
+        [<JsonPropertyName("roles")>]
+        Roles : List<string>
         [<JsonPropertyName("type")>]
         Type : UserType
     }

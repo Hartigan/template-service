@@ -82,7 +82,7 @@ type RenameHeadRequest = {
     Name: HeadName
 }
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 [<Route("folders")>]
 type FoldersController(foldersService: IFoldersService,
                        permissionsService: IPermissionsService,

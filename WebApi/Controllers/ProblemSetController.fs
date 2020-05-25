@@ -33,7 +33,7 @@ type UpdateProblemSetRequest = {
     ProblemSet : ProblemSetModel
 }
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 [<Route("problem_set")>]
 type ProblemSetController(foldersService: IFoldersService,
                           permissionsService: IPermissionsService,

@@ -10,7 +10,7 @@ open Services.VersionControl
 open Models.Permissions
 open Microsoft.Extensions.Logging
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 [<Route("version")>]
 type VersionController(foldersService: IFoldersService,
                        permissionsService: IPermissionsService,

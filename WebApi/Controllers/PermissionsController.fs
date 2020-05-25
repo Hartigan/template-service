@@ -87,7 +87,7 @@ type AddPermissionsGroupRequest = {
     GroupId: GroupId
 }
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 [<Route("permissions")>]
 type PermissionsController(permissionsService: IPermissionsService,
                            logger: ILogger<PermissionsController>) =

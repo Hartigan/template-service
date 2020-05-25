@@ -33,7 +33,7 @@ type UpdateProblemRequest = {
     Problem : ProblemModel
 }
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 [<Route("problems")>]
 type ProblemsController(foldersService: IFoldersService,
                         permissionsService: IPermissionsService,

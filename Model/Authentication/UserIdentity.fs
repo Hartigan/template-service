@@ -16,6 +16,7 @@ type UserIdentity() =
     member val NormalizedName       = String.Empty with get, set
     member val IsAuthenticated      = false with get, set
     member val AuthenticationType   = String.Empty with get, set
+    member val Roles                : List<string> = [] with get, set
 
     interface IIdentity with
         member this.AuthenticationType

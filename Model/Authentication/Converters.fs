@@ -18,6 +18,7 @@ module Converters =
                 NormalizedName       = this.NormalizedName
                 IsAuthenticated      = this.IsAuthenticated
                 AuthenticationType   = this.AuthenticationType
+                Roles                = this.Roles
                 Type                 = UserType.Instance
             }
 
@@ -34,6 +35,7 @@ module Converters =
             result.NormalizedName       <- this.NormalizedName
             result.IsAuthenticated      <- this.IsAuthenticated
             result.AuthenticationType   <- this.AuthenticationType
+            result.Roles                <- this.Roles
             result
 
     type RoleIdentity with

@@ -11,6 +11,8 @@ open DatabaseTypes
 open DatabaseTypes.Identificators
 open System
 open Utils.ResultHelper
+open System.Threading
+open System.Collections.Generic
 
 type UserStore(context: IUserContext,
                userGroupsContext: IContext<UserGroups>,
@@ -18,25 +20,8 @@ type UserStore(context: IUserContext,
                trashContext: IContext<Trash>,
                logger: ILogger<UserStore>) =
 
-    interface IUserPasswordStore<UserIdentity> with
-        member this.GetPasswordHashAsync(user, cancellationToken) =
-            taskC cancellationToken {
-                cancellationToken.ThrowIfCancellationRequested()
-                return user.PasswordHash
-            }
 
-        member this.HasPasswordAsync(user, cancellationToken) = 
-            taskC cancellationToken {
-                cancellationToken.ThrowIfCancellationRequested()
-                return true
-            }
-
-        member this.SetPasswordHashAsync(user, passwordHash, cancellationToken) = 
-            taskUC cancellationToken {
-                cancellationToken.ThrowIfCancellationRequested()
-                user.PasswordHash <- passwordHash
-            }
-
+    interface IUserStore<UserIdentity> with
         member this.DeleteAsync(user, cancellationToken) = 
             taskC cancellationToken {
                 cancellationToken.ThrowIfCancellationRequested()
@@ -180,3 +165,57 @@ type UserStore(context: IUserContext,
                     logger.LogError(ex, sprintf "User %s not added" user.Name)
                     return ex.ToIdentityResult()
             }
+
+    interface IUserRoleStore<UserIdentity> with
+        member this.AddToRoleAsync(user, roleName, cancellationToken) =
+            taskUC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                user.Roles <- roleName :: user.Roles
+            }
+
+        member this.GetRolesAsync(user, cancellationToken) = 
+            taskC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                return ResizeArray<string>(user.Roles) :> IList<string>
+            }
+
+        member this.GetUsersInRoleAsync(roleName, cancellationToken): Task<Collections.Generic.IList<UserIdentity>> = 
+            failwith "Not Implemented"
+
+        member this.IsInRoleAsync(user, roleName, cancellationToken): Task<bool> = 
+            taskC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                return
+                    user.Roles
+                    |> Seq.exists(fun role -> role = roleName)
+            }
+
+        member this.RemoveFromRoleAsync(user, roleName, cancellationToken): Task = 
+            taskUC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                user.Roles <-
+                    user.Roles
+                    |> Seq.filter(fun role -> role <> roleName)
+                    |> List.ofSeq
+            }
+
+
+    interface IUserPasswordStore<UserIdentity> with
+        member this.GetPasswordHashAsync(user, cancellationToken) =
+            taskC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                return user.PasswordHash
+            }
+
+        member this.HasPasswordAsync(user, cancellationToken) = 
+            taskC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                return true
+            }
+
+        member this.SetPasswordHashAsync(user, passwordHash, cancellationToken) = 
+            taskUC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                user.PasswordHash <- passwordHash
+            }
+
