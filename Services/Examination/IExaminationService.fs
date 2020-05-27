@@ -20,4 +20,5 @@ type IExaminationService =
     abstract member Get : ReportId -> Async<Result<ReportModel, Exception>>
     
     abstract member GetProblemSets : UserId -> Async<Result<List<HeadModel>, Exception>>
+    abstract member GetProblemSets : UserId * List<TagModel> -> Async<Result<List<HeadModel>, Exception>>
     abstract member GetProblemSetPreview : CommitId -> Async<Result<ProblemSetPreviewModel, Exception>>

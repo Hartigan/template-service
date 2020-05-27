@@ -9,6 +9,7 @@ import SubmissionDialog from "../train/SubmissionDialog";
 import { Head } from "../../models/Head";
 import { Report } from "../../models/Report";
 import ReportDialog from "../train/ReportDialog";
+import TagsEditorView from "../utils/TagsEditorView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -34,6 +35,7 @@ interface IState {
     report: Report | null;
     submissionsIds: Array<SubmissionId> | null;
     problemSets: Array<Head> | null;
+    searchTags: Array<string>;
 }
 
 export interface ITrainTabProps {
@@ -46,11 +48,12 @@ export default function TrainTab(props: ITrainTabProps) {
         submission: null,
         submissionsIds: null,
         problemSets: null,
-        report: null
+        report: null,
+        searchTags: []
     });
 
     const fetchProblemSets = async () => {
-        let problemSets = await props.examinationService.getProblemSets();
+        let problemSets = await props.examinationService.getProblemSets(state.searchTags);
         setState({
             ...state,
             problemSets: problemSets
@@ -91,6 +94,24 @@ export default function TrainTab(props: ITrainTabProps) {
             ...state,
             report: report
         });
+    };
+
+    const onAddSearchTag = async (tag: string) => {
+        if (tag) {
+            setState({
+                ...state,
+                problemSets: null,
+                searchTags: [...state.searchTags, tag]
+            })
+        }
+    };
+
+    const onRemoveSearchTag = async (tag: string) => {
+        setState({
+            ...state,
+            problemSets: null,
+            searchTags: state.searchTags.filter(x => x !== tag)
+        })
     };
 
     const onCloseDialog = () => {
@@ -168,6 +189,11 @@ export default function TrainTab(props: ITrainTabProps) {
             {getReportDialog()}
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>
+                    <TagsEditorView
+                        tags={state.searchTags}
+                        onAdd={onAddSearchTag}
+                        onRemove={onRemoveSearchTag}
+                        />
                     {getProblemSets()}
                 </Box>
             </Grid>

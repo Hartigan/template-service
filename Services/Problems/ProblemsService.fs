@@ -8,7 +8,7 @@ open DatabaseTypes.Identificators
 open System.Linq
 open Utils.ResultHelper
 
-type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: IContext<ProblemSet>, headContext: IContext<Head>) =
+type ProblemsService(problemsContext: IContext<Problem>, problemSetContext: IContext<ProblemSet>, headContext: IHeadContext) =
     interface IProblemsService with
         member this.Create(model: ProblemSetModel) = 
             model.Slots

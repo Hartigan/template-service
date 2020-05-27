@@ -8,6 +8,7 @@ open Couchbase
 open Couchbase.Query
 open Utils.AsyncHelper
 open FSharp.Control
+open DatabaseTypes.Identificators
 
 type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     let commonContext =  CommonContext<UserGroup>(couchbaseBuckets) :> IContext<UserGroup>
@@ -53,6 +54,51 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                 with ex -> return Result.Error(ex)
             }
 
+type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
+    let commonContext =  CommonContext<Head>(couchbaseBuckets) :> IContext<Head>
+
+    member internal this.GetBucket() =
+        async {
+            let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
+            return bucket
+        }
+
+    interface IHeadContext with
+        member this.Exists(key) =
+            commonContext.Exists(key)
+        member this.Get(key) = 
+            commonContext.Get(key)
+        member this.Insert(key, entity) =
+            commonContext.Insert(key, entity)
+        member this.Remove(key) =
+            commonContext.Remove(key)
+        member this.Update(key: IDocumentKey, updater: Head -> Result<Head, Exception>) =
+            commonContext.Update(key, updater)
+        member this.Update(key: IDocumentKey, updater: Head -> Head) =
+            commonContext.Update(key, updater)
+
+        member this.SearchByTagsAndIds(tags, headIds) =
+            async {
+                try
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
+                    let! bucket = this.GetBucket()
+                    let queryOptions = 
+                        QueryOptions()
+                        |> fun x -> x.Parameter("type", HeadType.Instance.Value)
+                        |> fun x -> x.Parameter("tags", tags |> Seq.distinct |> Array.ofSeq)
+                        |> fun x -> x.Parameter("ids", headIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
+                    let! result = cluster.QueryAsync<Head>
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND ARRAY_INTERSECT(tags, $tags) = $tags and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
+                                       queryOptions)
+                    let (headsAsync : IQueryResult<Head>) = result
+                    let heads =
+                        headsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
+                    return Ok(heads |> List.ofSeq)
+                with ex -> return Result.Error(ex)
+            }
+
 type SubmissionContext = CommonContext<Submission>
 
 type ReportContext = CommonContext<Report>
@@ -64,8 +110,6 @@ type GeneratedProblemContext = CommonContext<GeneratedProblem>
 type CommitContext = CommonContext<Commit>
 
 type FolderContext = CommonContext<Folder>
-
-type HeadContext = CommonContext<Head>
 
 type ProblemContext = CommonContext<Problem>
 

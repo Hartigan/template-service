@@ -15,7 +15,7 @@ open FSharpx.Control
 open Services.VersionControl
 
 type FoldersService(folderContext: IContext<Folder>,
-                    headContext: IContext<Head>,
+                    headContext: IHeadContext,
                     trashContext: IContext<Trash>,
                     permissionsService: IPermissionsService) =
 

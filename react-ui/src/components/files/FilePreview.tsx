@@ -5,10 +5,11 @@ import { HeadId } from "../../models/Identificators";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import ProblemEditor from "../problems/ProblemEditor";
-import { Commit } from "../../models/Commit";
 import ProblemSetPreview from "../problem_sets/ProblemSetPreview";
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { FoldersService } from "../../services/FoldersService";
+import { Head } from "../../models/Head";
+import TagsEditorView from "../utils/TagsEditorView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,6 +17,10 @@ const useStyles = makeStyles(theme => ({
         height: "100%",
     },
 }));
+
+interface IState {
+    head: Head | null;
+}
 
 export interface IFilePreviewProps {
     fileExplorerState: FileExplorerState;
@@ -27,11 +32,16 @@ export interface IFilePreviewProps {
 
 export default function FilePreview(props: IFilePreviewProps) {
 
-    const [ commit, setCommit ] = React.useState<Commit | null>(null);
+    const [ state, setState ] = React.useState<IState>({
+        head: null
+    });
 
     const sync = async (id: HeadId) => {
         let head = await props.versionService.getHead(id);
-        setCommit(head.commit);
+        setState({
+            ...state,
+            head: head
+        });
     }
 
     useEffect(() => {
@@ -42,7 +52,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                     return;
                 }
 
-                if (commit && commit.head_id === headLink.id) {
+                if (state.head && state.head.id === headLink.id) {
                     return;
                 }
 
@@ -63,34 +73,68 @@ export default function FilePreview(props: IFilePreviewProps) {
 
     const classes = useStyles();
 
-    if (commit) {
-        switch (commit.target.type) {
-            case "problem":
-                return (
-                    <Paper className={classes.root}>
+    const getHeadView = () => {
+        if (state.head) {
+            switch (state.head.commit.target.type) {
+                case "problem":
+                    return (
                         <ProblemEditor
-                            commit={commit}
+                            commit={state.head.commit}
                             fileExplorerState={props.fileExplorerState}
                             problemsService={props.problemsService} />
-                    </Paper>
-                );
-            case "problem_set":
-                return (
-                    <Paper className={classes.root}>
+                    );
+                case "problem_set":
+                    return (
                         <ProblemSetPreview
-                            commit={commit}
+                            commit={state.head.commit}
                             fileExplorerState={props.fileExplorerState}
                             versionService={props.versionService}
                             foldersService={props.foldersService}
                             problemSetService={props.problemSetService}
                             problemsService={props.problemsService} />
-                    </Paper>
-                );
+                    );
+            }
         }
-    }
+    };
+
+    const getTagsEditor = () => {
+        if (state.head) {
+            const onRemove = async (tag: string) => {
+                if (state.head === null) {
+                    return;
+                }
+                await props.versionService.updateTags(state.head.id, state.head.tags.filter(x => x !== tag))
+                await sync(state.head.id);
+            };
+
+            const onAdd = async (tag: string) => {
+                if (state.head === null || !tag) {
+                    return;
+                }
+                const tags = [ ...state.head.tags, tag ];
+                await props.versionService.updateTags(state.head.id, tags);
+                await sync(state.head.id);
+            };
+
+            return (
+                <TagsEditorView
+                    tags={state.head.tags}
+                    onAdd={onAdd}
+                    onRemove={onRemove}
+                    />
+            );
+        }
+        else {
+            return (
+                <div/>
+            )
+        }
+    };
 
     return (
         <Paper className={classes.root}>
+            {getTagsEditor()}
+            {getHeadView()}
         </Paper>
     );
 };

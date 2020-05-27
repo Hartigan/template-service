@@ -14,6 +14,13 @@ type HeadName(name: string) =
 and HeadNameConverter() =
     inherit StringConverter<HeadName>((fun m -> m.Value), (fun s -> HeadName(s)))
 
+[<JsonConverter(typeof<TagConverter>)>]
+type TagModel(tag: string) =
+    member val Value = tag with get
+
+and TagConverter() =
+    inherit StringConverter<TagModel>((fun m -> m.Value), (fun s -> TagModel(s)))
+
 type HeadModel =
     {
         [<JsonPropertyName("id")>]
@@ -22,6 +29,8 @@ type HeadModel =
         Name    : HeadName
         [<JsonPropertyName("commit")>]
         Commit  : CommitModel
+        [<JsonPropertyName("tags")>]
+        Tags    : List<TagModel>
     }
     
     
@@ -33,5 +42,6 @@ type HeadModel =
                 Id      = head.Id
                 Name    = HeadName(head.Name)
                 Commit  = commitModel
+                Tags    = head.Tags |> Seq.map TagModel |> List.ofSeq
             })
      

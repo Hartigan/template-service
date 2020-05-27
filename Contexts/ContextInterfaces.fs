@@ -2,6 +2,7 @@ namespace Contexts
 
 open DatabaseTypes
 open System
+open DatabaseTypes.Identificators
 
 type IContext<'T> =
     abstract member Get : IDocumentKey -> Async<Result<'T, Exception>>
@@ -29,3 +30,7 @@ type IUserRoleContext =
 type IGroupContext =
     inherit IContext<UserGroup>
     abstract member SearchByContainsInName : string -> Async<Result<List<UserGroup>, Exception>>
+
+type IHeadContext =
+    inherit IContext<Head>
+    abstract member SearchByTagsAndIds : List<string> * List<HeadId> -> Async<Result<List<Head>, Exception>> 

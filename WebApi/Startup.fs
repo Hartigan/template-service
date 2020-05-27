@@ -54,7 +54,7 @@ type Startup private () =
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()
         |> fun x -> x.AddSingleton<IContext<Folder>, FolderContext>()
-        |> fun x -> x.AddSingleton<IContext<Head>, HeadContext>()
+        |> fun x -> x.AddSingleton<IHeadContext, HeadContext>()
         |> fun x -> x.AddSingleton<IUserContext, UserContext>()
         |> fun x -> x.AddSingleton<IUserRoleContext, UserRoleContext>()
         |> fun x -> x.AddSingleton<IContext<Report>, ReportContext>()

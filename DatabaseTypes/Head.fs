@@ -19,6 +19,8 @@ type Head =
         Name : string
         [<JsonPropertyName("commit")>]
         Commit : Commit
+        [<JsonPropertyName("tags")>]
+        Tags : List<string>
         [<JsonPropertyName("permissions")>]
         Permissions : Permissions
         [<JsonPropertyName("type")>]

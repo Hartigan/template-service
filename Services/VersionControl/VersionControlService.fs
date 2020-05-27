@@ -10,9 +10,21 @@ open Models.Permissions
 open Utils.ResultHelper
 
 type VersionControlService(commitContext: IContext<Commit>,
-                           headContext: IContext<Head>,
+                           headContext: IHeadContext,
                            permissionsService: IPermissionsService) =
     interface IVersionControlService with
+        member this.Update(headId, tags) = 
+            headContext.Update(Head.CreateDocumentKey(headId), fun head ->
+                {
+                    head with
+                        Tags =
+                            tags
+                            |> Seq.map(fun tag -> tag.Value)
+                            |> Seq.distinct
+                            |> List.ofSeq
+                }
+            )
+
         member this.Create(name: HeadName, concreteId: ConcreteId, description: CommitDescription, userId: UserId) = 
             let target =
                 match concreteId with
@@ -42,6 +54,7 @@ type VersionControlService(commitContext: IContext<Commit>,
                         Groups = []
                         Members = []
                     }
+                    Tags = []
                     Commit = commit
                     Name = name.Value
                 }

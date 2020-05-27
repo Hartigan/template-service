@@ -9,6 +9,15 @@ open System.Security.Claims
 open Services.VersionControl
 open Models.Permissions
 open Microsoft.Extensions.Logging
+open System.Text.Json.Serialization
+open Models.Heads
+
+type UpdateTagsRequest = {
+    [<JsonPropertyName("head_id")>]
+    HeadId : HeadId
+    [<JsonPropertyName("tags")>]
+    Tags : List<TagModel>
+}
 
 [<Authorize(Roles="admin")>]
 [<Route("version")>]
@@ -57,5 +66,23 @@ type VersionController(foldersService: IFoldersService,
                 | Error(ex) ->
                     logger.LogError(ex, "Access denied")
                     return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("update_tags")>]
+    member this.UpdateTags([<FromBody>] req: UpdateTagsRequest) =
+        async {
+            let userId = this.GetUserId()
+            match! permissionsService.CheckPermissions(ProtectedId.Head(req.HeadId), userId, AccessModel.CanWrite) with
+            | Ok() ->
+                match! versionControlService.Update(req.HeadId, req.Tags) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot update tags")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
         }
         |> Async.StartAsTask

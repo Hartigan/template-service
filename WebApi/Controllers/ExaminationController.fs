@@ -180,6 +180,23 @@ type ExaminationController(permissionsService: IPermissionsService,
         |> Async.StartAsTask
 
     [<HttpGet>]
+    [<Route("problem_sets_by_tags")>]
+    member this.GetProblemSetsByTags([<FromQuery(Name = "tags")>] tags: string) =
+        async {
+            let userId = this.GetUserId()
+            let tagModels = 
+                tags.Split(",")
+                |> Seq.map TagModel
+                |> List.ofSeq
+            match! examinationService.GetProblemSets(userId, tagModels) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get problem sets")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(models) -> return (JsonResult(models) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
     [<Route("problem_set_preview")>]
     member this.GetProblemSets([<FromQuery(Name = "id")>] id: string) =
         async {

@@ -43,7 +43,11 @@ export class ExaminationService {
         return this.http.get<Array<ReportId>>(`reports`);
     }
 
-    getProblemSets() {
+    getProblemSets(tags?: Array<string>) {
+        if (tags && tags.length > 0) {
+            const encodedTags = tags.map(x => encodeURIComponent(x)).join(",");
+            return this.http.get<Array<Head>>(`problem_sets_by_tags?tags=${encodedTags}`);
+        }
         return this.http.get<Array<Head>>(`problem_sets`);
     }
 

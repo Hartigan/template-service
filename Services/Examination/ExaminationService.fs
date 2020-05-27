@@ -16,6 +16,7 @@ open Models.Heads
 
 type ExaminationService(reportContext: IContext<Report>,
                         submissionContext: IContext<Submission>,
+                        headContext: IHeadContext,
                         versionControlService: IVersionControlService,
                         problemsService: IProblemsService,
                         permissionsService: IPermissionsService,
@@ -52,6 +53,36 @@ type ExaminationService(reportContext: IContext<Report>,
         )
 
     interface IExaminationService with
+        member this.GetProblemSets(userId, tags) = 
+            permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
+            |> Async.MapResult(fun protectedIds ->
+                protectedIds
+                |> Seq.collect(fun protectedId ->
+                    match protectedId with
+                    | ProtectedId.Head(id) -> seq { id }
+                    | _ -> Seq.empty
+                )
+                |> List.ofSeq
+            )
+            |> Async.BindResult(fun ids ->
+                headContext.SearchByTagsAndIds(tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids)
+                |> Async.TryMapResult(fun heads ->
+                    heads
+                    |> Seq.map HeadModel.Create
+                    |> ResultOfSeq
+                )
+            )
+            |> Async.MapResult(fun heads ->
+                heads
+                |> Seq.filter(fun head ->
+                    match head.Commit.Target.Type with
+                    | ModelType.ProblemSet -> true
+                    | _ -> false
+                )
+                |> List.ofSeq
+            )
+            
+
         member this.GetPreview(submissionId: SubmissionId) =
             this.TryComplete(submissionId)
             |> Async.BindResult(fun submission ->

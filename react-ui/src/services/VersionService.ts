@@ -19,4 +19,8 @@ export class VersionService {
     getCommit(id: CommitId) {
         return this.http.get<Commit>(`commit?id=${id}`);
     }
+
+    updateTags(head: HeadId, tags: Array<string>) {
+        return this.http.post<any>(`update_tags`, { head_id: head, tags: tags });
+    }
 }
