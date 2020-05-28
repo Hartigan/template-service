@@ -1,6 +1,5 @@
-import { makeStyles, Chip, InputBase } from "@material-ui/core";
+import { makeStyles, Chip } from "@material-ui/core";
 import React from "react";
-import AddIcon from '@material-ui/icons/Add';
 
 const useStyles = makeStyles({
     root: {
