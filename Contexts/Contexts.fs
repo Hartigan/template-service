@@ -88,7 +88,7 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                         |> fun x -> x.Parameter("tags", tags |> Seq.distinct |> Array.ofSeq)
                         |> fun x -> x.Parameter("ids", headIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
                     let! result = cluster.QueryAsync<Head>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND ARRAY_INTERSECT(tags, $tags) = $tags and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND ARRAY_SORT(ARRAY_INTERSECT(tags, $tags)) = ARRAY_SORT($tags) and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
                                        queryOptions)
                     let (headsAsync : IQueryResult<Head>) = result
                     let heads =
