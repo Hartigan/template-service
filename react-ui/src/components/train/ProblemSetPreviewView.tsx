@@ -4,6 +4,7 @@ import { CommitId, SubmissionId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";
 import { ExaminationService } from "../../services/ExaminationService";
 import { Head } from "../../models/Head";
+import TagsView from "../utils/TagsView";
 
 
 
@@ -76,6 +77,13 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
             <Card className={classes.root}>
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="h2">
+                        {props.head.name}
+                    </Typography>
+                    <TagsView tags={props.head.tags} />
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Title
+                    </Typography>
+                    <Typography gutterBottom variant="h6" component="h2">
                         {state.preview.title}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>

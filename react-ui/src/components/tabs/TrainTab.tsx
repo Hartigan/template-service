@@ -1,4 +1,4 @@
-import { makeStyles, Grid, Box } from "@material-ui/core";
+import { makeStyles, Grid, Box, TextField } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
@@ -35,6 +35,10 @@ interface IState {
     report: Report | null;
     submissionsIds: Array<SubmissionId> | null;
     problemSets: Array<Head> | null;
+    search : {
+        value: string;
+        filtered: Array<Head>;
+    }
     searchTags: Array<string>;
 }
 
@@ -49,14 +53,22 @@ export default function TrainTab(props: ITrainTabProps) {
         submissionsIds: null,
         problemSets: null,
         report: null,
-        searchTags: []
+        searchTags: [],
+        search: {
+            value: "",
+            filtered: []
+        }
     });
 
     const fetchProblemSets = async () => {
         let problemSets = await props.examinationService.getProblemSets(state.searchTags);
         setState({
             ...state,
-            problemSets: problemSets
+            problemSets: problemSets,
+            search: {
+                ...state.search,
+                filtered: problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
+            }
         });
     };
 
@@ -168,19 +180,18 @@ export default function TrainTab(props: ITrainTabProps) {
         }
     };
 
-    const getProblemSets = () => {
-        if (state.problemSets) {
-            return (
-                <ProblemSetsListView
-                    examinationService={props.examinationService}
-                    onShowSubmission={onShowSubmission}
-                    problemSets={state.problemSets}
-                    />
-            );
+    const onSearchUpdated = (value: string) => {
+        if (state.problemSets === null) {
+            return;
         }
-        else {
-            return <div/>;
-        }
+
+        setState({
+            ...state,
+            search: {
+                value: value,
+                filtered: state.problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
+            }
+        })
     };
 
     return (
@@ -194,7 +205,17 @@ export default function TrainTab(props: ITrainTabProps) {
                         onAdd={onAddSearchTag}
                         onRemove={onRemoveSearchTag}
                         />
-                    {getProblemSets()}
+                    <TextField
+                        placeholder="search..."
+                        color="primary"
+                        value={state.search.value}
+                        onChange={(e) => onSearchUpdated(e.target.value)}
+                        />
+                    <ProblemSetsListView
+                        examinationService={props.examinationService}
+                        onShowSubmission={onShowSubmission}
+                        problemSets={state.search.filtered}
+                        />
                 </Box>
             </Grid>
             <Grid item className={classes.submissions}>
