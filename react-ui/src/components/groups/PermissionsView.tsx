@@ -3,11 +3,11 @@ import React, { useEffect } from "react";
 import { PermissionsService, Protected } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
 import { Access, Permissions } from "../../models/Permissions";
-import UserSearchView from "./UserSearchView";
+import UserSearchView from "../common/UserSearchView";
 import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "./MemberListItemView";
-import GroupSearchView from "./GroupSearchView";
+import GroupSearchView from "../common/GroupSearchView";
 import GroupListItemView from "./GroupListItemView";
 
 const useStyles = makeStyles(theme => ({
@@ -194,7 +194,6 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                             <Grid item className={classes.searchCell}>
                                 <UserSearchView
                                     userService={props.userService}
-                                    permissionsService={props.permissionsService}
                                     onUserSelected={setNewUserId}
                                     />
                             </Grid>

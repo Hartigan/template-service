@@ -15,6 +15,7 @@ open System.Text.Json.Serialization
 open Models.Permissions
 open Microsoft.Extensions.Logging
 open Models.Problems
+open Utils.ResultHelper
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
@@ -23,6 +24,15 @@ type ApplyAnswerRequest = {
     GeneratedProblemId  : GeneratedProblemId
     [<JsonPropertyName("answer")>]
     Answer              : ProblemAnswer
+}
+
+type ShareReportRequest = {
+    [<JsonPropertyName("id")>]
+    Id                  : ReportId
+    [<JsonPropertyName("user_ids")>]
+    Users               : List<UserId>
+    [<JsonPropertyName("group_ids")>]
+    Groups              : List<GroupId>
 }
 
 [<Authorize>]
@@ -165,6 +175,47 @@ type ExaminationController(permissionsService: IPermissionsService,
             | Ok(models) -> return (JsonResult(models) :> IActionResult)
         }
         |> Async.StartAsTask
+
+    [<HttpGet>]
+    [<Route("reports_by_author")>]
+    member this.GetReports([<FromQuery(Name = "author_id")>] id: string) =
+        async {
+            let userId = this.GetUserId()
+            let authorId = UserId(id)
+            match! examinationService.Search(userId, authorId) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get reports by author")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(models) -> return (JsonResult(models) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("share_report")>]
+    member this.ShareReport([<FromBody>] req: ShareReportRequest) =
+        async {
+            let userId = this.GetUserId()
+            match! permissionsService.CheckPermissions(ProtectedId.Report(req.Id), userId, AccessModel.CanAdministrate) with
+            | Ok() ->
+                let! result =
+                    req.Users
+                    |> Seq.map(fun id -> permissionsService.Share(ProtectedId.Report(req.Id), id))
+                    |> Seq.append(
+                        req.Groups
+                        |> Seq.map(fun id -> permissionsService.Share(ProtectedId.Report(req.Id), id))
+                    )
+                    |> ResultOfAsyncSeq
+                match result with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot share report")
+                    return (BadRequestResult() :> IActionResult)
+                | Ok(model) -> return (JsonResult(model) :> IActionResult)
+            | Error(ex) ->
+                logger.LogError(ex, "Access denied")
+                return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
 
     [<HttpGet>]
     [<Route("problem_sets")>]

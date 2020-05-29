@@ -57,7 +57,7 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IHeadContext, HeadContext>()
         |> fun x -> x.AddSingleton<IUserContext, UserContext>()
         |> fun x -> x.AddSingleton<IUserRoleContext, UserRoleContext>()
-        |> fun x -> x.AddSingleton<IContext<Report>, ReportContext>()
+        |> fun x -> x.AddSingleton<IReportContext, ReportContext>()
         |> fun x -> x.AddSingleton<IContext<Submission>, SubmissionContext>()
         |> fun x -> x.AddSingleton<IContext<Commit>, CommitContext>()
         |> fun x -> x.AddSingleton<IContext<Problem>, ProblemContext>()

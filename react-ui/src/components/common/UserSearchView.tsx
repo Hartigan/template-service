@@ -1,6 +1,5 @@
 import { makeStyles } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { PermissionsService } from "../../services/PermissionsService";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -23,7 +22,6 @@ interface IState {
 }
 
 export interface IUserSearchViewProps {
-    permissionsService: PermissionsService;
     userService: UserService;
     onUserSelected: (userId: UserId | null) => void;
 }

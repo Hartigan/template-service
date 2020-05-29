@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { PermissionsService } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
 import { Group, Access } from "../../models/Permissions";
-import UserSearchView from "./UserSearchView";
+import UserSearchView from "../common/UserSearchView";
 import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "./MemberListItemView";
@@ -119,7 +119,6 @@ export default function GroupView(props: IGroupViewProps) {
                             <Grid item className={classes.searchCell}>
                                 <UserSearchView
                                     userService={props.userService}
-                                    permissionsService={props.permissionsService}
                                     onUserSelected={setNewUserId}
                                     />
                             </Grid>

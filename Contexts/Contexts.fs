@@ -99,9 +99,52 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                 with ex -> return Result.Error(ex)
             }
 
-type SubmissionContext = CommonContext<Submission>
+type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
+    let commonContext =  CommonContext<Report>(couchbaseBuckets) :> IContext<Report>
 
-type ReportContext = CommonContext<Report>
+    member internal this.GetBucket() =
+        async {
+            let! (bucket: IBucket) = couchbaseBuckets.GetMainBucketAsync()
+            return bucket
+        }
+
+    interface IReportContext with
+        member this.Exists(key) =
+            commonContext.Exists(key)
+        member this.Get(key) = 
+            commonContext.Get(key)
+        member this.Insert(key, entity) =
+            commonContext.Insert(key, entity)
+        member this.Remove(key) =
+            commonContext.Remove(key)
+        member this.Update(key: IDocumentKey, updater: Report -> Result<Report, Exception>) =
+            commonContext.Update(key, updater)
+        member this.Update(key: IDocumentKey, updater: Report -> Report) =
+            commonContext.Update(key, updater)
+
+        member this.SearchByUserAndIds(userId, reportIds) =
+            async {
+                try
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
+                    let! bucket = this.GetBucket()
+                    let queryOptions = 
+                        QueryOptions()
+                        |> fun x -> x.Parameter("type", ReportType.Instance.Value)
+                        |> fun x -> x.Parameter("userId", userId.Value)
+                        |> fun x -> x.Parameter("ids", reportIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
+                    let! result = cluster.QueryAsync<Report>
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND permissions.owner_id = $userId and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
+                                       queryOptions)
+                    let (reportsAsync : IQueryResult<Report>) = result
+                    let reports =
+                        reportsAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toBlockingSeq
+                    return Ok(reports |> List.ofSeq)
+                with ex -> return Result.Error(ex)
+            }
+
+type SubmissionContext = CommonContext<Submission>
 
 type GeneratedProblemSetContext = CommonContext<GeneratedProblemSet>
 

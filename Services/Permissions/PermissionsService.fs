@@ -11,6 +11,7 @@ open Utils.ResultHelper
 open FSharp.Control
 
 type PermissionsService(userService: IUserService,
+                        userContext: IUserContext,
                         groupContext: IGroupContext,
                         permissionsContext: IPermissionsContext,
                         userGroupsContext: IContext<UserGroups>,
@@ -517,6 +518,76 @@ type PermissionsService(userService: IUserService,
                                 |> List.ofSeq
                     }
                 )
+        
+        member this.Share(id: ProtectedId, userId: UserId) = 
+            let accessFlags = AccessModel.CanRead.ToFlags()
+            userContext.Exists(User.CreateDocumentKey(userId))
+            |> Async.BindResult(fun exists ->
+                if exists then
+                    this.UpdatePermissions
+                        (id,
+                        fun perm ->
+                            let mmbr =
+                                perm.Members
+                                |> Seq.tryFind(fun m -> m.UserId = userId)
+                                |> fun opt ->
+                                    match opt with
+                                    | None ->
+                                        {
+                                            UserId = userId
+                                            Access = accessFlags
+                                        }
+                                    | Some(m) ->
+                                        {
+                                            m with
+                                                Access = accessFlags ||| m.Access
+                                        }
+                            {
+                                perm with
+                                    Members =
+                                        mmbr :: perm.Members
+                                        |> Seq.filter(fun m -> m.UserId <> userId)
+                                        |> List.ofSeq
+                            }
+                       )
+                else
+                    async.Return(Result.Error(InvalidOperationException(sprintf "User with UserId %s not found" userId.Value) :> Exception))
+            )
+
+        member this.Share(id: ProtectedId, groupId: GroupId) = 
+            let accessFlags = AccessModel.CanRead.ToFlags()
+            groupContext.Exists(UserGroup.CreateDocumentKey(groupId))
+            |> Async.BindResult(fun exists ->
+                if exists then
+                    this.UpdatePermissions
+                        (id,
+                        fun perm ->
+                            let gr =
+                                perm.Groups
+                                |> Seq.tryFind(fun g -> g.GroupId = groupId)
+                                |> fun opt ->
+                                    match opt with
+                                    | None ->
+                                        {
+                                            GroupId = groupId
+                                            Access = accessFlags
+                                        }
+                                    | Some(g) ->
+                                        {
+                                            g with
+                                                Access = accessFlags ||| g.Access
+                                        }
+                            {
+                                perm with
+                                    Groups =
+                                        gr :: perm.Groups
+                                        |> Seq.filter(fun g -> g.GroupId <> groupId)
+                                        |> List.ofSeq
+                            }
+                       )
+                else
+                    async.Return(Result.Error(InvalidOperationException(sprintf "Group with GroupId %s not found" groupId.Value) :> Exception))
+            )
 
         member this.UserItemsAppend(id, userId) =
             userItemsContext.Update(UserItems.CreateDocumentKey(userId),

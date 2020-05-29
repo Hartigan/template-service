@@ -1,7 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { HttpService } from './HttpService';
 import { Submission, ProblemAnswer } from '../models/Submission';
-import { SubmissionId, ReportId, Id, HeadId, CommitId } from '../models/Identificators';
+import { SubmissionId, ReportId, Id, HeadId, CommitId, UserId, GroupId } from '../models/Identificators';
 import { Report } from '../models/Report';
 import { HttpServiceFactory } from './HttpServiceFactory';
 import { ProblemSetPreview } from '../models/ProblemSetPreview';
@@ -41,6 +41,18 @@ export class ExaminationService {
 
     getReports() {
         return this.http.get<Array<ReportId>>(`reports`);
+    }
+
+    getSearchReportsByAuthor(userId: UserId) {
+        return this.http.get<Array<ReportId>>(`reports_by_author?author_id=${userId}`);
+    }
+
+    shareReport(reportId: ReportId, users: Array<UserId>, groups: Array<GroupId>) {
+        return this.http.post<void>(`share_report`, {
+            id: reportId,
+            user_ids: users,
+            group_ids: groups
+        });
     }
 
     getProblemSets(tags?: Array<string>) {

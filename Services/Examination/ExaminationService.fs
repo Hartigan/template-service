@@ -14,7 +14,7 @@ open FSharp.Control
 open Services.VersionControl
 open Models.Heads
 
-type ExaminationService(reportContext: IContext<Report>,
+type ExaminationService(reportContext: IReportContext,
                         submissionContext: IContext<Submission>,
                         headContext: IHeadContext,
                         versionControlService: IVersionControlService,
@@ -53,6 +53,27 @@ type ExaminationService(reportContext: IContext<Report>,
         )
 
     interface IExaminationService with
+
+        member this.Search(userId, targetId): Async<Result<List<ReportId>,Exception>> = 
+            permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
+            |> Async.MapResult(fun protectedIds ->
+                protectedIds
+                |> Seq.collect(fun protectedId ->
+                    match protectedId with
+                    | ProtectedId.Report(id) -> seq { id }
+                    | _ -> Seq.empty
+                )
+                |> List.ofSeq
+            )
+            |> Async.BindResult(fun ids ->
+                reportContext.SearchByUserAndIds(targetId, ids)
+            )
+            |> Async.MapResult(fun reports ->
+                reports
+                |> Seq.map(fun report -> report.Id)
+                |> List.ofSeq
+            )
+
         member this.GetProblemSets(userId, tags) = 
             permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
             |> Async.MapResult(fun protectedIds ->

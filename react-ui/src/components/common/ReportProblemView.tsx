@@ -1,7 +1,7 @@
 import { makeStyles, Typography, Card, CardActionArea, CardContent } from "@material-ui/core";
 import React from "react";
 import { ProblemReport } from "../../models/Report";
-import ProblemView from "./ProblemView";
+import ProblemView from "../train/ProblemView";
 import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({

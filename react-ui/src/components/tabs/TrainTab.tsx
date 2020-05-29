@@ -8,7 +8,7 @@ import { Submission } from "../../models/Submission";
 import SubmissionDialog from "../train/SubmissionDialog";
 import { Head } from "../../models/Head";
 import { Report } from "../../models/Report";
-import ReportDialog from "../train/ReportDialog";
+import ReportDialog from "../common/ReportDialog";
 import TagsEditorView from "../utils/TagsEditorView";
 
 const useStyles = makeStyles(theme => ({

@@ -21,6 +21,8 @@ type IPermissionsService =
     abstract member Add : GroupId * UserId -> Async<Result<unit, Exception>>
     abstract member Update : ProtectedId * UserId * AccessModel -> Async<Result<unit, Exception>>
     abstract member Update : ProtectedId * GroupId * AccessModel -> Async<Result<unit, Exception>>
+    abstract member Share : ProtectedId * UserId -> Async<Result<unit, Exception>>
+    abstract member Share : ProtectedId * GroupId -> Async<Result<unit, Exception>>
     abstract member Add : ProtectedId * UserId -> Async<Result<unit, Exception>>
     abstract member Add : ProtectedId * GroupId -> Async<Result<unit, Exception>>
     abstract member Remove : ProtectedId * UserId -> Async<Result<unit, Exception>>
