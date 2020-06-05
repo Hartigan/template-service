@@ -261,7 +261,7 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                 with ex -> return Result.Error(ex)
             }
 
-        member this.SearchByContainsInName(pattern: string): Async<Result<List<User>, Exception>> =
+        member this.Search(pattern, offset, limit): Async<Result<List<User>, Exception>> =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
@@ -269,9 +269,19 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                     let queryOptions = 
                         QueryOptions()
                         |> fun x -> x.Parameter("type", UserType.Instance.Value)
-                        |> fun x -> x.Parameter("pattern", pattern.ToUpper())
+                        |> fun x -> x.Parameter("offset", offset)
+                        |> fun x -> x.Parameter("limit", limit)
+                        |> fun x ->
+                            match pattern with
+                            | None -> x
+                            | Some(p) ->  x.Parameter("pattern", p.ToUpper())
+
+                    let patternFilter = 
+                        match pattern with
+                        | None -> String.Empty
+                        | Some(_) -> sprintf "AND CONTAINS(LOWER(`%s`), LOWER($pattern))" normalizedName
                     let! result = cluster.QueryAsync<User>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(`%s`, $pattern)" bucket.Name bucket.Name normalizedName,
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type %s LIMIT $limit OFFSET $offset" bucket.Name bucket.Name patternFilter,
                                        queryOptions)
                     let (usersAsync : IQueryResult<User>) = result
                     let users =

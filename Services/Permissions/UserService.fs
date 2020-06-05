@@ -10,8 +10,8 @@ open Utils.ResultHelper
 
 type UserService(userContext: IUserContext) =
     interface IUserService with
-        member this.SearchByContains(pattern) =
-            userContext.SearchByContainsInName(pattern)
+        member this.Search(pattern, offset, limit) =
+            userContext.Search(pattern, offset, limit)
             |> Async.TryMapResult(fun users ->
                 users
                 |> Seq.map UserModel.Create

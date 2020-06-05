@@ -15,7 +15,7 @@ export class UserService {
         return this.http.get<User>(`get?id=${id}`);
     }
 
-    searchByContains(pattern: string) {
-        return this.http.get<Array<User>>(`search_by_contains?pattern=${pattern}`);
+    search(pattern: string | null, offset: number, limit: number) {
+        return this.http.post<Array<User>>(`search`, { pattern: pattern, offset: offset, limit: limit });
     }
 }

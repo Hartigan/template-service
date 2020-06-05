@@ -17,8 +17,7 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     open: boolean;
     pattern: string;
-    users: Array<User>;
-    loaded: boolean;
+    users: Array<User> | null;
 }
 
 export interface IUserSearchViewProps {
@@ -30,29 +29,23 @@ export default function UserSearchView(props: IUserSearchViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
         open: false,
-        users: [],
-        loaded: false,
+        users: null,
         pattern: ""
     });
 
-    const loading = state.open && !state.loaded;
+    const loading = state.open && state.users === null;
 
     useEffect(() => {
         let active = true;
 
-        if (!loading) {
-            return;
-        }
-    
-        if (state.pattern !== "") {
+        if (state.users === null) {
             props.userService
-                .searchByContains(state.pattern)
+                .search(state.pattern ? state.pattern : null, 0, 10)
                 .then(users => {
                     if (active) {
                         setState({
                             ...state,
                             users: users,
-                            loaded: true
                         });
                     }
                 });
@@ -76,8 +69,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         setState({
             ...state,
             pattern: value,
-            users: [],
-            loaded: false
+            users: null,
         });
     }
 
@@ -90,7 +82,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
             getOptionSelected={(option, value) => option.username === value.username}
             getOptionLabel={option => option.username}
             onChange={(event: any, value: User | null) => props.onUserSelected(value ? value.id : null)}
-            options={state.users}
+            options={state.users === null ? [] : state.users}
             loading={loading}
             renderInput={params => (
                 <TextField

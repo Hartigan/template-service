@@ -21,7 +21,7 @@ type IPermissionsContext =
 type IUserContext =
     inherit IContext<User>
     abstract member GetByName : string -> Async<Result<User, Exception>>
-    abstract member SearchByContainsInName : string -> Async<Result<List<User>, Exception>>
+    abstract member Search : string option * offset:UInt32 * limit:UInt32 -> Async<Result<List<User>, Exception>>
 
 type IUserRoleContext =
     inherit IContext<UserRole>
