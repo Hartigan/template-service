@@ -11,6 +11,7 @@ type Language =
     | Markdown
     | CSharp
     | PlainText
+    | Tex
 
 [<JsonConverter(typeof<LanguageModelConverter>)>]
 type LanguageModel private (name: string,  language: Language) =
@@ -23,6 +24,7 @@ type LanguageModel private (name: string,  language: Language) =
         | "csharp" -> Ok(LanguageModel(language, Language.CSharp))
         | "markdown" -> Ok(LanguageModel(language, Language.Markdown))
         | "plain_text" -> Ok(LanguageModel(language, Language.PlainText))
+        | "tex" -> Ok(LanguageModel(language, Language.Tex))
         | _ -> Error(InvalidOperationException(sprintf "Cannot create LanguageModel" ) :> Exception)
 
 and LanguageModelConverter() =

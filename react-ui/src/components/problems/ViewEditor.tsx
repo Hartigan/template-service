@@ -13,7 +13,8 @@ export default function ViewEditor(props: IViewEditorProps) {
 
     const languages = [
         { value: "plain_text"   , title: "Plain" },
-        { value: "markdown"     , title: "Markdown"}
+        { value: "markdown"     , title: "Markdown"},
+        { value: "tex"          , title: "TeX"}
     ];
 
     return (

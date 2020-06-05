@@ -8,6 +8,7 @@ open System
 type ViewLanguage =
     | Markdown
     | PlainText
+    | Tex
 
 [<JsonConverter(typeof<ViewLanguageModelConverter>)>]
 type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel) =
@@ -19,6 +20,7 @@ type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel
         match model.Language with
         | Language.Markdown -> Ok(ViewLanguageModel(ViewLanguage.Markdown, model))
         | Language.PlainText -> Ok(ViewLanguageModel(ViewLanguage.PlainText, model))
+        | Language.Tex -> Ok(ViewLanguageModel(ViewLanguage.Tex, model))
         | _ -> Error(InvalidOperationException(sprintf "cannot create ViewLanguageModel") :> Exception)
 
 and ViewLanguageModelConverter() =
