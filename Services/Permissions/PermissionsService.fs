@@ -522,71 +522,103 @@ type PermissionsService(userService: IUserService,
         member this.Share(id: ProtectedId, userId: UserId) = 
             let accessFlags = AccessModel.CanRead.ToFlags()
             userContext.Exists(User.CreateDocumentKey(userId))
-            |> Async.BindResult(fun exists ->
+            |> Async.TryMapResult(fun exists ->
                 if exists then
-                    this.UpdatePermissions
-                        (id,
-                        fun perm ->
-                            let mmbr =
-                                perm.Members
-                                |> Seq.tryFind(fun m -> m.UserId = userId)
-                                |> fun opt ->
-                                    match opt with
-                                    | None ->
-                                        {
-                                            UserId = userId
-                                            Access = accessFlags
-                                        }
-                                    | Some(m) ->
-                                        {
-                                            m with
-                                                Access = accessFlags ||| m.Access
-                                        }
-                            {
-                                perm with
-                                    Members =
-                                        mmbr :: perm.Members
-                                        |> Seq.filter(fun m -> m.UserId <> userId)
-                                        |> List.ofSeq
-                            }
-                       )
+                    Ok()
                 else
-                    async.Return(Result.Error(InvalidOperationException(sprintf "User with UserId %s not found" userId.Value) :> Exception))
+                    Result.Error(InvalidOperationException(sprintf "User with UserId %s not found" userId.Value) :> Exception)
+            )
+            |> Async.BindResult(fun _ ->
+                this.UpdatePermissions
+                    (id,
+                    fun perm ->
+                        let mmbr =
+                            perm.Members
+                            |> Seq.tryFind(fun m -> m.UserId = userId)
+                            |> fun opt ->
+                                match opt with
+                                | None ->
+                                    {
+                                        UserId = userId
+                                        Access = accessFlags
+                                    }
+                                | Some(m) ->
+                                    {
+                                        m with
+                                            Access = accessFlags ||| m.Access
+                                    }
+                        {
+                            perm with
+                                Members =
+                                    mmbr :: (perm.Members
+                                    |> Seq.filter(fun m -> m.UserId <> userId)
+                                    |> List.ofSeq)
+                        }
+                   )
+            )
+            |> Async.BindResult(fun _ ->
+                userItemsContext.Update(UserItems.CreateDocumentKey(userId),
+                                        fun x ->
+                                            let protectedItem = id.ToEntity()
+                                            {
+                                                x with
+                                                    Allowed = protectedItem :: (x.Allowed
+                                                    |> Seq.filter(fun item -> item.Id <> protectedItem.Id)
+                                                    |> List.ofSeq
+                                                    )
+                                            }
+                                        )
             )
 
         member this.Share(id: ProtectedId, groupId: GroupId) = 
             let accessFlags = AccessModel.CanRead.ToFlags()
             groupContext.Exists(UserGroup.CreateDocumentKey(groupId))
-            |> Async.BindResult(fun exists ->
+            |> Async.TryMapResult(fun exists ->
                 if exists then
-                    this.UpdatePermissions
-                        (id,
-                        fun perm ->
-                            let gr =
-                                perm.Groups
-                                |> Seq.tryFind(fun g -> g.GroupId = groupId)
-                                |> fun opt ->
-                                    match opt with
-                                    | None ->
-                                        {
-                                            GroupId = groupId
-                                            Access = accessFlags
-                                        }
-                                    | Some(g) ->
-                                        {
-                                            g with
-                                                Access = accessFlags ||| g.Access
-                                        }
-                            {
-                                perm with
-                                    Groups =
-                                        gr :: perm.Groups
-                                        |> Seq.filter(fun g -> g.GroupId <> groupId)
-                                        |> List.ofSeq
-                            }
-                       )
+                    Ok()
                 else
-                    async.Return(Result.Error(InvalidOperationException(sprintf "Group with GroupId %s not found" groupId.Value) :> Exception))
+                    Result.Error(InvalidOperationException(sprintf "Group with GroupId %s not found" groupId.Value) :> Exception)
+            )
+            |> Async.BindResult(fun _ ->
+                this.UpdatePermissions
+                    (id,
+                    fun perm ->
+                        let grp =
+                            perm.Groups
+                            |> Seq.tryFind(fun g -> g.GroupId = groupId)
+                            |> fun opt ->
+                                match opt with
+                                | None ->
+                                    {
+                                        GroupId = groupId
+                                        Access = accessFlags
+                                    }
+                                | Some(m) ->
+                                    {
+                                        m with
+                                            Access = accessFlags ||| m.Access
+                                    }
+                        {
+                            perm with
+                                Groups =
+                                    grp :: (perm.Groups
+                                    |> Seq.filter(fun g -> g.GroupId <> groupId)
+                                    |> List.ofSeq)
+                        }
+                   )
+            )
+            |> Async.BindResult(fun _ ->
+                groupItemsContext.Update(GroupItems.CreateDocumentKey(groupId),
+                                        fun x ->
+                                            let protectedItem = id.ToEntity()
+                                            {
+                                                x with
+                                                    Allowed = protectedItem :: (x.Allowed
+                                                    |> Seq.filter(fun item -> item.Id <> protectedItem.Id)
+                                                    |> List.ofSeq
+                                                    )
+                                            }
+                                        )
             )
 
         member this.UserItemsAppend(id, userId) =
