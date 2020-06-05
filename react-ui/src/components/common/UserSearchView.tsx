@@ -40,7 +40,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
 
         if (state.users === null) {
             props.userService
-                .search(state.pattern ? state.pattern : null, 0, 10)
+                .search(state.pattern, 0, 10)
                 .then(users => {
                     if (active) {
                         setState({

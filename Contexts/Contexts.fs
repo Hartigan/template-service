@@ -274,7 +274,7 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                         |> fun x ->
                             match pattern with
                             | None -> x
-                            | Some(p) ->  x.Parameter("pattern", p.ToUpper())
+                            | Some(p) ->  x.Parameter("pattern", p)
 
                     let patternFilter = 
                         match pattern with
