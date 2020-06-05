@@ -33,7 +33,7 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
         member this.Update(key: IDocumentKey, updater: UserGroup -> UserGroup) =
             commonContext.Update(key, updater)
 
-        member this.SearchByContainsInName(pattern) =
+        member this.Search(pattern, offset, limit) =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
@@ -41,9 +41,20 @@ type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbas
                     let queryOptions = 
                         QueryOptions()
                         |> fun x -> x.Parameter("type", UserGroupType.Instance.Value)
-                        |> fun x -> x.Parameter("pattern", pattern.ToUpper())
+                        |> fun x -> x.Parameter("offset", offset)
+                        |> fun x -> x.Parameter("limit", limit)
+                        |> fun x ->
+                            match pattern with
+                            | None -> x
+                            | Some(p) -> x.Parameter("pattern", p)
+
+                    let patternFilter = 
+                        match pattern with
+                        | None -> String.Empty
+                        | Some(_) -> "AND CONTAINS(LOWER(`name`), LOWER($pattern))"
+
                     let! result = cluster.QueryAsync<UserGroup>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND CONTAINS(UPPER(`name`), $pattern)" bucket.Name bucket.Name,
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type %s OFFSET $offset LIMIT $limit" bucket.Name bucket.Name patternFilter,
                                        queryOptions)
                     let (groupsAsync : IQueryResult<UserGroup>) = result
                     let groups =
@@ -276,7 +287,7 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                             | None -> x
                             | Some(p) ->  x.Parameter("pattern", p)
 
-                    let patternFilter = 
+                    let patternFilter =
                         match pattern with
                         | None -> String.Empty
                         | Some(_) -> sprintf "AND CONTAINS(LOWER(`%s`), LOWER($pattern))" normalizedName

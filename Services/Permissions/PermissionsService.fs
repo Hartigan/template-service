@@ -135,8 +135,8 @@ type PermissionsService(userService: IUserService,
             |> Async.MapResult(fun p -> p.OwnerId)
 
 
-        member this.SearchByContains(pattern) =
-            groupContext.SearchByContainsInName(pattern)
+        member this.Search(pattern, offset, limit) =
+            groupContext.Search(pattern, offset, limit)
             |> Async.BindResult this.CreateGroups
 
         member this.Get(userId: UserId, access: AccessModel, protectedType: ProtectedType) : Async<Result<List<ProtectedId>, Exception>> =

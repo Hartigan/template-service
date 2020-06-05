@@ -17,8 +17,7 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     open: boolean;
     pattern: string;
-    groups: Array<Group>;
-    loaded: boolean;
+    groups: Array<Group> | null;
 }
 
 export interface IGroupSearchViewProps {
@@ -30,29 +29,23 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
         open: false,
-        groups: [],
-        loaded: false,
+        groups: null,
         pattern: ""
     });
 
-    const loading = state.open && !state.loaded;
+    const loading = state.open && state.groups === null;
 
     useEffect(() => {
         let active = true;
 
-        if (!loading) {
-            return;
-        }
-    
-        if (state.pattern !== "") {
+        if (state.groups === null) {
             props.permissionsService
-                .searchByContains(state.pattern)
+                .search(state.pattern, 0, 10)
                 .then(groups => {
                     if (active) {
                         setState({
                             ...state,
                             groups: groups,
-                            loaded: true
                         });
                     }
                 });
@@ -76,8 +69,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
         setState({
             ...state,
             pattern: value,
-            groups: [],
-            loaded: false
+            groups: null,
         });
     }
 
@@ -90,7 +82,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
             getOptionSelected={(option, value) => option.name === value.name}
             getOptionLabel={option => option.name}
             onChange={(event: any, value: Group | null) => props.onGroupSelected(value ? value.id : null)}
-            options={state.groups}
+            options={state.groups ? state.groups : []}
             loading={loading}
             renderInput={params => (
                 <TextField

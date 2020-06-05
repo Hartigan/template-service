@@ -78,7 +78,7 @@ export class PermissionsService {
         return this.http.post<void>(`add_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
     }
 
-    searchByContains(pattern: string) {
-        return this.http.get<Array<Group>>(`search_by_contains?pattern=${pattern}`);
+    search(pattern: string | null, offset: number, limit: number) {
+        return this.http.post<Array<Group>>(`search`, { pattern: pattern ? pattern : null, offset: offset, limit: limit });
     }
 }

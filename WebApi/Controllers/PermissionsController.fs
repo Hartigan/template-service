@@ -87,6 +87,15 @@ type AddPermissionsGroupRequest = {
     GroupId: GroupId
 }
 
+type GroupSearchRequest = {
+    [<JsonPropertyName("pattern")>]
+    Pattern : string option
+    [<JsonPropertyName("offset")>]
+    Offset : uint32
+    [<JsonPropertyName("limit")>]
+    Limit : uint32
+}
+
 [<Authorize(Roles="admin")>]
 [<Route("permissions")>]
 type PermissionsController(permissionsService: IPermissionsService,
@@ -448,11 +457,11 @@ type PermissionsController(permissionsService: IPermissionsService,
         }
         |> Async.StartAsTask
 
-    [<HttpGet>]
-    [<Route("search_by_contains")>]
-    member this.SearchByContains([<FromQuery(Name = "pattern")>] pattern: string) =
+    [<HttpPost>]
+    [<Route("search")>]
+    member this.Search([<FromBody>] req: GroupSearchRequest) =
         async {
-            match! permissionsService.SearchByContains(pattern) with
+            match! permissionsService.Search(req.Pattern, req.Offset, req.Limit) with
             | Error(ex) ->
                 logger.LogError(ex, "Search failed")
                 return (BadRequestResult() :> IActionResult)

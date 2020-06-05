@@ -16,6 +16,6 @@ export class UserService {
     }
 
     search(pattern: string | null, offset: number, limit: number) {
-        return this.http.post<Array<User>>(`search`, { pattern: pattern, offset: offset, limit: limit });
+        return this.http.post<Array<User>>(`search`, { pattern: pattern ? pattern : null, offset: offset, limit: limit });
     }
 }
