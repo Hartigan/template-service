@@ -133,6 +133,7 @@ export default function ReportsTab(props: IReportsTabProps) {
                     />
                 <ReportsListView
                     examinationService={props.examinationService}
+                    userService={props.userService}
                     reports={state.search.filtered}
                     />
             </Grid>

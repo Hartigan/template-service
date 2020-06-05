@@ -4,6 +4,8 @@ import { ExaminationService } from "../../services/ExaminationService";
 import DateView from "../utils/DateView";
 import { Report } from "../../models/Report";
 import ReportDialog from "../common/ReportDialog";
+import { UserService } from "../../services/UserService";
+import ShareReportDialog from "./ShareReportDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -23,17 +25,20 @@ const useStyles = makeStyles(theme => ({
 
 interface IState {
     reportOpened: boolean;
+    shareOpened: boolean;
 }
 
 export interface IReportPreviewViewProps {
     preview: Report;
     examinationService: ExaminationService;
+    userService: UserService;
 }
 
 export default function ReportPreviewView(props: IReportPreviewViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
-        reportOpened: false
+        reportOpened: false,
+        shareOpened: false
     });
 
     const classes = useStyles();
@@ -41,6 +46,13 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
     return (
         <Card className={classes.root}>
             <CardContent>
+                <ShareReportDialog
+                    open={state.shareOpened}
+                    reportId={props.preview.id}
+                    userService={props.userService}
+                    examinationService={props.examinationService}
+                    onClose={() => setState({ ...state, shareOpened: false })}
+                    />
                 <ReportDialog 
                     open={state.reportOpened}
                     report={props.preview}
@@ -85,7 +97,7 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
                 <Button
                     size="small"
                     color="primary"
-                    onClick={() => {}}
+                    onClick={() => setState({ ...state, shareOpened: true })}
                     >
                     Share
                 </Button>

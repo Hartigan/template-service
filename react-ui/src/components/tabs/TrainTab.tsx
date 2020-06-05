@@ -67,7 +67,9 @@ export default function TrainTab(props: ITrainTabProps) {
             problemSets: problemSets,
             search: {
                 ...state.search,
-                filtered: problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
+                filtered: state.search.value
+                    ? problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
+                    : problemSets
             }
         });
     };
@@ -189,7 +191,9 @@ export default function TrainTab(props: ITrainTabProps) {
             ...state,
             search: {
                 value: value,
-                filtered: state.problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
+                filtered: value
+                    ? state.problemSets.filter(head => head.name.toLowerCase().includes(value))
+                    : state.problemSets
             }
         })
     };

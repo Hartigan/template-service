@@ -3,6 +3,7 @@ import { makeStyles, List, ListItem } from '@material-ui/core';
 import { ExaminationService } from '../../services/ExaminationService';
 import { Report } from '../../models/Report';
 import ReportPreviewView from './ReportPreviewView';
+import { UserService } from '../../services/UserService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -12,6 +13,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface IReportsListViewProps {
     examinationService: ExaminationService;
+    userService: UserService;
     reports: Array<Report>;
 };
 
@@ -28,6 +30,7 @@ export default function ReportsListView(props: IReportsListViewProps) {
                         >
                         <ReportPreviewView
                             examinationService={props.examinationService}
+                            userService={props.userService}
                             preview={report}
                             />
                     </ListItem>
