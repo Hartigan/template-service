@@ -1,4 +1,4 @@
-import { makeStyles, Grid, Box, TextField } from "@material-ui/core";
+import { makeStyles, Grid, Box } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
@@ -10,6 +10,7 @@ import { Head } from "../../models/Head";
 import { Report } from "../../models/Report";
 import ReportDialog from "../common/ReportDialog";
 import TagsEditorView from "../utils/TagsEditorView";
+import SearchField from "../common/SearchField";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -189,11 +190,10 @@ export default function TrainTab(props: ITrainTabProps) {
                         onAdd={onAddSearchTag}
                         onRemove={onRemoveSearchTag}
                         />
-                    <TextField
+                    <SearchField
                         placeholder="search..."
                         color="primary"
-                        value={state.searchString}
-                        onChange={(e) => onSearchUpdated(e.target.value)}
+                        onSearch={(v) => onSearchUpdated(v)}
                         />
                     <ProblemSetsListView
                         examinationService={props.examinationService}

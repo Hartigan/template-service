@@ -1,4 +1,4 @@
-import { makeStyles, Grid, TextField } from "@material-ui/core";
+import { makeStyles, Grid } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { Report } from "../../models/Report";
@@ -6,6 +6,7 @@ import { UserId } from "../../models/Identificators";
 import { UserService } from "../../services/UserService";
 import UserSearchView from "../common/UserSearchView";
 import ReportsListView from "../reports/ReportsListView";
+import SearchField from "../common/SearchField";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -109,12 +110,11 @@ export default function ReportsTab(props: IReportsTabProps) {
                         onUserSelected={onUserChanged}
                         />
                 </div>
-                <TextField
+                <SearchField
                     className={classes.titleSearch}
                     placeholder="search..."
                     color="primary"
-                    value={state.search.pattern}
-                    onChange={(e) => onSearchUpdated(e.target.value)}
+                    onSearch={(v) => onSearchUpdated(v)}
                     />
                 <ReportsListView
                     examinationService={props.examinationService}
