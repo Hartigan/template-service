@@ -95,7 +95,8 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", HeadType.Instance.Value)
+                        |> fun x -> x.Parameter("head_type", HeadType.Instance.Value)
+                        |> fun x -> x.Parameter("problem_set_type", ProblemSetType.Instance.Value)
                         |> fun x ->
                             if tags.IsEmpty then
                                 x
