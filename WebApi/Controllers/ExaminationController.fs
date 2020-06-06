@@ -35,6 +35,17 @@ type ShareReportRequest = {
     Groups              : List<GroupId>
 }
 
+type ProblemSetSearchRequest = {
+    [<JsonPropertyName("pattern")>]
+    Pattern             : string option
+    [<JsonPropertyName("tags")>]
+    Tags                : List<TagModel>
+    [<JsonPropertyName("offset")>]
+    Offset              : uint32
+    [<JsonPropertyName("limit")>]
+    Limit               : uint32
+}
+
 [<Authorize>]
 [<Route("examination")>]
 type ExaminationController(permissionsService: IPermissionsService,
@@ -217,29 +228,12 @@ type ExaminationController(permissionsService: IPermissionsService,
         |> Async.StartAsTask
 
 
-    [<HttpGet>]
+    [<HttpPost>]
     [<Route("problem_sets")>]
-    member this.GetProblemSets() =
+    member this.GetProblemSetsByTags([<FromBody>] req: ProblemSetSearchRequest) =
         async {
             let userId = this.GetUserId()
-            match! examinationService.GetProblemSets(userId) with
-            | Error(ex) ->
-                logger.LogError(ex, "Cannot get problem sets")
-                return (BadRequestResult() :> IActionResult)
-            | Ok(models) -> return (JsonResult(models) :> IActionResult)
-        }
-        |> Async.StartAsTask
-
-    [<HttpGet>]
-    [<Route("problem_sets_by_tags")>]
-    member this.GetProblemSetsByTags([<FromQuery(Name = "tags")>] tags: string) =
-        async {
-            let userId = this.GetUserId()
-            let tagModels = 
-                tags.Split(",")
-                |> Seq.map TagModel
-                |> List.ofSeq
-            match! examinationService.GetProblemSets(userId, tagModels) with
+            match! examinationService.GetProblemSets(userId, req.Pattern, req.Tags, req.Offset, req.Limit) with
             | Error(ex) ->
                 logger.LogError(ex, "Cannot get problem sets")
                 return (BadRequestResult() :> IActionResult)

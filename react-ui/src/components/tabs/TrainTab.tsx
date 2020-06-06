@@ -35,10 +35,7 @@ interface IState {
     report: Report | null;
     submissionsIds: Array<SubmissionId> | null;
     problemSets: Array<Head> | null;
-    search : {
-        value: string;
-        filtered: Array<Head>;
-    }
+    searchString: string; 
     searchTags: Array<string>;
 }
 
@@ -54,23 +51,14 @@ export default function TrainTab(props: ITrainTabProps) {
         problemSets: null,
         report: null,
         searchTags: [],
-        search: {
-            value: "",
-            filtered: []
-        }
+        searchString: ""
     });
 
     const fetchProblemSets = async () => {
-        let problemSets = await props.examinationService.getProblemSets(state.searchTags);
+        let problemSets = await props.examinationService.getProblemSets(state.searchString, state.searchTags, 0, 10);
         setState({
             ...state,
             problemSets: problemSets,
-            search: {
-                ...state.search,
-                filtered: state.search.value
-                    ? problemSets.filter(head => head.name.toLowerCase().includes(state.search.value))
-                    : problemSets
-            }
         });
     };
 
@@ -183,18 +171,10 @@ export default function TrainTab(props: ITrainTabProps) {
     };
 
     const onSearchUpdated = (value: string) => {
-        if (state.problemSets === null) {
-            return;
-        }
-
         setState({
             ...state,
-            search: {
-                value: value,
-                filtered: value
-                    ? state.problemSets.filter(head => head.name.toLowerCase().includes(value))
-                    : state.problemSets
-            }
+            searchString: value,
+            problemSets: null
         })
     };
 
@@ -212,13 +192,13 @@ export default function TrainTab(props: ITrainTabProps) {
                     <TextField
                         placeholder="search..."
                         color="primary"
-                        value={state.search.value}
+                        value={state.searchString}
                         onChange={(e) => onSearchUpdated(e.target.value)}
                         />
                     <ProblemSetsListView
                         examinationService={props.examinationService}
                         onShowSubmission={onShowSubmission}
-                        problemSets={state.search.filtered}
+                        problemSets={state.problemSets ? state.problemSets : []}
                         />
                 </Box>
             </Grid>

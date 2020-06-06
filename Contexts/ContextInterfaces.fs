@@ -33,7 +33,7 @@ type IGroupContext =
 
 type IHeadContext =
     inherit IContext<Head>
-    abstract member SearchByTagsAndIds : List<string> * List<HeadId> -> Async<Result<List<Head>, Exception>> 
+    abstract member SearchProblemSets : string option * List<string> * List<HeadId> * offset:UInt32 * limit:UInt32 -> Async<Result<List<Head>, Exception>> 
 
 type IReportContext =
     inherit IContext<Report>

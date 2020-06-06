@@ -74,7 +74,7 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
 
-        member this.GetProblemSets(userId, tags) = 
+        member this.GetProblemSets(userId, pattern, tags, offset, limit) = 
             permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
             |> Async.MapResult(fun protectedIds ->
                 protectedIds
@@ -86,7 +86,7 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
             |> Async.BindResult(fun ids ->
-                headContext.SearchByTagsAndIds(tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids)
+                headContext.SearchProblemSets(pattern, tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids, offset, limit)
                 |> Async.TryMapResult(fun heads ->
                     heads
                     |> Seq.map HeadModel.Create
@@ -284,40 +284,6 @@ type ExaminationService(reportContext: IReportContext,
                     | _ -> []
                 )
                 |> List.ofSeq
-            )
-
-        member this.GetProblemSets(userId: UserId) =
-            permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
-            |> Async.BindResult(fun ids ->
-                ids
-                |> Seq.collect(fun id ->
-                    match id with
-                    | Head(headId) -> [ headId ]
-                    | _ -> []
-                )
-                |> Seq.map versionControlService.Get
-                |> AsyncSeq.ofSeqAsync
-                |> AsyncSeq.map(fun r ->
-                    match r with
-                    | Error(error) -> Error([ error ])
-                    | Ok(head) ->
-                        match head.Commit.Target.Type with
-                        | ModelType.ProblemSet -> Ok([ head ])
-                        | _ -> Ok([])
-                )
-                |> AsyncSeq.fold (fun r x ->
-                    match (r, x) with
-                    | (Ok(l), Ok(r)) -> Ok(l @ r)
-                    | (Error(ex), Ok(r)) -> Error(ex)
-                    | (Ok(l), Error(ex)) -> Error(ex)
-                    | (Error(lex), Error(rex)) -> Error(lex @ rex)
-                ) (Ok([]))
-                |> fun x ->
-                    async {
-                        match! x with
-                        | Ok(list) -> return Ok(list)
-                        | Error(exList) -> return Error(AggregateException(exList) :> Exception)
-                    }
             )
 
         member this.Get(id: SubmissionId) =

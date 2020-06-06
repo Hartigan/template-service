@@ -88,7 +88,7 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
         member this.Update(key: IDocumentKey, updater: Head -> Head) =
             commonContext.Update(key, updater)
 
-        member this.SearchByTagsAndIds(tags, headIds) =
+        member this.SearchProblemSets(pattern, tags, headIds, offset, limit) =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
@@ -96,10 +96,45 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                     let queryOptions = 
                         QueryOptions()
                         |> fun x -> x.Parameter("type", HeadType.Instance.Value)
-                        |> fun x -> x.Parameter("tags", tags |> Seq.distinct |> Array.ofSeq)
+                        |> fun x ->
+                            if tags.IsEmpty then
+                                x
+                            else
+                                x.Parameter("tags", tags |> Seq.distinct |> Array.ofSeq)
                         |> fun x -> x.Parameter("ids", headIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
+                        |> fun x -> x.Parameter("offset", offset)
+                        |> fun x -> x.Parameter("limit", limit)
+                        |> fun x ->
+                            match pattern with
+                            | None -> x
+                            | Some(p) -> x.Parameter("pattern", p)
+
+                    let patternFilter =
+                        match pattern with
+                        | None -> String.Empty
+                        | Some(_) -> "AND CONTAINS(LOWER(p.title), LOWER($pattern))"
+
+                    let tagsFilter =
+                        if tags.IsEmpty then
+                            String.Empty
+                        else
+                            "AND ARRAY_SORT(ARRAY_INTERSECT(h.tags, $tags)) = ARRAY_SORT($tags)"
+
                     let! result = cluster.QueryAsync<Head>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND ARRAY_SORT(ARRAY_INTERSECT(tags, $tags)) = ARRAY_SORT($tags) and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
+                                      (sprintf "
+SELECT RAW h FROM `%s` h
+INNER JOIN `%s` p
+ON
+h.`commit`.target.id = p.id
+WHERE
+h.type = \"head\"
+AND h.`commit`.target.type = \"problem_set\"
+AND p.type = \"problem_set\"
+AND ARRAY_CONTAINS($ids, h.id)
+%s
+%s
+OFFSET $offset
+LIMIT $limit" bucket.Name bucket.Name tagsFilter patternFilter,
                                        queryOptions)
                     let (headsAsync : IQueryResult<Head>) = result
                     let heads =

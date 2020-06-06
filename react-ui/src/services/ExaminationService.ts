@@ -55,12 +55,16 @@ export class ExaminationService {
         });
     }
 
-    getProblemSets(tags?: Array<string>) {
-        if (tags && tags.length > 0) {
-            const encodedTags = tags.map(x => encodeURIComponent(x)).join(",");
-            return this.http.get<Array<Head>>(`problem_sets_by_tags?tags=${encodedTags}`);
-        }
-        return this.http.get<Array<Head>>(`problem_sets`);
+    getProblemSets(pattern: string | null, tags: Array<string> | null, offset: number, limit: number) {
+        return this.http.post<Array<Head>>(
+            `problem_sets`,
+            {
+                pattern: pattern ? pattern : null,
+                tags: tags ? tags : null,
+                offset: offset,
+                limit: limit
+            }
+        );
     }
 
     getProblemSetPreview(id: CommitId) {
