@@ -37,4 +37,4 @@ type IHeadContext =
 
 type IReportContext =
     inherit IContext<Report>
-    abstract member SearchByUserAndIds : UserId * List<ReportId> -> Async<Result<List<Report>, Exception>>
+    abstract member Search : string option * UserId option * List<ReportId> * offset:UInt32 * limit:UInt32 -> Async<Result<List<Report>, Exception>>

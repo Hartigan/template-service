@@ -46,6 +46,17 @@ type ProblemSetSearchRequest = {
     Limit               : uint32
 }
 
+type ReportSearchRequest = {
+    [<JsonPropertyName("pattern")>]
+    Pattern             : string option
+    [<JsonPropertyName("user_id")>]
+    UserId              : UserId option
+    [<JsonPropertyName("offset")>]
+    Offset              : uint32
+    [<JsonPropertyName("limit")>]
+    Limit               : uint32
+}
+
 [<Authorize>]
 [<Route("examination")>]
 type ExaminationController(permissionsService: IPermissionsService,
@@ -174,26 +185,12 @@ type ExaminationController(permissionsService: IPermissionsService,
         }
         |> Async.StartAsTask
 
-    [<HttpGet>]
+    [<HttpPost>]
     [<Route("reports")>]
-    member this.GetReports() =
+    member this.GetReports([<FromBody>] req: ReportSearchRequest) =
         async {
             let userId = this.GetUserId()
-            match! examinationService.GetReports(userId) with
-            | Error(ex) ->
-                logger.LogError(ex, "Cannot get reports")
-                return (BadRequestResult() :> IActionResult)
-            | Ok(models) -> return (JsonResult(models) :> IActionResult)
-        }
-        |> Async.StartAsTask
-
-    [<HttpGet>]
-    [<Route("reports_by_author")>]
-    member this.GetReports([<FromQuery(Name = "author_id")>] id: string) =
-        async {
-            let userId = this.GetUserId()
-            let authorId = UserId(id)
-            match! examinationService.Search(userId, authorId) with
+            match! examinationService.Search(req.Pattern, userId, req.UserId, req.Offset, req.Limit) with
             | Error(ex) ->
                 logger.LogError(ex, "Cannot get reports by author")
                 return (BadRequestResult() :> IActionResult)

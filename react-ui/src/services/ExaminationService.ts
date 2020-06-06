@@ -39,12 +39,13 @@ export class ExaminationService {
         return this.http.get<Array<SubmissionId>>(`submissions`);
     }
 
-    getReports() {
-        return this.http.get<Array<ReportId>>(`reports`);
-    }
-
-    getSearchReportsByAuthor(userId: UserId) {
-        return this.http.get<Array<ReportId>>(`reports_by_author?author_id=${userId}`);
+    getReports(pattern: string | null, userId: UserId | null, offset: number, limit: number) {
+        return this.http.post<Array<ReportId>>(`reports`, {
+            pattern: pattern ? pattern : null,
+            user_id: userId,
+            offset: offset,
+            limit: limit
+        });
     }
 
     shareReport(reportId: ReportId, users: Array<UserId>, groups: Array<GroupId>) {

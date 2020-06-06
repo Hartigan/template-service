@@ -36,8 +36,7 @@ interface IState {
     reports: Array<Report> | null;
     search : {
         userId: UserId | null;
-        value: string;
-        filtered: Array<Report>;
+        pattern: string;
     }
 }
 
@@ -52,28 +51,18 @@ export default function ReportsTab(props: IReportsTabProps) {
         reports: null,
         search: {
             userId: null,
-            value: "",
-            filtered: []
+            pattern: "",
         }
     });
 
     const fetchReports = async () => {
-        const reportIds = await (state.search.userId
-            ? props.examinationService.getSearchReportsByAuthor(state.search.userId)
-            : props.examinationService.getReports());
+        const reportIds = await props.examinationService.getReports(state.search.pattern, state.search.userId, 0, 100);
 
-        
         let reports = await Promise.all(reportIds.map(id => props.examinationService.getReport(id)));
 
         setState({
             ...state,
             reports: reports,
-            search: {
-                ...state.search,
-                filtered: state.search.value
-                    ? reports.filter(report => report.problem_set.title.toLowerCase().includes(state.search.value))
-                    : reports
-            }
         });
     };
 
@@ -84,19 +73,16 @@ export default function ReportsTab(props: IReportsTabProps) {
     });
 
     const onSearchUpdated = (value: string) => {
-        console.log(value);
         if (state.reports === null) {
             return;
         }
 
         setState({
             ...state,
+            reports: null,
             search: {
                 ...state.search,
-                value: value,
-                filtered: value
-                    ? state.reports.filter(report => report.problem_set.title.toLowerCase().includes(state.search.value))
-                    : state.reports
+                pattern: value,
             }
         })
     };
@@ -108,7 +94,6 @@ export default function ReportsTab(props: IReportsTabProps) {
             search: {
                 ...state.search,
                 userId: userId,
-                filtered: []
             }
         })
     };
@@ -128,13 +113,13 @@ export default function ReportsTab(props: IReportsTabProps) {
                     className={classes.titleSearch}
                     placeholder="search..."
                     color="primary"
-                    value={state.search.value}
+                    value={state.search.pattern}
                     onChange={(e) => onSearchUpdated(e.target.value)}
                     />
                 <ReportsListView
                     examinationService={props.examinationService}
                     userService={props.userService}
-                    reports={state.search.filtered}
+                    reports={state.reports ? state.reports : []}
                     />
             </Grid>
         </Grid>

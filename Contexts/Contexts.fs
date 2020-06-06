@@ -127,14 +127,15 @@ INNER JOIN `%s` p
 ON
 h.`commit`.target.id = p.id
 WHERE
-h.type = \"head\"
-AND h.`commit`.target.type = \"problem_set\"
-AND p.type = \"problem_set\"
+h.type = $head_type
+AND h.`commit`.target.type = $problem_set_type
+AND p.type = $problem_set_type
 AND ARRAY_CONTAINS($ids, h.id)
 %s
 %s
 OFFSET $offset
-LIMIT $limit" bucket.Name bucket.Name tagsFilter patternFilter,
+LIMIT $limit
+" bucket.Name bucket.Name tagsFilter patternFilter,
                                        queryOptions)
                     let (headsAsync : IQueryResult<Head>) = result
                     let heads =
@@ -168,19 +169,52 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
         member this.Update(key: IDocumentKey, updater: Report -> Report) =
             commonContext.Update(key, updater)
 
-        member this.SearchByUserAndIds(userId, reportIds) =
+        member this.Search(pattern, userId, reportIds, offset, limit) =
             async {
                 try
                     let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
                     let! bucket = this.GetBucket()
                     let queryOptions = 
                         QueryOptions()
-                        |> fun x -> x.Parameter("type", ReportType.Instance.Value)
-                        |> fun x -> x.Parameter("userId", userId.Value)
+                        |> fun x -> x.Parameter("report_type", ReportType.Instance.Value)
+                        |> fun x -> x.Parameter("generated_problem_set_type", GeneratedProblemSetType.Instance.Value)
+                        |> fun x ->
+                            match userId with
+                            | None -> x
+                            | Some(u) -> x.Parameter("userId", u.Value)
                         |> fun x -> x.Parameter("ids", reportIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
+                        |> fun x -> x.Parameter("offset", offset)
+                        |> fun x -> x.Parameter("limit", limit)
+                        |> fun x ->
+                            match pattern with
+                            | None -> x
+                            | Some(p) -> x.Parameter("pattern", p)
+
+                    let patternFilter =
+                        match pattern with
+                        | None -> String.Empty
+                        | Some(_) -> "AND CONTAINS(LOWER(g.title), LOWER($pattern))"
+
+                    let userFilter =
+                        match userId with
+                        | None -> String.Empty
+                        | Some(_) -> "AND r.permissions.owner_id = $userId"
+
                     let! result = cluster.QueryAsync<Report>
-                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND permissions.owner_id = $userId and ARRAY_CONTAINS($ids, id)" bucket.Name bucket.Name,
-                                       queryOptions)
+                                      (sprintf "
+SELECT RAW r FROM `%s` r
+INNER JOIN `%s` g
+ON
+r.generated_problem_set_id = g.id
+WHERE
+r.type = $report_type
+AND g.type = $generated_problem_set_type
+AND ARRAY_CONTAINS($ids, r.id)
+%s
+%s
+OFFSET $offset
+LIMIT $limit
+" bucket.Name bucket.Name patternFilter userFilter, queryOptions)
                     let (reportsAsync : IQueryResult<Report>) = result
                     let reports =
                         reportsAsync

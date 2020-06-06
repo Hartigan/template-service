@@ -54,7 +54,7 @@ type ExaminationService(reportContext: IReportContext,
 
     interface IExaminationService with
 
-        member this.Search(userId, targetId): Async<Result<List<ReportId>,Exception>> = 
+        member this.Search(pattern, userId, targetId, offset, limit): Async<Result<List<ReportId>,Exception>> = 
             permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
             |> Async.MapResult(fun protectedIds ->
                 protectedIds
@@ -66,7 +66,7 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
             |> Async.BindResult(fun ids ->
-                reportContext.SearchByUserAndIds(targetId, ids)
+                reportContext.Search(pattern, targetId, ids, offset, limit)
             )
             |> Async.MapResult(fun reports ->
                 reports
