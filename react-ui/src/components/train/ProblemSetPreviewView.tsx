@@ -76,9 +76,6 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
         return (
             <Card className={classes.root}>
                 <CardContent>
-                    <Typography gutterBottom variant="h5" component="h2">
-                        {props.head.name}
-                    </Typography>
                     <TagsView tags={props.head.tags} />
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Title
@@ -87,10 +84,10 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                         {state.preview.title}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Duration, s
+                        Duration, min
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {state.preview.duration}
+                        {state.preview.duration / 60}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Problems count
