@@ -53,6 +53,7 @@ export interface INavigationTabsProps {
     permissionsService: PermissionsService;
     userService: UserService;
     examinationService: ExaminationService;
+    isAdmin: boolean;
 }
 
 export default function NavigationTabs(props: INavigationTabsProps) {
@@ -71,14 +72,25 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           value={value}
           onChange={(_, newValue) => handleChange(newValue)}
         >
-          <Tab label="Editor" />
-          <Tab label="Groups" />
-          <Tab label="Permissions" />
           <Tab label="Train" />
           <Tab label="Reports" />
+          {props.isAdmin ? <Tab label="Editor" /> : null}
+          {props.isAdmin ? <Tab label="Groups" /> : null}
+          {props.isAdmin ? <Tab label="Permissions" />: null}
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
+        <TrainTab
+          examinationService={props.examinationService}
+          />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <ReportsTab
+          examinationService={props.examinationService}
+          userService={props.userService}
+          />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
         <EditorTab
             versionService={props.versionService}
             foldersService={props.foldersService}
@@ -86,29 +98,18 @@ export default function NavigationTabs(props: INavigationTabsProps) {
             problemSetService={props.problemSetService}
             />
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={value} index={3}>
         <GroupsTab
           permissionsService={props.permissionsService}
           userService={props.userService}
           />
       </TabPanel>
-      <TabPanel value={value} index={2}>
+      <TabPanel value={value} index={4}>
         <PermissionsTab
           permissionsService={props.permissionsService}
           userService={props.userService}
           versionService={props.versionService}
           foldersService={props.foldersService}
-          />
-      </TabPanel>
-      <TabPanel value={value} index={3}>
-        <TrainTab
-          examinationService={props.examinationService}
-          />
-      </TabPanel>
-      <TabPanel value={value} index={4}>
-        <ReportsTab
-          examinationService={props.examinationService}
-          userService={props.userService}
           />
       </TabPanel>
     </div>

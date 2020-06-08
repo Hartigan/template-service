@@ -20,6 +20,9 @@ export type SearchFieldProps = SearchStandardTextFieldProps | SearchFilledTextFi
 export default function SearchField(props: SearchFieldProps) {
 
     const subject = new Subject<string>();
+
+    const newProps = { ...props };
+    delete newProps.onSearch;
     
     useEffect(() => {
         const sub = 
@@ -38,7 +41,7 @@ export default function SearchField(props: SearchFieldProps) {
 
     return (
         <TextField
-            {...props}
+            {...newProps}
             onChange={(e) => onUpdate(e.target.value)}
             />
     );
