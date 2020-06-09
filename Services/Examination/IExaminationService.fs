@@ -16,7 +16,6 @@ type IExaminationService =
     abstract member Get : SubmissionId -> Async<Result<SubmissionModel, Exception>>
     abstract member GetPreview : SubmissionId -> Async<Result<SubmissionPreviewModel, Exception>>
     
-    abstract member GetReports : UserId -> Async<Result<List<ReportId>, Exception>>
     abstract member Get : ReportId -> Async<Result<ReportModel, Exception>>
     abstract member Search : string option * userId:UserId * targetId:UserId option * offset:UInt32 * limit:UInt32 -> Async<Result<List<ReportId>, Exception>>
     

@@ -52,10 +52,35 @@ type ExaminationService(reportContext: IReportContext,
                 async.Return(Ok(s))
         )
 
+    member this.RemoveCompleted(submissions: List<Submission>) =
+        let toRemove = 
+            submissions
+            |> Seq.filter(fun submission -> submission.ReportId.IsSome)
+
+        toRemove
+        |> Seq.map(fun submission -> permissionsService.Remove(ProtectedId.Submission(submission.Id)))
+        |> ResultOfAsyncSeq
+        |> Async.BindResult(fun _  ->
+            toRemove
+            |> Seq.map(fun submission ->
+                submissionContext.Remove(Submission.CreateDocumentKey(submission.Id))
+            )
+            |> ResultOfAsyncSeq
+        )
+        |> Async.MapResult(fun _ ->
+            submissions
+            |> Seq.filter(fun submission -> submission.ReportId.IsNone)
+            |> Seq.map(fun submission -> submission.Id)
+            |> List.ofSeq
+        )
+
     interface IExaminationService with
 
-        member this.Search(pattern, userId, targetId, offset, limit): Async<Result<List<ReportId>,Exception>> = 
-            permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
+        member this.Search(pattern, userId, targetId, offset, limit): Async<Result<List<ReportId>,Exception>> =
+            (this :> IExaminationService).GetSubmissions(userId)
+            |> Async.BindResult(fun _ ->
+                permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
+            )
             |> Async.MapResult(fun protectedIds ->
                 protectedIds
                 |> Seq.collect(fun protectedId ->
@@ -194,7 +219,6 @@ type ExaminationService(reportContext: IReportContext,
                             Report.Id = reportId
                             Type = ReportType.Instance
                             GeneratedProblemSetId = entity.GeneratedProblemSetId
-                            SubmissionId = submissionId
                             Permissions = entity.Permissions
                             StartedAt = entity.StartedAt
                             FinishedAt = if now < entity.Deadline then now else entity.Deadline
@@ -262,29 +286,19 @@ type ExaminationService(reportContext: IReportContext,
                 )
             )
 
-        member this.GetReports(userId: UserId) =
-            permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
-            |> Async.MapResult(fun ids ->
-                ids
-                |> Seq.collect(fun id ->
-                    match id with
-                    | Report(reportId) -> [ reportId ]
-                    | _ -> []
-                )
-                |> List.ofSeq
-            )
-
         member this.GetSubmissions(userId: UserId) =
             permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Submission)
-            |> Async.MapResult(fun ids ->
+            |> Async.BindResult(fun ids ->
                 ids
                 |> Seq.collect(fun id ->
                     match id with
                     | Submission(submissionId) -> [ submissionId ]
                     | _ -> []
                 )
-                |> List.ofSeq
+                |> Seq.map this.TryComplete
+                |> ResultOfAsyncSeq
             )
+            |> Async.BindResult this.RemoveCompleted
 
         member this.Get(id: SubmissionId) =
             this.TryComplete(id)

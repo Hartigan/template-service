@@ -34,8 +34,6 @@ type Report =
         Id : ReportId
         [<JsonPropertyName("generated_problem_set_id")>]
         GeneratedProblemSetId : GeneratedProblemSetId
-        [<JsonPropertyName("submission_id")>]
-        SubmissionId : SubmissionId
         [<JsonPropertyName("permissions")>]
         Permissions : Permissions
         [<JsonPropertyName("started_at")>]

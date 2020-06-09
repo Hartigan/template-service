@@ -130,6 +130,54 @@ type PermissionsService(userService: IUserService,
 
 
     interface IPermissionsService with
+        member this.Remove(id: ProtectedId) =
+            let rawId =
+                match id with
+                | ProtectedId.Folder(folderId) -> folderId.Value
+                | ProtectedId.Head(headId) -> headId.Value
+                | ProtectedId.Submission(submissionId) -> submissionId.Value
+                | ProtectedId.Report(reportId) -> reportId.Value
+
+            this.GetPermissions(id)
+            |> Async.BindResult(fun permissions ->
+                permissions.Members
+                |> Seq.map(fun m -> m.UserId)
+                |> Seq.append(seq { permissions.OwnerId })
+                |> Seq.map(fun userId ->
+                    userItemsContext.Update(UserItems.CreateDocumentKey(userId), fun userItems ->
+                        {
+                            userItems with
+                                Allowed =
+                                    userItems.Allowed
+                                    |> Seq.filter(fun x -> x.Id <> rawId)
+                                    |> List.ofSeq
+                                Owned =
+                                    userItems.Owned
+                                    |> Seq.filter(fun x -> x.Id <> rawId)
+                                    |> List.ofSeq
+                        }
+                    )
+                )
+                |> ResultOfAsyncSeq
+                |> Async.MapResult(fun _ -> permissions)
+            )
+            |> Async.BindResult(fun permissions ->
+                permissions.Groups
+                |> Seq.map(fun group ->
+                    groupItemsContext.Update(GroupItems.CreateDocumentKey(group.GroupId), fun groupItems ->
+                        {
+                            groupItems with
+                                Allowed =
+                                    groupItems.Allowed
+                                    |> Seq.filter(fun x -> x.Id <> rawId)
+                                    |> List.ofSeq
+                        }
+                    )
+                )
+                |> ResultOfAsyncSeq
+            )
+            |> Async.MapResult ignore
+
         member this.GetOwner(protectedId) = 
             this.GetPermissions(protectedId)
             |> Async.MapResult(fun p -> p.OwnerId)
