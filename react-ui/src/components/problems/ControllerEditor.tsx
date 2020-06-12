@@ -1,6 +1,7 @@
 import { Controller } from "../../models/Controller";
 import CodeEditor from "./CodeEditor";
 import React from "react";
+import { CodeLanguage } from "../../models/Code";
 
 export interface IControllerEditorProps {
     value: Controller;
@@ -11,7 +12,7 @@ export interface IControllerEditorProps {
 export default function ControllerEditor(props: IControllerEditorProps) {
 
     const languages = [
-        { value: "csharp", title: "C#"}
+        { value: CodeLanguage.CSharp, title: "C#"}
     ];
 
     return (

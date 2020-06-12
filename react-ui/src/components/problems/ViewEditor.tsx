@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/core";
 import { View } from "../../models/View";
 import CodeEditor from "./CodeEditor";
 import React from "react";
+import { ViewLanguage } from "../../models/Code";
 
 export interface IViewEditorProps {
     value: View;
@@ -12,9 +12,9 @@ export interface IViewEditorProps {
 export default function ViewEditor(props: IViewEditorProps) {
 
     const languages = [
-        { value: "plain_text"   , title: "Plain" },
-        { value: "markdown"     , title: "Markdown"},
-        { value: "tex"          , title: "TeX"}
+        { value: ViewLanguage.PlainText   , title: "Plain" },
+        { value: ViewLanguage.Markdown    , title: "Markdown"},
+        { value: ViewLanguage.TeX         , title: "TeX"}
     ];
 
     return (

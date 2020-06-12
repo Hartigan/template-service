@@ -1,6 +1,14 @@
-import { makeStyles, FormControl, MenuItem, InputLabel, Select, TextField } from "@material-ui/core";
-import { Code } from "../../models/Code";
+import { makeStyles, FormControl, MenuItem, InputLabel, Select } from "@material-ui/core";
+import { Code, CodeLanguage, ViewLanguage } from "../../models/Code";
 import React from "react";
+import AceEditor from "react-ace";
+
+import "ace-builds/src-noconflict/mode-csharp";
+import "ace-builds/src-noconflict/mode-markdown";
+import "ace-builds/src-noconflict/mode-tex";
+import "ace-builds/src-noconflict/mode-plain_text";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/ext-language_tools"
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -20,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface ICodeLanguage {
-    value: string;
+    value: CodeLanguage | ViewLanguage;
     title: string;
 }
 
@@ -55,6 +63,21 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
         } as T);
     };
 
+    const languageToMode = (language: CodeLanguage | ViewLanguage) => {
+        switch (language) {
+            case CodeLanguage.CSharp:
+                return "csharp";
+            case ViewLanguage.Markdown:
+                return "markdown";
+            case ViewLanguage.TeX:
+                return "tex";
+            case ViewLanguage.PlainText:
+                return "plain_text";
+            default:
+                return undefined;
+        }
+    };
+
     return (
         <FormControl className={classes.formControl} disabled={props.disabled}>
             <InputLabel
@@ -70,14 +93,25 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
                 onChange={(e) => updateLanguage(e.target.value as string)}>
                 {langItems}
             </Select>
-            <TextField
+            <AceEditor
                 className={classes.codeEditor}
-                label={props.label}
-                multiline
+                mode={languageToMode(props.value.language)}
+                theme="monokai"
                 value={props.value.content}
-                disabled={props.disabled}
-                rows="5"
-                onChange={(e) => updateContent(e.target.value)} />
+                readOnly={props.disabled}
+                minLines={5}
+                fontSize={14}
+                showPrintMargin={true}
+                showGutter={true}
+                highlightActiveLine={true}
+                setOptions={{
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true,
+                    enableSnippets: false,
+                    showLineNumbers: true,
+                    tabSize: 4,
+                }}
+                onChange={(value) => updateContent(value)} />
         </FormControl>
     );
 };

@@ -11,6 +11,7 @@ import { Validator } from "../../models/Validator";
 import ControllerEditor from "./ControllerEditor";
 import ViewEditor from "./ViewEditor";
 import ValidatorEditor from "./ValidatorEditor";
+import { CodeLanguage, ViewLanguage } from "../../models/Code";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -44,30 +45,30 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
 
     const [ title, setTitle ] = React.useState<string>(""); 
     const [ controller, setController ] = React.useState<Controller>({
-        language: "csharp",
+        language: CodeLanguage.CSharp,
         content: ""
     });
     const [ view, setView ] = React.useState<View>({
-        language: "plain_text",
+        language: ViewLanguage.PlainText,
         content: ""
     });
     const [ validator, setValidator ] = React.useState<Validator>({
-        language: "csharp",
+        language: CodeLanguage.CSharp,
         content: ""
     });
 
     const clean = () => {
         setTitle("");
         setController({
-            language: "csharp",
+            language: CodeLanguage.CSharp,
             content: ""
         });
         setView({
-            language: "plain_text",
+            language: ViewLanguage.PlainText,
             content: ""
         });
         setValidator({
-            language: "csharp",
+            language: CodeLanguage.CSharp,
             content: ""
         });
     };

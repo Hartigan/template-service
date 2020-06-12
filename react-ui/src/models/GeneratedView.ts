@@ -1,5 +1,5 @@
-import { Code } from "./Code";
+import { Code, ViewLanguage } from "./Code";
 
 export interface GeneratedView extends Code {
-    language: "markdown" | "plain_text" | "tex";
+    language: ViewLanguage;
 }

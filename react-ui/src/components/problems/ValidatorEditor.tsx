@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/core";
 import { Validator } from "../../models/Validator";
 import CodeEditor from "./CodeEditor";
 import React from "react";
+import { CodeLanguage } from "../../models/Code";
 
 export interface IValidatorEditorProps {
     value: Validator;
@@ -12,7 +12,7 @@ export interface IValidatorEditorProps {
 export default function ValidatorEditor(props: IValidatorEditorProps) {
 
     const languages = [
-        { value: "csharp", title: "C#"}
+        { value: CodeLanguage.CSharp, title: "C#"}
     ];
 
     return (
