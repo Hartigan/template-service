@@ -261,6 +261,9 @@ namespace IdentityServer
                 // delete local authentication cookie
                 await HttpContext.SignOutAsync();
 
+                // sign out from Identity
+                await _signInManager.SignOutAsync();
+
                 // raise the logout event
                 await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
             }
