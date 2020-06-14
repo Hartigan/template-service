@@ -53,8 +53,8 @@ export default function ShareReportDialog(props: IShareReportDialogProps) {
                 userService={props.userService}
                 />
             <Container>
-                <Button variant="contained" onClick={onShare}>Share</Button>
                 <Button variant="contained" onClick={onCancel}>Cancel</Button>
+                <Button variant="contained" onClick={onShare}>Share</Button>
             </Container>
         </Dialog>
     );

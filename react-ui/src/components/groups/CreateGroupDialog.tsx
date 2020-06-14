@@ -82,8 +82,8 @@ export default function CreateGroupDialog(props: ICreateGroupDialogProps) {
                 helperText={state.descError}
                 onChange={(e) => updateDesc(e.target.value)} />
             <Container>
-                <Button variant="contained" onClick={() => onCreate()}>Create</Button>
                 <Button variant="contained" onClick={onCancel}>Cancel</Button>
+                <Button variant="contained" onClick={() => onCreate()}>Create</Button>
             </Container>
         </Dialog>
     );
