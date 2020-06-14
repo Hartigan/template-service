@@ -123,13 +123,18 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     };
 
     const onCancel = () => {
-        setState({
-            ...state,
-            disabled: true,
-            description: props.commit.description
-        });
-        sync(props.commit);
+        props.problemsService
+            .get(props.commit.id)
+            .then(problem => {
+                setState({
+                    ...state,
+                    problem: problem,
+                    disabled: true,
+                    description: props.commit.description
+                });
+            });
     };
+
     const onEdit = () => {
         setState({
             ...state,
