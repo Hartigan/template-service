@@ -21,7 +21,9 @@ type ExaminationService(reportContext: IReportContext,
                         problemsService: IProblemsService,
                         permissionsService: IPermissionsService,
                         userService: IUserService,
-                        generatorService: IGeneratorService) =
+                        generatorService: IGeneratorService,
+                        reportSearch: IReportSearch,
+                        headSearch: IHeadSearch) =
 
     member this.UpdateSubmission(answer: DatabaseTypes.ProblemAnswer) : Submission -> Result<Submission, Exception> =
         fun submission ->
@@ -91,7 +93,7 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
             |> Async.BindResult(fun ids ->
-                reportContext.Search(pattern, targetId, ids, offset, limit)
+                reportSearch.Search(pattern, targetId, ids, offset, limit)
             )
             |> Async.MapResult(fun reports ->
                 reports
@@ -111,7 +113,7 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
             |> Async.BindResult(fun ids ->
-                headContext.SearchProblemSets(pattern, tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids, offset, limit)
+                headSearch.SearchProblemSets(pattern, tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids, offset, limit)
                 |> Async.TryMapResult(fun heads ->
                     heads
                     |> Seq.map HeadModel.Create

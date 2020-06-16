@@ -9,6 +9,8 @@ open Couchbase.Query
 open Utils.AsyncHelper
 open FSharp.Control
 open DatabaseTypes.Identificators
+open Microsoft.Extensions.Logging
+open Utils.ResultHelper
 
 type GroupContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     let commonContext =  CommonContext<UserGroup>(couchbaseBuckets) :> IContext<UserGroup>
@@ -88,65 +90,6 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
         member this.Update(key: IDocumentKey, updater: Head -> Head) =
             commonContext.Update(key, updater)
 
-        member this.SearchProblemSets(pattern, tags, headIds, offset, limit) =
-            async {
-                try
-                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
-                    let! bucket = this.GetBucket()
-                    let queryOptions = 
-                        QueryOptions()
-                        |> fun x -> x.Parameter("head_type", HeadType.Instance.Value)
-                        |> fun x -> x.Parameter("problem_set_type", ProblemSetType.Instance.Value)
-                        |> fun x ->
-                            if tags.IsEmpty then
-                                x
-                            else
-                                x.Parameter("tags", tags |> Seq.distinct |> Array.ofSeq)
-                        |> fun x -> x.Parameter("ids", headIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
-                        |> fun x -> x.Parameter("offset", offset)
-                        |> fun x -> x.Parameter("limit", limit)
-                        |> fun x ->
-                            match pattern with
-                            | None -> x
-                            | Some(p) -> x.Parameter("pattern", p)
-
-                    let patternFilter =
-                        match pattern with
-                        | None -> String.Empty
-                        | Some(_) -> "AND CONTAINS(LOWER(p.title), LOWER($pattern))"
-
-                    let tagsFilter =
-                        if tags.IsEmpty then
-                            String.Empty
-                        else
-                            "AND ARRAY_SORT(ARRAY_INTERSECT(h.tags, $tags)) = ARRAY_SORT($tags)"
-
-                    let! result = cluster.QueryAsync<Head>
-                                      (sprintf "
-SELECT RAW h FROM `%s` h
-INNER JOIN `%s` p
-ON
-h.`commit`.target.id = p.id
-WHERE
-h.type = $head_type
-AND h.`commit`.target.type = $problem_set_type
-AND p.type = $problem_set_type
-AND ARRAY_CONTAINS($ids, h.id)
-%s
-%s
-OFFSET $offset
-LIMIT $limit
-" bucket.Name bucket.Name tagsFilter patternFilter,
-                                       queryOptions)
-                    let (headsAsync : IQueryResult<Head>) = result
-                    let heads =
-                        headsAsync
-                        |> AsyncSeq.ofAsyncEnum
-                        |> AsyncSeq.toBlockingSeq
-                    return Ok(heads |> List.ofSeq)
-                with ex -> return Result.Error(ex)
-            }
-
 type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: CouchbaseCluster) =
     let commonContext =  CommonContext<Report>(couchbaseBuckets) :> IContext<Report>
 
@@ -169,61 +112,6 @@ type ReportContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchba
             commonContext.Update(key, updater)
         member this.Update(key: IDocumentKey, updater: Report -> Report) =
             commonContext.Update(key, updater)
-
-        member this.Search(pattern, userId, reportIds, offset, limit) =
-            async {
-                try
-                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
-                    let! bucket = this.GetBucket()
-                    let queryOptions = 
-                        QueryOptions()
-                        |> fun x -> x.Parameter("report_type", ReportType.Instance.Value)
-                        |> fun x -> x.Parameter("generated_problem_set_type", GeneratedProblemSetType.Instance.Value)
-                        |> fun x ->
-                            match userId with
-                            | None -> x
-                            | Some(u) -> x.Parameter("userId", u.Value)
-                        |> fun x -> x.Parameter("ids", reportIds |> Seq.map(fun id -> id.Value) |> Array.ofSeq)
-                        |> fun x -> x.Parameter("offset", offset)
-                        |> fun x -> x.Parameter("limit", limit)
-                        |> fun x ->
-                            match pattern with
-                            | None -> x
-                            | Some(p) -> x.Parameter("pattern", p)
-
-                    let patternFilter =
-                        match pattern with
-                        | None -> String.Empty
-                        | Some(_) -> "AND CONTAINS(LOWER(g.title), LOWER($pattern))"
-
-                    let userFilter =
-                        match userId with
-                        | None -> String.Empty
-                        | Some(_) -> "AND r.permissions.owner_id = $userId"
-
-                    let! result = cluster.QueryAsync<Report>
-                                      (sprintf "
-SELECT RAW r FROM `%s` r
-INNER JOIN `%s` g
-ON
-r.generated_problem_set_id = g.id
-WHERE
-r.type = $report_type
-AND g.type = $generated_problem_set_type
-AND ARRAY_CONTAINS($ids, r.id)
-%s
-%s
-OFFSET $offset
-LIMIT $limit
-" bucket.Name bucket.Name patternFilter userFilter, queryOptions)
-                    let (reportsAsync : IQueryResult<Report>) = result
-                    let reports =
-                        reportsAsync
-                        |> AsyncSeq.ofAsyncEnum
-                        |> AsyncSeq.toBlockingSeq
-                    return Ok(reports |> List.ofSeq)
-                with ex -> return Result.Error(ex)
-            }
 
 type SubmissionContext = CommonContext<Submission>
 

@@ -12,6 +12,8 @@
     <Compile Include="CommonContext.fs" />
     <Compile Include="Contexts.fs" />
     <Compile Include="PermissionsContext.fs" />
+    <Compile Include="SearchInterfaces.fs" />
+    <Compile Include="Search.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CouchbaseNetClient" Version="3.0.0" />

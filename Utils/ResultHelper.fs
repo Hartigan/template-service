@@ -73,3 +73,16 @@ module ResultHelper =
                 | Result.Error(error) -> return Result.Error(error)
             }
 
+        static member Bind f ar =
+            async {
+                let! result = ar
+                return! f(result)
+            }
+
+        static member Map f ar =
+            async {
+                let! result = ar
+                return f(result)
+            }
+
+
