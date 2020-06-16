@@ -2,11 +2,11 @@ import * as React from 'react'
 import { makeStyles, Box, Container, IconButton } from '@material-ui/core';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import CreateGroupDialog from './CreateGroupDialog';
-import { PermissionsService } from '../../services/PermissionsService';
 import GroupExplorerView from './GroupExplorerView';
 import { GroupId } from '../../models/Identificators';
 import { Group } from '../../models/Permissions';
 import { isNull } from 'util';
+import { GroupService } from '../../services/GroupService';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -22,7 +22,7 @@ interface IState {
 }
 
 export interface IGroupsListViewProps {
-    permissionsService: PermissionsService;
+    groupService: GroupService;
     currentGroup: GroupId | null;
     onCurrentGroupChange: (groupId: GroupId) => void;
 }
@@ -44,7 +44,7 @@ export default function GroupsListView(props: IGroupsListViewProps) {
     };
 
     const fetchGroups = async () => {
-        let groups = await props.permissionsService.getGroups({
+        let groups = await props.groupService.getGroups({
             admin: true,
             read: false,
             write: false,
@@ -77,7 +77,7 @@ export default function GroupsListView(props: IGroupsListViewProps) {
                 </IconButton>
             </Container>
             <CreateGroupDialog
-                permissionsService={props.permissionsService}
+                groupService={props.groupService}
                 open={state.openCreateGroupDialog}
                 onClose={onCloseCreateGroupDialog} />
             <GroupExplorerView

@@ -1,7 +1,7 @@
 import { makeStyles, Dialog, DialogTitle, TextField, Container, Button } from "@material-ui/core";
 import React from "react";
-import { PermissionsService } from "../../services/PermissionsService";
 import { isNull } from "util";
+import { GroupService } from "../../services/GroupService";
 
 const useStyles = makeStyles({
 });
@@ -16,7 +16,7 @@ interface IState {
 export interface ICreateGroupDialogProps {
     open: boolean;
     onClose: () => void;
-    permissionsService: PermissionsService;
+    groupService: GroupService;
 }
 
 export default function CreateGroupDialog(props: ICreateGroupDialogProps) {
@@ -61,7 +61,7 @@ export default function CreateGroupDialog(props: ICreateGroupDialogProps) {
             return;
         }
 
-        await props.permissionsService.createGroup(state.name, state.desc);
+        await props.groupService.create(state.name, state.desc);
         clean();
         props.onClose();
     }

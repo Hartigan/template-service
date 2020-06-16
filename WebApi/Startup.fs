@@ -78,6 +78,7 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IGeneratorService, GeneratorService>()
         |> fun x -> x.AddSingleton<IViewFormatter, ViewFormatter>()
         |> fun x -> x.AddSingleton<IProblemsService, ProblemsService>()
+        |> fun x -> x.AddSingleton<IGroupService, GroupService>()
         |> fun x -> x.AddCors(fun options -> 
                 options.AddPolicy("_allowAll", fun builder ->
                         builder.WithOrigins("*")

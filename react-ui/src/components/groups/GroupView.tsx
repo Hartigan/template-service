@@ -1,12 +1,12 @@
 import { makeStyles, Paper, Grid, IconButton, List } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { PermissionsService } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
 import { Group, Access } from "../../models/Permissions";
 import UserSearchView from "../common/UserSearchView";
 import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "./MemberListItemView";
+import { GroupService } from "../../services/GroupService";
 
 
 
@@ -40,7 +40,7 @@ interface IState {
 }
 
 export interface IGroupViewProps {
-    permissionsService: PermissionsService;
+    groupService: GroupService;
     userService: UserService;
     groupId: GroupId;
 }
@@ -53,8 +53,8 @@ export default function GroupView(props: IGroupViewProps) {
     });
 
     const refresh = () => {
-        props.permissionsService
-            .getGroup(props.groupId)
+        props.groupService
+            .get(props.groupId)
             .then(group => {
                 setState({
                     ...state,
@@ -81,7 +81,7 @@ export default function GroupView(props: IGroupViewProps) {
             return;
         }
 
-        await props.permissionsService.addGroupMember(
+        await props.groupService.addMember(
                 props.groupId,
                 state.newUserId
             );
@@ -90,7 +90,7 @@ export default function GroupView(props: IGroupViewProps) {
     };
 
     const onRemove = async (userId: UserId) => {
-        await props.permissionsService.removeGroupMember(
+        await props.groupService.removeMember(
                 props.groupId,
                 userId
             );
@@ -99,7 +99,7 @@ export default function GroupView(props: IGroupViewProps) {
     };
 
     const onUpdateAccess = async (userId: UserId, access: Access) => {
-        await props.permissionsService.updateGroupMember(
+        await props.groupService.updateMember(
                 props.groupId,
                 userId,
                 access

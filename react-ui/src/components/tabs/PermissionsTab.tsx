@@ -7,6 +7,7 @@ import { FoldersService } from "../../services/FoldersService";
 import ExplorerView from "../files/ExplorerView";
 import PermissionsView from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
+import { GroupService } from "../../services/GroupService";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -33,6 +34,7 @@ export interface IPermissionsTabProps {
     userService: UserService;
     versionService: VersionService;
     foldersService: FoldersService;
+    groupService: GroupService;
 }
 
 export default function PermissionsTab(props: IPermissionsTabProps) {
@@ -63,6 +65,7 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
     const permissionsView = state.current ? (
         <PermissionsView
             userService={props.userService}
+            groupService={props.groupService}
             permissionsService={props.permissionsService}
             protectedItem={state.current}
             />

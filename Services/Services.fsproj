@@ -22,6 +22,7 @@
     <Compile Include="Problems/IGeneratorService.fs" />
     <Compile Include="Problems/IProblemsService.fs" />
     <Compile Include="Examination/IExaminationService.fs" />
+    <Compile Include="Permissions/IGroupService.fs" />
     <Compile Include="Permissions/IPermissionsService.fs" />
     <Compile Include="Permissions/IUserService.fs" />
     <Compile Include="Folders/FolderService.fs" />
@@ -33,6 +34,7 @@
     <Compile Include="Examination/ExaminationService.fs" />
     <Compile Include="Permissions/UserService.fs" />
     <Compile Include="Permissions/PermissionsService.fs" />
+    <Compile Include="Permissions/GroupService.fs" />
   </ItemGroup>
 
 </Project>

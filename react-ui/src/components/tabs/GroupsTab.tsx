@@ -1,10 +1,10 @@
 import { makeStyles, Grid } from "@material-ui/core";
 import React from "react";
 import GroupsListView from "../groups/GroupsListView";
-import { PermissionsService } from "../../services/PermissionsService";
 import GroupView from "../groups/GroupView";
 import { UserService } from "../../services/UserService";
 import { GroupId } from "../../models/Identificators";
+import { GroupService } from "../../services/GroupService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -26,7 +26,7 @@ interface IState {
 }
 
 export interface IGroupsTabProps {
-    permissionsService: PermissionsService;
+    groupService: GroupService;
     userService: UserService;
 }
 
@@ -48,7 +48,7 @@ export default function GroupsTab(props: IGroupsTabProps) {
     const groupView = state.currentGroup ? (
         <GroupView
             userService={props.userService}
-            permissionsService={props.permissionsService}
+            groupService={props.groupService}
             groupId={state.currentGroup}
             />
     ) : null;
@@ -57,7 +57,7 @@ export default function GroupsTab(props: IGroupsTabProps) {
         <Grid container className={classes.root}>
             <Grid item className={classes.tree}>
                 <GroupsListView
-                    permissionsService={props.permissionsService}
+                    groupService={props.groupService}
                     onCurrentGroupChange={changeCurrentGroup}
                     currentGroup={state.currentGroup} />
             </Grid>

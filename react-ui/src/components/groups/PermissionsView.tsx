@@ -9,6 +9,7 @@ import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "./MemberListItemView";
 import GroupSearchView from "../common/GroupSearchView";
 import GroupListItemView from "./GroupListItemView";
+import { GroupService } from "../../services/GroupService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -43,6 +44,7 @@ interface IState {
 
 export interface IPermissionsViewProps {
     permissionsService: PermissionsService;
+    groupService: GroupService;
     userService: UserService;
     protectedItem: Protected;
 }
@@ -162,7 +164,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                         <Grid container className={classes.search}>
                             <Grid item className={classes.searchCell}>
                                 <GroupSearchView
-                                    permissionsService={props.permissionsService}
+                                    groupService={props.groupService}
                                     onGroupSelected={setNewGroupId}
                                     />
                             </Grid>

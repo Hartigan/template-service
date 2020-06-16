@@ -14,6 +14,7 @@ import { PermissionsService } from './services/PermissionsService';
 import { UserService } from './services/UserService';
 import { ExaminationService } from './services/ExaminationService';
 import { User } from 'oidc-client';
+import { GroupService } from './services/GroupService';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -42,6 +43,7 @@ const problemSetService = new ProblemSetService(httpServiceFactory);
 const permissionsService = new PermissionsService(httpServiceFactory);
 const userService = new UserService(httpServiceFactory);
 const examinationService = new ExaminationService(httpServiceFactory);
+const groupService = new GroupService(httpServiceFactory);
 
 interface IState {
     isLoaded: boolean;
@@ -87,6 +89,7 @@ const App: React.FC = () => {
                     permissionsService={permissionsService}
                     userService={userService}
                     examinationService={examinationService}
+                    groupService={groupService}
                     isAdmin={state.user.profile.role === "admin"}
                     />
             );

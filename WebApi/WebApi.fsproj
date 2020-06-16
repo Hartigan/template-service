@@ -19,6 +19,7 @@
     <Compile Include="Controllers/ExaminationController.fs" />
     <Compile Include="Controllers/PermissionsController.fs" />
     <Compile Include="Controllers/UserController.fs" />
+    <Compile Include="Controllers/GroupController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

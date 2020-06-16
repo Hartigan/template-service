@@ -1,11 +1,11 @@
 import { makeStyles } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { PermissionsService } from "../../services/PermissionsService";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Group } from "../../models/Permissions";
 import { GroupId } from "../../models/Identificators";
+import { GroupService } from "../../services/GroupService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,7 +21,7 @@ interface IState {
 }
 
 export interface IGroupSearchViewProps {
-    permissionsService: PermissionsService;
+    groupService: GroupService;
     onGroupSelected: (groupId: GroupId | null) => void;
 }
 
@@ -39,7 +39,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
         let active = true;
 
         if (state.groups === null) {
-            props.permissionsService
+            props.groupService
                 .search(state.pattern, 0, 10)
                 .then(groups => {
                     if (active) {
