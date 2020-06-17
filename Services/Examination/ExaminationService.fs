@@ -92,7 +92,7 @@ type ExaminationService(reportContext: IReportContext,
                 )
                 |> List.ofSeq
             )
-            |> Async.BindResult(fun ids ->
+            |> Async.MapResultAsync(fun ids ->
                 reportSearch.Search(pattern, targetId, ids, offset, limit)
             )
             |> Async.MapResult(fun reports ->
@@ -114,7 +114,7 @@ type ExaminationService(reportContext: IReportContext,
             )
             |> Async.BindResult(fun ids ->
                 headSearch.SearchProblemSets(pattern, tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids, offset, limit)
-                |> Async.TryMapResult(fun heads ->
+                |> Async.Map(fun heads ->
                     heads
                     |> Seq.map HeadModel.Create
                     |> ResultOfSeq

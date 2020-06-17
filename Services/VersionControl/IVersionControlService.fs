@@ -10,3 +10,4 @@ type IVersionControlService =
     abstract member Create : ConcreteId * CommitDescription * UserId * HeadId -> Async<Result<CommitId, Exception>>
     abstract member Create : HeadName * ConcreteId * CommitDescription * UserId -> Async<Result<HeadId, Exception>>
     abstract member Update : HeadId * List<TagModel> -> Async<Result<unit, Exception>>
+    abstract member Search : UserId * string option * UserId option * List<TagModel> * offset:UInt32 * limit:UInt32 -> Async<Result<List<HeadModel> ,Exception>>

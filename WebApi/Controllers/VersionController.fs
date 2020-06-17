@@ -19,6 +19,19 @@ type UpdateTagsRequest = {
     Tags : List<TagModel>
 }
 
+type SearchHeadsRequest = {
+    [<JsonPropertyName("owner_id")>]
+    OwnerId : UserId option
+    [<JsonPropertyName("tags")>]
+    Tags : List<TagModel>
+    [<JsonPropertyName("pattern")>]
+    Pattern : string option
+    [<JsonPropertyName("offset")>]
+    Offset : uint32
+    [<JsonPropertyName("limit")>]
+    Limit : uint32
+}
+
 [<Authorize(Roles="admin")>]
 [<Route("version")>]
 type VersionController(foldersService: IFoldersService,
@@ -84,5 +97,18 @@ type VersionController(foldersService: IFoldersService,
             | Error(ex) ->
                 logger.LogError(ex, "Access denied")
                 return (UnauthorizedResult() :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpPost>]
+    [<Route("search")>]
+    member this.Search([<FromBody>] req: SearchHeadsRequest) =
+        async {
+            let userId = this.GetUserId()
+            match! versionControlService.Search(userId, req.Pattern, req.OwnerId, req.Tags, req.Offset, req.Limit) with
+            | Error(ex) ->
+                logger.LogError(ex, "Search of heads failed")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
         }
         |> Async.StartAsTask

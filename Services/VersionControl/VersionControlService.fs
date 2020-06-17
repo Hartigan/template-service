@@ -11,8 +11,30 @@ open Utils.ResultHelper
 
 type VersionControlService(commitContext: IContext<Commit>,
                            headContext: IHeadContext,
-                           permissionsService: IPermissionsService) =
+                           permissionsService: IPermissionsService,
+                           headSearch: IHeadSearch) =
     interface IVersionControlService with
+        member this.Search(userId, pattern, ownerId, tags, offset, limit) =
+            permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Head)
+            |> Async.MapResult(fun ids ->
+                ids
+                |> Seq.collect(fun id ->
+                    match id with
+                    | ProtectedId.Head(headId) -> Seq.singleton(headId)
+                    | _ -> Seq.empty
+                )
+                |> List.ofSeq
+            )
+            |> Async.BindResult(fun headIds ->
+                headSearch.Search(pattern, ownerId, tags |> List.map(fun x -> x.Value), headIds, offset, limit)
+                |> Async.Map(fun heads ->
+                    heads
+                    |> List.map HeadModel.Create
+                    |> ResultOfSeq
+                )
+            )
+
+
         member this.Update(headId, tags) = 
             headContext.Update(Head.CreateDocumentKey(headId), fun head ->
                 {
