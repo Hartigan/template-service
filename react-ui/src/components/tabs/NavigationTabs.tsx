@@ -3,8 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
 import EditorTab from './EditorTab';
 import { VersionService } from '../../services/VersionService';
 import { FoldersService } from '../../services/FoldersService';
@@ -18,26 +16,7 @@ import TrainTab from './TrainTab';
 import { ExaminationService } from '../../services/ExaminationService';
 import ReportsTab from './ReportsTab';
 import { GroupService } from '../../services/GroupService';
-
-interface ITabPanelProps {
-    children: Array<React.ReactNode> | React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function TabPanel(props: ITabPanelProps) {
-  const { children, value, index } = props;
-
-  return (
-    <Typography
-      component="div"
-      hidden={value !== index}
-      id={`nav-tabpanel-${index}`}
-    >
-      {value === index && <Box>{children}</Box>}
-    </Typography>
-  );
-}
+import { TabPanel } from '../common/TabPanel';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -98,6 +77,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
             foldersService={props.foldersService}
             problemsService={props.problemsService}
             problemSetService={props.problemSetService}
+            userService={props.userService}
             />
       </TabPanel>
       <TabPanel value={value} index={3}>

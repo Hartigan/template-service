@@ -74,10 +74,6 @@ export default function ReportsTab(props: IReportsTabProps) {
     });
 
     const onSearchUpdated = (value: string) => {
-        if (state.reports === null) {
-            return;
-        }
-
         setState({
             ...state,
             reports: null,

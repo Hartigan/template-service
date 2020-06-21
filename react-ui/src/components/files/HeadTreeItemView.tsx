@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { makeStyles, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
 import { HeadLink } from '../../models/Folder';
 import { FileExplorerState } from '../../states/FileExplorerState';
-import NoteIcon from '@material-ui/icons/Note';
-import ListAltIcon from '@material-ui/icons/ListAlt';
+import HeadLabelView from './HeadLabelView';
 
 const useStyles = makeStyles(theme => ({
     labelIcon: {
@@ -21,12 +20,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export interface IHeadViewProperties {
+export interface IHeadTreeItemViewProperties {
     head: HeadLink
     fileExplorerState: FileExplorerState;
 }
 
-export default function HeadView(props: IHeadViewProperties) {
+export default function HeadTreeItemView(props: IHeadTreeItemViewProperties) {
     const fileExplorerState = props.fileExplorerState;
 
     const onClick = () => {
@@ -35,30 +34,11 @@ export default function HeadView(props: IHeadViewProperties) {
 
     const classes = useStyles();
 
-    var icon = (<div/>);
-    switch (props.head.type) {
-        case "problem":
-            icon = (
-                <NoteIcon className={classes.labelIcon} />
-            );
-            break;
-        case "problem_set":
-            icon = (
-                <ListAltIcon className={classes.labelIcon} />
-            );
-            break;
-    }
-
     return (
         <TreeItem
             nodeId={props.head.id}
             label={
-                <div className={classes.labelRoot}>
-                    {icon}
-                    <Typography variant="body2" className={classes.labelText}>
-                        {props.head.name}
-                    </Typography>
-                </div>
+                <HeadLabelView head={props.head} />
             }
             onClick={onClick} />
     );

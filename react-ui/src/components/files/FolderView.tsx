@@ -3,7 +3,7 @@ import { makeStyles, Typography } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
 import { FolderLink, Folder } from '../../models/Folder';
 import { FoldersService } from '../../services/FoldersService';
-import HeadView from './HeadView';
+import HeadTreeItemView from './HeadTreeItemView';
 import { FileExplorerState } from '../../states/FileExplorerState';
 import { FolderId } from '../../models/Identificators';
 import { TargetType } from '../../models/Commit';
@@ -90,7 +90,7 @@ export default function FolderView(props: IFolderViewProperties) {
         });
         folder.heads.forEach(link => {
             nodes.push((
-                <HeadView
+                <HeadTreeItemView
                     key={link.id}
                     head={link}
                     fileExplorerState={props.fileExplorerState} />
