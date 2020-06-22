@@ -1,13 +1,16 @@
 import { makeStyles, Grid } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { PermissionsService, Protected } from "../../services/PermissionsService";
+import { PermissionsService } from "../../services/PermissionsService";
 import { UserService } from "../../services/UserService";
 import { FileExplorerState } from "../../states/FileExplorerState";
 import { FoldersService } from "../../services/FoldersService";
-import ExplorerView from "../files/ExplorerView";
 import PermissionsView from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
 import { GroupService } from "../../services/GroupService";
+import { ProblemsService } from "../../services/ProblemsService";
+import FileTreeView from "../files/FileTreeView";
+import { ProblemSetService } from "../../services/ProblemSetService";
+import { HeadLink } from "../../models/Folder";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -25,7 +28,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface IState {
-    current: Protected | null;
+    current: HeadLink | null;
     tree: FileExplorerState;
 }
 
@@ -35,6 +38,8 @@ export interface IPermissionsTabProps {
     versionService: VersionService;
     foldersService: FoldersService;
     groupService: GroupService;
+    problemsService: ProblemsService;
+    problemSetService: ProblemSetService;
 }
 
 export default function PermissionsTab(props: IPermissionsTabProps) {
@@ -44,7 +49,7 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
         tree: new FileExplorerState(props.foldersService)
     });
 
-    const changeCurrent = (current: Protected) => {
+    const changeCurrent = (current: HeadLink | null) => {
         setState({
             ...state,
             current: current
@@ -53,7 +58,7 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
 
     useEffect(() => {
         let protectedSub = state.tree
-            .currentProtectedChanged()
+            .currentHeadChanged()
             .subscribe(changeCurrent);
         return () => {
             protectedSub.unsubscribe();
@@ -67,16 +72,21 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
             userService={props.userService}
             groupService={props.groupService}
             permissionsService={props.permissionsService}
-            protectedItem={state.current}
+            protectedItem={{ id: state.current.id, type: "head"}}
+            title={state.current.name}
             />
     ) : null;
 
     return (
         <Grid container className={classes.root}>
             <Grid item className={classes.tree}>
-                <ExplorerView
+                <FileTreeView
+                    hideToolbar={true}
                     versionService={props.versionService}
                     foldersService={props.foldersService}
+                    problemsService={props.problemsService}
+                    problemSetService={props.problemSetService}
+                    userService={props.userService}
                     state={state.tree} />
             </Grid>
             <Grid item className={classes.content}>

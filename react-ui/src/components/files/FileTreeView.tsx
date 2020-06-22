@@ -35,6 +35,7 @@ interface IState {
 }
 
 export interface IFileTreeViewProps {
+    hideToolbar?: boolean;
     foldersService: FoldersService;
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
@@ -96,7 +97,7 @@ export default function FileTreeView(props: IFileTreeViewProps) {
             <TabPanel
                 value={state.selectedTab}
                 index={0}>
-                <Container>
+                <Container hidden={props.hideToolbar}>
                     <IconButton
                         color="primary" aria-label="Create folder"
                         onClick={() => setOpenCreateFolderDialog(true)}>

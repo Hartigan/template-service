@@ -11,6 +11,7 @@ import { Report } from "../../models/Report";
 import ReportDialog from "../common/ReportDialog";
 import TagsEditorView from "../utils/TagsEditorView";
 import SearchField from "../common/SearchField";
+import { SearchNavigationView } from "../common/SearchNavigationView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -28,7 +29,11 @@ const useStyles = makeStyles(theme => ({
     list: {
         margin: "auto",
         width: "60%"
-    }
+    },
+    searchNavigation: {
+        margin: "auto",
+        width: "auto"
+    },
 }));
 
 interface IState {
@@ -38,7 +43,9 @@ interface IState {
     problemSets: Array<Head> | null;
     searchString: string; 
     searchTags: Array<string>;
-}
+    searchPage: number;
+    searchLimit: number;
+};
 
 export interface ITrainTabProps {
     examinationService: ExaminationService;
@@ -52,11 +59,18 @@ export default function TrainTab(props: ITrainTabProps) {
         problemSets: null,
         report: null,
         searchTags: [],
-        searchString: ""
+        searchString: "",
+        searchPage: 1,
+        searchLimit: 10
     });
 
     const fetchProblemSets = async () => {
-        let problemSets = await props.examinationService.getProblemSets(state.searchString, state.searchTags, 0, 10);
+        let problemSets = await props.examinationService.getProblemSets(
+            state.searchString,
+            state.searchTags,
+            (state.searchPage - 1) * state.searchLimit,
+            state.searchLimit
+        );
         setState({
             ...state,
             problemSets: problemSets,
@@ -82,6 +96,22 @@ export default function TrainTab(props: ITrainTabProps) {
     });
 
     const classes = useStyles();
+
+    const onPageChanged = (page: number) => {
+        setState({
+            ...state,
+            problemSets: null,
+            searchPage: page
+        });
+    };
+
+    const onLimitChanged = (limit: number) => {
+        setState({
+            ...state,
+            problemSets: null,
+            searchLimit: limit
+        });
+    };
 
     const onShowSubmission = async (submissionId: SubmissionId) => {
         let submission = await props.examinationService.getSubmission(submissionId);
@@ -194,6 +224,13 @@ export default function TrainTab(props: ITrainTabProps) {
                         placeholder="search..."
                         color="primary"
                         onSearch={(v) => onSearchUpdated(v)}
+                        />
+                    <SearchNavigationView
+                        className={classes.searchNavigation}
+                        page={state.searchPage}
+                        size={state.searchLimit}
+                        onPageChanged={onPageChanged}
+                        onSizeChanged={onLimitChanged}
                         />
                     <ProblemSetsListView
                         examinationService={props.examinationService}

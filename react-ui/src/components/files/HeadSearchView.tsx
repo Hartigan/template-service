@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { makeStyles, Box } from '@material-ui/core';
+import { makeStyles, Box, Container } from '@material-ui/core';
 import { FileExplorerState } from '../../states/FileExplorerState';
 import { VersionService } from '../../services/VersionService';
 import { UserId } from '../../models/Identificators';
@@ -9,6 +9,7 @@ import UserSearchView from '../common/UserSearchView';
 import { UserService } from '../../services/UserService';
 import SearchField from '../common/SearchField';
 import HeadsListView from './HeadsListView';
+import { SearchNavigationView } from '../common/SearchNavigationView';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,8 +18,8 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'left'
     },
     search: {
-        margin: "auto",
-        padding: "10px"
+        padding: "10px",
+        width: "100%"
     },
     searchItem: {
         margin: "auto",
@@ -28,6 +29,11 @@ const useStyles = makeStyles(theme => ({
         margin: "20px 0px 0px 0px",
         width: "100%"
     },
+    searchNavigation: {
+        margin: "auto",
+        width: "100%",
+        textAlign: "center"
+    },
 }));
 
 interface IState {
@@ -35,6 +41,8 @@ interface IState {
     pattern: string;
     ownerId: UserId | null;
     heads: Array<Head> | null;
+    page: number;
+    limit: number;
 }
 
 export interface IHeadSearchViewProps {
@@ -49,7 +57,9 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
         tags: [],
         pattern: "",
         ownerId: null,
-        heads: null
+        heads: null,
+        page: 1,
+        limit: 10
     });
 
     React.useEffect(() => {
@@ -57,7 +67,13 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
 
         if (state.heads === null) {
             props.versionService
-                .search(state.ownerId, state.tags, state.pattern, 0, 10)
+                .search(
+                    state.ownerId,
+                    state.tags,
+                    state.pattern,
+                    (state.page - 1) * state.limit,
+                    state.limit
+                )
                 .then(heads => {
                     if (canUpdate) {
                         setState({
@@ -107,11 +123,27 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
         });
     };
 
+    const onPageChanged = (page: number) => {
+        setState({
+            ...state,
+            heads: null,
+            page: page
+        });
+    };
+
+    const onLimitChanged = (limit: number) => {
+        setState({
+            ...state,
+            heads: null,
+            limit: limit
+        });
+    };
+
     const classes = useStyles();
 
     return (
         <Box className={classes.root}>
-            <Box className={classes.search}>
+            <Container className={classes.search}>
                 <div className={classes.searchItem}>
                     <TagsEditorView
                         tags={state.tags}
@@ -133,7 +165,14 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
                         onSearch={onSearchUpdated}
                         />
                 </div>
-            </Box>
+                <SearchNavigationView
+                    className={classes.searchNavigation}
+                    page={state.page}
+                    size={state.limit}
+                    onPageChanged={onPageChanged}
+                    onSizeChanged={onLimitChanged}
+                    />
+            </Container>
             <HeadsListView
                 heads={state.heads ? state.heads : []}
                 state={props.state}

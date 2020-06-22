@@ -87,7 +87,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
             renderInput={params => (
                 <TextField
                     {...params}
-                    label="Name"
+                    label="Group"
                     fullWidth
                     variant="outlined"
                     value={state.pattern}

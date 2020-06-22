@@ -7,6 +7,7 @@ import { UserService } from "../../services/UserService";
 import UserSearchView from "../common/UserSearchView";
 import ReportsListView from "../reports/ReportsListView";
 import SearchField from "../common/SearchField";
+import { SearchNavigationView } from "../common/SearchNavigationView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -27,6 +28,10 @@ const useStyles = makeStyles(theme => ({
         width: "320px",
         margin: "10px",
     },
+    searchNavigation: {
+        margin: "auto",
+        width: "auto"
+    },
     list: {
         margin: "auto",
         width: "60%"
@@ -38,6 +43,8 @@ interface IState {
     search : {
         userId: UserId | null;
         pattern: string;
+        page: number;
+        limit: number;
     }
 }
 
@@ -53,11 +60,18 @@ export default function ReportsTab(props: IReportsTabProps) {
         search: {
             userId: null,
             pattern: "",
+            page: 1,
+            limit: 10
         }
     });
 
     const fetchReports = async () => {
-        const reportIds = await props.examinationService.getReports(state.search.pattern, state.search.userId, 0, 100);
+        const reportIds = await props.examinationService.getReports(
+            state.search.pattern,
+            state.search.userId,
+            (state.search.page - 1) * state.search.limit,
+            state.search.limit
+        );
 
         let reports = await Promise.all(reportIds.map(id => props.examinationService.getReport(id)));
 
@@ -95,6 +109,28 @@ export default function ReportsTab(props: IReportsTabProps) {
         })
     };
 
+    const onPageChanged = (page: number) => {
+        setState({
+            ...state,
+            reports: null,
+            search: {
+                ...state.search,
+                page: page
+            }
+        })
+    };
+
+    const onLimitChanged = (limit: number) => {
+        setState({
+            ...state,
+            reports: null,
+            search: {
+                ...state.search,
+                limit: limit
+            }
+        })
+    };
+
     const classes = useStyles();
 
     return (
@@ -111,6 +147,13 @@ export default function ReportsTab(props: IReportsTabProps) {
                     placeholder="search..."
                     color="primary"
                     onSearch={(v) => onSearchUpdated(v)}
+                    />
+                <SearchNavigationView
+                    className={classes.searchNavigation}
+                    page={state.search.page}
+                    size={state.search.limit}
+                    onPageChanged={onPageChanged}
+                    onSizeChanged={onLimitChanged}
                     />
                 <ReportsListView
                     examinationService={props.examinationService}

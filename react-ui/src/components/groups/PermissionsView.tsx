@@ -1,4 +1,4 @@
-import { makeStyles, Paper, Grid, IconButton, List } from "@material-ui/core";
+import { makeStyles, Paper, Grid, IconButton, List, Typography } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { PermissionsService, Protected } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
@@ -6,6 +6,7 @@ import { Access, Permissions } from "../../models/Permissions";
 import UserSearchView from "../common/UserSearchView";
 import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import MemberListItemView from "./MemberListItemView";
 import GroupSearchView from "../common/GroupSearchView";
 import GroupListItemView from "./GroupListItemView";
@@ -23,6 +24,9 @@ const useStyles = makeStyles(theme => ({
         width: "100%",
     },
     membersList: {
+        width: "100%",
+    },
+    title: {
         width: "100%",
     },
     search: {
@@ -47,6 +51,7 @@ export interface IPermissionsViewProps {
     groupService: GroupService;
     userService: UserService;
     protectedItem: Protected;
+    title: string;
 }
 
 export default function PermissionsView(props: IPermissionsViewProps) {
@@ -162,6 +167,11 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                 <Grid container>
                     <Grid item className={classes.header}>
                         <Grid container className={classes.search}>
+                            <Grid item className={classes.title}>
+                                <Typography variant="h5">
+                                    {props.title}
+                                </Typography>
+                            </Grid>
                             <Grid item className={classes.searchCell}>
                                 <GroupSearchView
                                     groupService={props.groupService}
@@ -172,7 +182,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                                 <IconButton
                                     color="primary" aria-label="Add group"
                                     onClick={() => addGroup()}>
-                                    <PersonAddIcon />
+                                    <GroupAddIcon />
                                 </IconButton>
                             </Grid>
                         </Grid>

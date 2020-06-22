@@ -93,6 +93,8 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           userService={props.userService}
           versionService={props.versionService}
           foldersService={props.foldersService}
+          problemsService={props.problemsService}
+          problemSetService={props.problemSetService}
           />
       </TabPanel>
     </div>
