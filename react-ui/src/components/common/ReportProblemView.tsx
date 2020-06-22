@@ -2,7 +2,7 @@ import { makeStyles, Typography, Card, CardActionArea, CardContent } from "@mate
 import React from "react";
 import { ProblemReport } from "../../models/Report";
 import ProblemView from "../train/ProblemView";
-import DateView from "../utils/DateView";
+import TimeSpanView from "../utils/TimeSpanView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportProblemViewProps {
+    startTime: Date;
     problem: ProblemReport;
 }
 
@@ -46,7 +47,7 @@ export default function ReportProblemView(props: IReportProblemViewProps) {
                         Answer timestamp
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.problem.timestamp ? (<DateView date={props.problem.timestamp}/>) : "Skipped"}
+                        {props.problem.timestamp ? (<TimeSpanView fromDate={props.startTime} toDate={props.problem.timestamp}/>) : "Skipped"}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Expected answer

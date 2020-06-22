@@ -69,6 +69,7 @@ export default function ReportDialog(props: IReportDialogProps) {
                                     key={"problem_" + problem.id}
                                     >
                                     <ReportProblemView
+                                        startTime={props.report.started_at}
                                         problem={problem}
                                         />
                                 </ListItem>
