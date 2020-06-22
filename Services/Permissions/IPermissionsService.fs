@@ -12,6 +12,7 @@ type IPermissionsService =
     abstract member Get : UserId * AccessModel * ProtectedType -> Async<Result<List<ProtectedId>, Exception>>
     abstract member Get : UserId * AccessModel -> Async<Result<List<GroupModel>, Exception>>
     abstract member Get : ProtectedId -> Async<Result<PermissionsModel, Exception>>
+    abstract member Get : UserId * ProtectedId -> Async<Result<AccessModel, Exception>>
     abstract member Update : ProtectedId * UserId * AccessModel -> Async<Result<unit, Exception>>
     abstract member Update : ProtectedId * GroupId * AccessModel -> Async<Result<unit, Exception>>
     abstract member Share : ProtectedId * UserId -> Async<Result<unit, Exception>>

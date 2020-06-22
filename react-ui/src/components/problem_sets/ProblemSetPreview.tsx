@@ -13,6 +13,8 @@ import SlotsListView from "./SlotsListView";
 import ProblemPreview from "./ProblemPreview";
 import EditProblemSetDialog from "./EditProblemSetDialog";
 import { FoldersService } from "../../services/FoldersService";
+import { Access } from "../../models/Permissions";
+import { PermissionsService } from "../../services/PermissionsService";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -38,7 +40,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface IState {
-    problemSet: ProblemSet | null;
+    problemSet: {
+        value: ProblemSet;
+        access: Access;
+    } | null;
     selectedSlot: number | null;
     selectedProblemInSlot: number | null;
     preview: Problem | null;
@@ -52,6 +57,7 @@ export interface IProblemSetPreviewProps {
     versionService: VersionService;
     foldersService: FoldersService;
     fileExplorerState: FileExplorerState;
+    permissionsService: PermissionsService;
 }
 
 export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
@@ -64,20 +70,28 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
         editOpened: false
     });
 
+    const fetchProblemSet = async (commit: Commit) => {
+        const problemSet = await props.problemSetService.get(props.commit.id);
+        const access = await props.permissionsService.getAccess({ id: props.commit.head_id, type: "head" });
+        return {
+            value: problemSet,
+            access: access
+        };
+    };
+
     useEffect(() => {
         let canUpdate = true;
 
         const problemId : ProblemSetId = props.commit.target.id;
 
-        if (state.problemSet === null || state.problemSet.id !== problemId) {
-            props.problemSetService
-                .get(props.commit.id)
+        if (state.problemSet === null || state.problemSet.value.id !== problemId) {
+            fetchProblemSet(props.commit)
                 .then(problemSet => {
                     if (canUpdate) {
                         setState({
                             ...state,
                             problemSet: problemSet
-                        })
+                        });
                     }
                 });
         }
@@ -88,7 +102,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
             state.preview === null) {
 
             props.versionService
-                .getHead(state.problemSet.slots[state.selectedSlot].head_ids[state.selectedProblemInSlot])
+                .getHead(state.problemSet.value.slots[state.selectedSlot].head_ids[state.selectedProblemInSlot])
                 .then(head => {
                     props.problemsService
                         .get(head.commit.id)
@@ -160,6 +174,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
             <Container>
                 <IconButton
                     onClick={onEdit}
+                    disabled={!state.problemSet.access.write}
                     color="primary"
                     aria-label="Edit">
                     <EditIcon />
@@ -168,7 +183,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
             <EditProblemSetDialog
                 open={state.editOpened}
                 headId={props.commit.head_id}
-                problemSet={state.problemSet}
+                problemSet={state.problemSet.value}
                 onClose={() => setState({...state, editOpened: false})}
                 versionService={props.versionService}
                 foldersService={props.foldersService}
@@ -194,7 +209,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             Title
                         </Typography>
                         <Typography variant="h5" component="h2">
-                            {state.problemSet.title}
+                            {state.problemSet.value.title}
                         </Typography>
                     </Box>
                 </ListItem>
@@ -204,14 +219,14 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             Diration
                         </Typography>
                         <Typography variant="h5" component="h2">
-                            {state.problemSet.duration / 60} min
+                            {state.problemSet.value.duration / 60} min
                         </Typography>
                     </Box>
                 </ListItem>
                 <Grid container className={classes.listContainer}>
                     <Grid item className={classes.problemsList}>
                         <SlotsListView
-                            slots={state.problemSet.slots}
+                            slots={state.problemSet.value.slots}
                             selectedSlot={state.selectedSlot}
                             selectedProblemInSlot={state.selectedProblemInSlot}
                             versionService={props.versionService}

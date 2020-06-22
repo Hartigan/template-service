@@ -74,6 +74,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
       <TabPanel value={value} index={2}>
         <EditorTab
             versionService={props.versionService}
+            permissionsService={props.permissionsService}
             foldersService={props.foldersService}
             problemsService={props.problemsService}
             problemSetService={props.problemSetService}

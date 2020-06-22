@@ -8,6 +8,7 @@ import { FileExplorerState } from "../../states/FileExplorerState";
 import FileTreeView from "../files/FileTreeView";
 import FilePreview from "../files/FilePreview";
 import { UserService } from "../../services/UserService";
+import { PermissionsService } from "../../services/PermissionsService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -30,6 +31,7 @@ export interface IEditorTabProps {
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
     userService: UserService;
+    permissionsService: PermissionsService;
 }
 
 export default function EditorTab(props: IEditorTabProps) {
@@ -55,6 +57,7 @@ export default function EditorTab(props: IEditorTabProps) {
                     problemsService={props.problemsService}
                     foldersService={props.foldersService}
                     problemSetService={props.problemSetService}
+                    permissionsService={props.permissionsService}
                     versionService={props.versionService} />
             </Grid>
         </Grid>

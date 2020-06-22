@@ -44,6 +44,20 @@ type AccessModel =
             Admin = true
         }
 
+    static member CanAll = {
+            AccessModel.Generate = true
+            Read = true
+            Write = true
+            Admin = true
+        }
+    
+    static member CanNothing = {
+            AccessModel.Generate = false
+            Read = false
+            Write = false
+            Admin = false
+        }
+
     static member Create(access: uint64) : AccessModel =
         {
             AccessModel.Generate    = (access &&& (1UL <<< 0)) <> 0UL
@@ -51,6 +65,12 @@ type AccessModel =
             Write                   = (access &&& (1UL <<< 2)) <> 0UL
             Admin                   = (access &&& (1UL <<< 3)) <> 0UL
         }
+
+    static member (|||)(left: AccessModel, right: AccessModel) =
+        AccessModel.Create(left.ToFlags() ||| right.ToFlags())
+
+    static member (&&&)(left: AccessModel, right: AccessModel) =
+        AccessModel.Create(left.ToFlags() &&& right.ToFlags())
 
     member this.IsAllowed(access: AccessModel) =
         let thisFlags = this.ToFlags()

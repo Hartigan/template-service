@@ -74,6 +74,24 @@ type PermissionsController(permissionsService: IPermissionsService,
                         return (JsonResult(model) :> IActionResult)
         }
 
+    [<HttpGet>]
+    [<Route("access")>]
+    member this.GetAccess([<FromQuery(Name = "id")>] id: string, [<FromQuery(Name = "type")>] typeName: string) =
+        async {
+            match ProtectedId.Create(id, typeName) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot create protected id")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(protectedId) ->
+                let userId = this.GetUserId()
+                match! permissionsService.Get(userId, protectedId) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot get access model")
+                    return (UnauthorizedResult() :> IActionResult)
+                | Ok(model) ->
+                    return (JsonResult(model) :> IActionResult)
+        }
+
     [<HttpPost>]
     [<Route("update_permissions_group")>]
     member this.UpdatePermissionsGroup

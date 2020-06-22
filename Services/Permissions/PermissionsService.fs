@@ -61,42 +61,35 @@ type PermissionsService(userService: IUserService,
         |> Seq.map(this.CreateGroupAccessModel)
         |> ResultOfAsyncSeq
 
-    member this.CheckPermissions(permissions: Permissions, userId: UserId, access: AccessModel): Async<Result<unit, Exception>> = 
+    member this.GetAccess(permissions: Permissions, userId: UserId): Async<Result<AccessModel, Exception>> = 
         let ownerId = permissions.OwnerId
 
         if (ownerId = userId) then
-            async.Return(Ok())
+            async.Return(Ok(AccessModel.CanAll))
         else
-            let isDirectAccess =
+            let directAccess =
                 permissions.Members
-                |> Seq.exists(fun m ->
-                    let memberId = m.UserId
-                    let hasAccess = AccessModel.Create(m.Access).IsAllowed(access)
-                    memberId = userId && hasAccess
-                )
+                |> Seq.tryFind(fun m -> m.UserId = userId)
+                |> Option.map(fun m -> AccessModel.Create(m.Access))
+                |> Option.defaultValue(AccessModel.CanNothing)
 
-            if isDirectAccess then
-                async.Return(Ok())
-            else
-                permissions.Groups
-                |> Seq.filter(fun group -> AccessModel.Create(group.Access).IsAllowed(access))
-                |> Seq.map(fun group -> groupContext.Get(UserGroup.CreateDocumentKey(group.GroupId)))
-                |> ResultOfAsyncSeq
-                |> Async.TryMapResult(fun groupsResults ->
-                    let groupAccess =
-                        groupsResults
-                        |> Seq.collect(fun group -> group.Members)
-                        |> Seq.exists(fun m ->
-                            let memberId = m.UserId
-                            let hasAccess = AccessModel.Create(m.Access).IsAllowed(access)
-                            memberId = userId && hasAccess
-                        )
-
-                    if groupAccess then
-                        Ok()
-                    else
-                        Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
+            permissions.Groups
+            |> Seq.map(fun group ->
+                groupContext.Get(UserGroup.CreateDocumentKey(group.GroupId))
+                |> Async.MapResult(fun g -> (g, AccessModel.Create(group.Access)))
+            )
+            |> ResultOfAsyncSeq
+            |> Async.MapResult(fun groupsResults ->
+                groupsResults
+                |> Seq.map(fun (g, a) ->
+                    g.Members
+                    |> Seq.tryFind(fun m -> m.UserId = userId)
+                    |> Option.map(fun m -> AccessModel.Create(m.Access))
+                    |> Option.defaultValue(AccessModel.CanNothing)
+                    |> fun x -> x &&& a
                 )
+                |> Seq.fold(|||) directAccess
+            )
 
     member this.GetPermissions(protectedId: ProtectedId) =
         match protectedId with
@@ -113,6 +106,12 @@ type PermissionsService(userService: IUserService,
         | ProtectedId.Report(id) -> permissionsContext.Update(Report.CreateDocumentKey(id), updater)
 
     interface IPermissionsService with
+        member this.Get(userId: UserId, protectedId: ProtectedId) =
+            this.GetPermissions(protectedId)
+            |> Async.BindResult(fun permissions ->
+                this.GetAccess(permissions, userId)
+            )
+
         member this.Remove(id: ProtectedId) =
             let rawId =
                 match id with
@@ -199,9 +198,9 @@ type PermissionsService(userService: IUserService,
                     this.GetPermissions(id)
                     |> Async.BindResult(fun permissions ->
                         async {
-                            match! this.CheckPermissions(permissions, userId, access) with
+                            match! this.GetAccess(permissions, userId) with
                             | Error(_) -> return Ok(false)
-                            | Ok() -> return Ok(true)
+                            | Ok(currentAccess) -> return Ok(currentAccess.IsAllowed(access))
                         }
                     )
                     |> Async.MapResult(fun hasPermissions -> (id, hasPermissions))
@@ -268,7 +267,15 @@ type PermissionsService(userService: IUserService,
 
         member this.CheckPermissions(protectedId : ProtectedId, userId, access) =
             this.GetPermissions(protectedId)
-            |> Async.BindResult(fun permissions -> this.CheckPermissions(permissions, userId, access))
+            |> Async.BindResult(fun permissions ->
+                this.GetAccess(permissions, userId)
+            )
+            |> Async.TryMapResult(fun x ->
+                if x.IsAllowed(access) then
+                    Ok()
+                else
+                    Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
+            )
 
         member this.Add(id: ProtectedId, userId: UserId) =
             let protectedItem = id.ToEntity()

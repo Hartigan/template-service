@@ -16,6 +16,8 @@ import SaveIcon from '@material-ui/icons/Save';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import { GeneratedProblem } from "../../models/GeneratedProblem";
 import TestProblemDialog from "./TestProblemDialog";
+import { PermissionsService } from "../../services/PermissionsService";
+import { Access } from "../../models/Permissions";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -35,7 +37,10 @@ const useStyles = makeStyles(theme => ({
 interface IProblemEditorState {
     description: string;
     disabled: boolean;
-    problem: Problem | null;
+    problem: {
+        value: Problem;
+        access: Access;
+    } | null;
     generatedProblem: GeneratedProblem | null;
     testProblemDialogOpened: boolean;
 }
@@ -43,6 +48,7 @@ interface IProblemEditorState {
 export interface IProblemEditorProps {
     commit: Commit;
     problemsService: ProblemsService;
+    permissionsService: PermissionsService;
     fileExplorerState: FileExplorerState;
 }
 
@@ -56,22 +62,35 @@ export default function ProblemEditor(props: IProblemEditorProps) {
         generatedProblem: null
     });
 
-    const sync = (commit: Commit) => {
-        props.problemsService
-            .get(commit.id)
-            .then(problem => {
-                setState({
-                    ...state,
-                    problem: problem
-                });
-            });
+    const fetchProblem = async (commit: Commit) => {
+        const problem = await props.problemsService.get(commit.id);
+        const access = await props.permissionsService.getAccess({ id: commit.head_id, type: "head" });
+        return {
+            value: problem,
+            access: access
+        };
     };
 
     useEffect(() => {
-        if (state.problem !== null && state.problem.id === props.commit.target.id) {
+        if (state.problem !== null && state.problem?.value.id === props.commit.target.id) {
             return;
         }
-        sync(props.commit);
+
+        let canUpdate = true;
+
+        fetchProblem(props.commit)
+            .then(problem => {
+                if (canUpdate) {
+                    setState({
+                        ...state,
+                        problem: problem
+                    });
+                }
+            })
+
+        return () => {
+            canUpdate = false;
+        }
     });
 
     const setTitle = (value: string) => {
@@ -80,7 +99,10 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                 ...state,
                 problem: {
                     ...state.problem,
-                    title: value
+                    value: {
+                        ...state.problem.value,
+                        title: value
+                    }
                 }
             });
         }
@@ -92,7 +114,10 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                 ...state,
                 problem: {
                     ...state.problem,
-                    controller: value
+                    value: {
+                        ...state.problem.value,
+                        controller: value
+                    }
                 }
             });
         }
@@ -104,7 +129,10 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                 ...state,
                 problem: {
                     ...state.problem,
-                    view: value
+                    value: {
+                        ...state.problem.value,
+                        view: value
+                    }
                 }
             });
         }
@@ -116,23 +144,22 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                 ...state,
                 problem: {
                     ...state.problem,
-                    validator: value
+                    value: {
+                        ...state.problem.value,
+                        validator: value
+                    }
                 }
             });
         }
     };
 
     const onCancel = () => {
-        props.problemsService
-            .get(props.commit.id)
-            .then(problem => {
-                setState({
-                    ...state,
-                    problem: problem,
-                    disabled: true,
-                    description: props.commit.description
-                });
-            });
+        setState({
+            ...state,
+            problem: null,
+            disabled: true,
+            description: props.commit.description
+        });
     };
 
     const onEdit = () => {
@@ -150,10 +177,12 @@ export default function ProblemEditor(props: IProblemEditorProps) {
         await props.problemsService.update(
             props.commit.head_id,
             state.description,
-            state.problem
+            state.problem.value
         );
+
         setState({
             ...state,
+            problem: null,
             disabled: true
         });
         props.fileExplorerState.syncHead(props.commit.head_id);
@@ -211,7 +240,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                     <IconButton
                         onClick={onEdit}
                         color="primary"
-                        disabled={!state.disabled}
+                        disabled={!state.disabled || !state.problem.access.write}
                         aria-label="Edit">
                         <EditIcon />
                     </IconButton>
@@ -247,26 +276,26 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                         <FormControl className={classes.formControl}>
                             <TextField
                                 label="Title"
-                                value={state.problem.title}
+                                value={state.problem.value.title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 disabled={state.disabled} />
                         </FormControl>
                     </ListItem>
                     <ListItem>
                         <ControllerEditor
-                            value={state.problem.controller}
+                            value={state.problem.value.controller}
                             onChange={(v) => setController(v)}
                             disabled={state.disabled} />
                     </ListItem>
                     <ListItem>
                         <ViewEditor
-                            value={state.problem.view}
+                            value={state.problem.value.view}
                             onChange={(v) => setView(v)}
                             disabled={state.disabled} />
                     </ListItem>
                     <ListItem>
                         <ValidatorEditor
-                            value={state.problem.validator}
+                            value={state.problem.value.validator}
                             onChange={(v) => setValidator(v)}
                             disabled={state.disabled} />
                     </ListItem>

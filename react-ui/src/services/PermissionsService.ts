@@ -22,6 +22,10 @@ export class PermissionsService {
         return this.http.get<Permissions>(`permissions?id=${item.id}&type=${item.type}`);
     }
 
+    getAccess(item: Protected) {
+        return this.http.get<Access>(`access?id=${item.id}&type=${item.type}`);
+    }
+
     updatePermissionsGroup(item: Protected, groupId: GroupId, access: Access) {
         return this.http.post<void>(`update_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId, access: access });
     }

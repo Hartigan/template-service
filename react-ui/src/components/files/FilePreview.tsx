@@ -10,6 +10,7 @@ import { ProblemSetService } from "../../services/ProblemSetService";
 import { FoldersService } from "../../services/FoldersService";
 import { Head } from "../../models/Head";
 import TagsEditorView from "../utils/TagsEditorView";
+import { PermissionsService } from "../../services/PermissionsService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -28,6 +29,7 @@ export interface IFilePreviewProps {
     foldersService: FoldersService;
     versionService: VersionService;
     problemsService: ProblemsService;
+    permissionsService: PermissionsService;
 }
 
 export default function FilePreview(props: IFilePreviewProps) {
@@ -81,6 +83,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                         <ProblemEditor
                             commit={state.head.commit}
                             fileExplorerState={props.fileExplorerState}
+                            permissionsService={props.permissionsService}
                             problemsService={props.problemsService} />
                     );
                 case "problem_set":
@@ -91,6 +94,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                             versionService={props.versionService}
                             foldersService={props.foldersService}
                             problemSetService={props.problemSetService}
+                            permissionsService={props.permissionsService}
                             problemsService={props.problemsService} />
                     );
             }
