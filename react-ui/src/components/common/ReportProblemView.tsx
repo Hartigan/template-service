@@ -23,6 +23,7 @@ const useStyles = makeStyles(theme => ({
 export interface IReportProblemViewProps {
     startTime: Date;
     problem: ProblemReport;
+    index: number;
 }
 
 export default function ReportProblemView(props: IReportProblemViewProps) {
@@ -34,7 +35,7 @@ export default function ReportProblemView(props: IReportProblemViewProps) {
             <CardActionArea>
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="h2">
-                        {props.problem.title}
+                        {props.index}. {props.problem.title}
                     </Typography>
                     <ProblemView view={props.problem.view} />
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
