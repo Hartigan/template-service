@@ -7,6 +7,5 @@ export interface SubmissionPreview {
     deadline: Date;
     title: string;
     completed: boolean;
-    report_id: ReportId | null;
     author: User;
 }

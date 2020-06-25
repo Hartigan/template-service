@@ -1,4 +1,4 @@
-import { makeStyles, Box, Card, CardContent, Typography, CardActions, Button } from "@material-ui/core";
+import { makeStyles, Button, TableCell, TableRow } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { CommitId, SubmissionId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";
@@ -7,21 +7,9 @@ import { Head } from "../../models/Head";
 import TagsView from "../utils/TagsView";
 
 
-
 const useStyles = makeStyles(theme => ({
-    root: {
-        width: "100%",
-        height: "100%",
-    },
-    header: {
-        width: "100%",
-    },
-    content: {
-        width: "100%",
-    },
-    title: {
-        fontSize: 14,
-    },
+    row: {
+    }
 }));
 
 interface IState {
@@ -74,35 +62,12 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
 
     if (state.preview) {
         return (
-            <Card className={classes.root}>
-                <CardContent>
-                    <TagsView tags={props.head.tags} />
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Title
-                    </Typography>
-                    <Typography gutterBottom variant="h6" component="h2">
-                        {state.preview.title}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Duration, min
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.duration / 60}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Problems count
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.problems_count}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Author
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.author.username}
-                    </Typography>
-                </CardContent>
-                <CardActions>
+            <TableRow className={classes.row}>
+                <TableCell align="right">{state.preview.title}</TableCell>
+                <TableCell align="right">{state.preview.duration / 60}</TableCell>
+                <TableCell align="right">{state.preview.problems_count}</TableCell>
+                <TableCell align="right">{state.preview.author.username}</TableCell>
+                <TableCell align="right">
                     <Button
                         size="small"
                         color="primary"
@@ -110,13 +75,13 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                         >
                         Start
                     </Button>
-                </CardActions>
-            </Card>
+                </TableCell>
+                <TableCell align="right">
+                    <TagsView tags={props.head.tags} />
+                </TableCell>
+            </TableRow>
         );
     }
 
-    return (
-        <Box className={classes.root}>
-        </Box>
-    );
+    return null;
 };

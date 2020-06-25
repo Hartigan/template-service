@@ -3,12 +3,11 @@ import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
 import SubmissionsListView from "../train/SubmissionsListView";
-import { SubmissionId, ReportId } from "../../models/Identificators";
+import { SubmissionId } from "../../models/Identificators";
 import { Submission } from "../../models/Submission";
 import SubmissionDialog from "../train/SubmissionDialog";
 import { Head } from "../../models/Head";
 import { Report } from "../../models/Report";
-import ReportDialog from "../common/ReportDialog";
 import TagsEditorView from "../utils/TagsEditorView";
 import SearchField from "../common/SearchField";
 import { SearchNavigationView } from "../common/SearchNavigationView";
@@ -19,15 +18,14 @@ const useStyles = makeStyles(theme => ({
         height: "100%",
     },
     problemSets: {
-        width: "50%",
-        height: "100%"
+        width: "100%",
     },
     submissions: {
-        width: "50%",
-        height: "100%"
+        width: "100%",
     },
     list: {
         margin: "auto",
+        padding: "10px 0px 10px 0px",
         width: "60%"
     },
     searchNavigation: {
@@ -121,14 +119,6 @@ export default function TrainTab(props: ITrainTabProps) {
         });
     };
 
-    const onShowReport = async (reportId: ReportId) => {
-        let report = await props.examinationService.getReport(reportId);
-        setState({
-            ...state,
-            report: report
-        });
-    };
-
     const onAddSearchTag = async (tag: string) => {
         if (tag) {
             setState({
@@ -171,28 +161,13 @@ export default function TrainTab(props: ITrainTabProps) {
         }
     };
 
-    const getReportDialog = () => {
-        if (state.report) {
-            return <ReportDialog
-                        open={true}
-                        onClose={onCloseDialog}
-                        report={state.report}
-                        />;
-        }
-        else {
-            return <div/>;
-        }
-    };
-
-
     const getSubmissionsList = () => {
-        if (state.submissionsIds) {
+        if (state.submissionsIds && state.submissionsIds.length > 0) {
             return (
                 <SubmissionsListView
                     examinationService={props.examinationService}
                     submissionsIds={state.submissionsIds}
                     onShowSubmission={onShowSubmission}
-                    onShowReport={onShowReport}
                     />
             );
         }
@@ -212,7 +187,11 @@ export default function TrainTab(props: ITrainTabProps) {
     return (
         <Grid container className={classes.root}>
             {getSubmissionDialog()}
-            {getReportDialog()}
+            <Grid item className={classes.submissions}>
+                <Box className={classes.list}>
+                    {getSubmissionsList()}
+                </Box>
+            </Grid>
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>
                     <TagsEditorView
@@ -237,11 +216,6 @@ export default function TrainTab(props: ITrainTabProps) {
                         onShowSubmission={onShowSubmission}
                         problemSets={state.problemSets ? state.problemSets : []}
                         />
-                </Box>
-            </Grid>
-            <Grid item className={classes.submissions}>
-                <Box className={classes.list}>
-                    {getSubmissionsList()}
                 </Box>
             </Grid>
         </Grid>

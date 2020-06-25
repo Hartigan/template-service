@@ -1,4 +1,4 @@
-import { makeStyles, Card, CardContent, Typography, CardActions, Button } from "@material-ui/core";
+import { makeStyles, Button, TableRow, TableCell } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import DateView from "../utils/DateView";
@@ -8,19 +8,8 @@ import { UserService } from "../../services/UserService";
 import ShareReportDialog from "./ShareReportDialog";
 
 const useStyles = makeStyles(theme => ({
-    root: {
-        width: "100%",
-        height: "100%",
-    },
-    header: {
-        width: "100%",
-    },
-    content: {
-        width: "100%",
-    },
-    title: {
-        fontSize: 14,
-    },
+    row: {
+    }
 }));
 
 interface IState {
@@ -44,49 +33,19 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
     const classes = useStyles();
 
     return (
-        <Card className={classes.root}>
-            <CardContent>
-                <ShareReportDialog
-                    open={state.shareOpened}
-                    reportId={props.preview.id}
-                    userService={props.userService}
-                    examinationService={props.examinationService}
-                    onClose={() => setState({ ...state, shareOpened: false })}
-                    />
-                <ReportDialog 
-                    open={state.reportOpened}
-                    report={props.preview}
-                    onClose={() => setState({ ...state, reportOpened: false })}
-                    />
-                <Typography gutterBottom variant="h5" component="h2">
-                    {props.preview.problem_set.title}
-                </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    Author
-                </Typography>
-                <Typography variant="body2" component="p">
-                    {props.preview.author.username}
-                </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    Started at
-                </Typography>
-                <Typography variant="body2" component="p">
-                    <DateView date={props.preview.started_at} />
-                </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    Finished at
-                </Typography>
-                <Typography variant="body2" component="p">
-                    <DateView date={props.preview.finished_at} />
-                </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    Result
-                </Typography>
-                <Typography variant="body2" component="p">
-                    {props.preview.problem_set.problems.map(x => (x.is_correct ? 1 : 0) as number).reduce((sum, x) => sum + x)} of {props.preview.problem_set.problems.length}
-                </Typography>
-            </CardContent>
-            <CardActions>
+        <TableRow className={classes.row}>
+            <TableCell align="right">{props.preview.problem_set.title}</TableCell>
+            <TableCell align="right">{props.preview.author.username}</TableCell>
+            <TableCell align="right">
+                <DateView date={props.preview.started_at} />
+            </TableCell>
+            <TableCell align="right">
+                <DateView date={props.preview.finished_at} />
+            </TableCell>
+            <TableCell align="right">
+            {props.preview.problem_set.problems.map(x => (x.is_correct ? 1 : 0) as number).reduce((sum, x) => sum + x)} of {props.preview.problem_set.problems.length}
+            </TableCell>
+            <TableCell align="right">
                 <Button
                     size="small"
                     color="primary"
@@ -101,7 +60,19 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
                     >
                     Share
                 </Button>
-            </CardActions>
-        </Card>
+                <ShareReportDialog
+                    open={state.shareOpened}
+                    reportId={props.preview.id}
+                    userService={props.userService}
+                    examinationService={props.examinationService}
+                    onClose={() => setState({ ...state, shareOpened: false })}
+                    />
+                <ReportDialog 
+                    open={state.reportOpened}
+                    report={props.preview}
+                    onClose={() => setState({ ...state, reportOpened: false })}
+                    />
+            </TableCell>
+        </TableRow>
     );
 };

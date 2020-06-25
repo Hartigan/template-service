@@ -3,11 +3,10 @@ import React from "react";
 
 const useStyles = makeStyles({
     root: {
-        width: "100%",
-        padding: "10px"
+        width: "100%"
     },
     chip: {
-        margin: "3px"
+        margin: "0px 3px 0px 3px"
     },
 });
 

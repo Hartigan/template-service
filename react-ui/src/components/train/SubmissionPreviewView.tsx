@@ -1,24 +1,13 @@
-import { makeStyles, Box, Card, CardContent, Typography, CardActions, Button } from "@material-ui/core";
+import { makeStyles, Button, TableRow, TableCell } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { SubmissionPreview } from "../../models/SubmissionPreview";
-import { SubmissionId, ReportId } from "../../models/Identificators";
+import { SubmissionId } from "../../models/Identificators";
 import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({
-    root: {
-        width: "100%",
-        height: "100%",
-    },
-    header: {
-        width: "100%",
-    },
-    content: {
-        width: "100%",
-    },
-    title: {
-        fontSize: 14,
-    },
+    row: {
+    }
 }));
 
 interface IState {
@@ -29,7 +18,6 @@ export interface ISubmissionPreviewViewProps {
     submissionId: SubmissionId;
     examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
-    onShowReport: (reportId: ReportId) => void;
 }
 
 export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps) {
@@ -59,74 +47,32 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
         }
     });
 
-    const onShowReport = () => {
-        if (state.preview?.report_id) {
-            props.onShowReport(state.preview.report_id);
-        }
-    }
-
     const classes = useStyles();
 
     if (state.preview) {
         return (
-            <Card className={classes.root}>
-                <CardContent>
-                    <Typography gutterBottom variant="h5" component="h2">
-                        {state.preview.title}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Author
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.author.username}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Started at
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        <DateView date={state.preview.started_at} />
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Deadline
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        <DateView date={state.preview.deadline} />
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Status
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.completed ? "Completed" : "In progress"}
-                    </Typography>
-                </CardContent>
-                <CardActions>
-                    {state.preview.report_id
-                        ? (
-                            <Button
-                                size="small"
-                                color="primary"
-                                onClick={onShowReport}
-                                >
-                                View report
-                            </Button>
-                        )
-                        : (
-                            <Button
-                                size="small"
-                                color="primary"
-                                onClick={() => props.onShowSubmission(props.submissionId)}
-                                >
-                                Continue
-                            </Button>
-                        )
-                    }
-                </CardActions>
-            </Card>
+            <TableRow
+                className={classes.row}>
+                <TableCell align="right">{state.preview.title}</TableCell>
+                <TableCell align="right">{state.preview.author.username}</TableCell>
+                <TableCell align="right">
+                    <DateView date={state.preview.started_at} />
+                </TableCell>
+                <TableCell align="right">
+                    <DateView date={state.preview.deadline} />
+                </TableCell>
+                <TableCell align="right">
+                    <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => props.onShowSubmission(props.submissionId)}
+                        >
+                        Continue
+                    </Button>
+                </TableCell>
+            </TableRow>
         );
     }
 
-    return (
-        <Box className={classes.root}>
-        </Box>
-    );
+    return null;
 };

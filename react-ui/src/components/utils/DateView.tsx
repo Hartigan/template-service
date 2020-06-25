@@ -5,5 +5,5 @@ export interface IDateViewProps {
 }
 
 export default function DateView(props: IDateViewProps) {
-    return <span>{new Date(props.date.toString()).toString()}</span>;
+    return <span>{new Date(props.date.toString()).toLocaleString()}</span>;
 };
