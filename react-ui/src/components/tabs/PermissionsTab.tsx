@@ -2,7 +2,6 @@ import { makeStyles, Grid } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { PermissionsService } from "../../services/PermissionsService";
 import { UserService } from "../../services/UserService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { FoldersService } from "../../services/FoldersService";
 import PermissionsView from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
@@ -29,7 +28,6 @@ const useStyles = makeStyles(() => ({
 
 interface IState {
     current: HeadLink | null;
-    tree: FileExplorerState;
 }
 
 export interface IPermissionsTabProps {
@@ -46,7 +44,6 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
 
     const [ state, setState ] = React.useState<IState>({
         current: null,
-        tree: new FileExplorerState(props.foldersService)
     });
 
     const changeCurrent = (current: HeadLink | null) => {
@@ -57,11 +54,7 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
     };
 
     useEffect(() => {
-        let protectedSub = state.tree
-            .currentHeadChanged()
-            .subscribe(changeCurrent);
         return () => {
-            protectedSub.unsubscribe();
         }
     });
 
@@ -87,7 +80,8 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
                     problemsService={props.problemsService}
                     problemSetService={props.problemSetService}
                     userService={props.userService}
-                    state={state.tree} />
+                    selected={state.current}
+                    onSelect={changeCurrent} />
             </Grid>
             <Grid item className={classes.content}>
                 {permissionsView}

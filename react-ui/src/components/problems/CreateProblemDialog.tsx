@@ -1,7 +1,6 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
 import { FoldersService } from "../../services/FoldersService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import CloseIcon from '@material-ui/icons/Close';
 import { Problem } from "../../models/Problem";
@@ -12,6 +11,7 @@ import ControllerEditor from "./ControllerEditor";
 import ViewEditor from "./ViewEditor";
 import ValidatorEditor from "./ValidatorEditor";
 import { CodeLanguage, ViewLanguage } from "../../models/Code";
+import { FolderLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -38,7 +38,7 @@ export interface ICreateProblemDialogProps {
     onClose: () => void;
     foldersService: FoldersService;
     problemsService: ProblemsService;
-    fileExplorerState: FileExplorerState;
+    currentFolder: FolderLink;
 }
 
 export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
@@ -79,11 +79,6 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
     };
 
     const onSave = async () => {
-        let curFolder = await props.fileExplorerState.currentFolderOrRoot();
-        if (!curFolder) {
-            return;
-        }
-
         let problem : Problem = {
             id: "",
             title: title,
@@ -92,10 +87,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
             validator: validator
         };
 
-        await props.problemsService.create(curFolder.id, title, problem);
-
-        props.fileExplorerState.syncFolder(curFolder.id);
-
+        await props.problemsService.create(props.currentFolder.id, title, problem);
         clean();
         props.onClose();
     };

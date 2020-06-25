@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { makeStyles, Typography } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
-import { FolderLink, Folder } from '../../models/Folder';
+import { FolderLink, Folder, HeadLink } from '../../models/Folder';
 import { FoldersService } from '../../services/FoldersService';
 import HeadTreeItemView from './HeadTreeItemView';
-import { FileExplorerState } from '../../states/FileExplorerState';
 import { FolderId } from '../../models/Identificators';
 import { TargetType } from '../../models/Commit';
 import { VersionService } from '../../services/VersionService';
@@ -28,7 +27,12 @@ const useStyles = makeStyles(theme => ({
 export interface IFolderViewProperties {
     folder: FolderLink;
     foldersService: FoldersService;
-    fileExplorerState: FileExplorerState;
+    selectedFolder: FolderLink | null;
+    selectedHead: HeadLink | null;
+    updatedFolder: FolderLink | null;
+    onFolderUpdated: () => void;
+    onSelectHead: (head: HeadLink) => void;
+    onSelectFolder: (folder: FolderLink) => void;
     versionService: VersionService;
     filter?: Array<TargetType>;
 }
@@ -37,37 +41,41 @@ export default function FolderView(props: IFolderViewProperties) {
 
     const [ folder, setFolder ] = React.useState<Folder | null>(null);
 
+    if (props.updatedFolder && props.updatedFolder.id === folder?.id) {
+        setFolder(null);
+        props.onFolderUpdated();
+    }
+
     const onClick = () => {
-        props.fileExplorerState.setCurrentFolder(props.folder);
+        if (folder) {
+            props.onSelectFolder(folder);
+        }
     };
   
-    const sync = async () => {
-        const f = await props.foldersService
-            .getFolder(props.folder.id);
+    const fetchData = async (folder: FolderId) => {
+        const f = await props.foldersService.getFolder(props.folder.id);
 
         if (props.filter) {
             const filter = new Set(props.filter);
             f.heads = f.heads.filter(link => filter.has(link.type));
         }
 
-        setFolder(f);
+        return f;
     };
 
     React.useEffect(() => {
-        const folderUpdatedSub = props.fileExplorerState
-            .folderUpdated()
-            .subscribe(async (id: FolderId) => {
-                if (props.folder.id === id) {
-                    sync();
-                } 
-            });
+        let canUpdate = true;
 
         if (!folder) {
-            sync();
+            fetchData(props.folder.id).then(f => {
+                if (canUpdate) {
+                    setFolder(f);
+                }
+            })
         }
 
         return () => {
-            folderUpdatedSub.unsubscribe();
+            canUpdate = false;
         };
     });
 
@@ -85,7 +93,13 @@ export default function FolderView(props: IFolderViewProperties) {
                     versionService={props.versionService}
                     folder={link}
                     foldersService={props.foldersService}
-                    fileExplorerState={props.fileExplorerState} />
+                    selectedFolder={props.selectedFolder}
+                    updatedFolder={props.updatedFolder}
+                    selectedHead={props.selectedHead}
+                    onFolderUpdated={props.onFolderUpdated}
+                    onSelectFolder={props.onSelectFolder}
+                    onSelectHead={props.onSelectHead}
+                    />
             ))
         });
         folder.heads.forEach(link => {
@@ -93,7 +107,9 @@ export default function FolderView(props: IFolderViewProperties) {
                 <HeadTreeItemView
                     key={link.id}
                     head={link}
-                    fileExplorerState={props.fileExplorerState} />
+                    selected={props.selectedHead}
+                    onSelect={props.onSelectHead}
+                    />
             ))
         });
         children = nodes;

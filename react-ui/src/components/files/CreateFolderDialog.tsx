@@ -2,33 +2,45 @@ import { makeStyles, Dialog, DialogTitle, TextField, Container, Button } from "@
 import React from "react";
 import PropTypes from 'prop-types';
 import { FoldersService } from "../../services/FoldersService";
-import { FileExplorerState } from "../../states/FileExplorerState";
+import { FolderLink } from "../../models/Folder";
 
 const useStyles = makeStyles({
 });
+
+interface IState {
+    name: string;
+    error: boolean;
+    helperText: string;
+}
 
 export interface ICreateFolderDialogProps {
     open: boolean;
     onClose: () => void;
     foldersService: FoldersService;
-    fileExplorerState: FileExplorerState;
+    currentFolder: FolderLink;
 }
 
 export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
-    const [ name, setName ] = React.useState<string>("");
-    const [ error, setError ] = React.useState<boolean>(false);
-    const [ helperText, setHelperText ] = React.useState<string>("");
+    const [ state, setState ] = React.useState<IState>({
+        name: "",
+        error: false,
+        helperText: ""
+    });
 
     const clean = () => {
-        setName("");
-        setError(false);
-        setHelperText("");
+        setState({
+            name: "",
+            error: false,
+            helperText: ""
+        });
     };
 
     const updateName = (value: string) => {
-        setName(value);
-        setError(value.length === 0);
-        setHelperText(error ? "Name is empty" : "")
+        setState({
+            name: value,
+            error: value.length === 0,
+            helperText: value.length === 0 ? "Name is empty" : ""
+        });
     };
 
     const onCancel = () => {
@@ -36,18 +48,13 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
         props.onClose();
     }
     const onCreate = async () => {
-        if (!name) {
+        if (!state.name) {
             return;
         }
 
-        let curFolder = await props.fileExplorerState.currentFolderOrRoot();
-
-        if (curFolder) {
-            await props.foldersService.createFolder(name, curFolder.id);
-            props.fileExplorerState.syncFolder(curFolder.id);
-            clean();
-            props.onClose();
-        }
+        await props.foldersService.createFolder(state.name, props.currentFolder.id);
+        clean();
+        props.onClose();
     }
 
     return (
@@ -57,8 +64,8 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
             <DialogTitle id="dialog-title">Create folder</DialogTitle>
             <TextField
                 label="Name"
-                error={error}
-                helperText={helperText}
+                error={state.error}
+                helperText={state.helperText}
                 onChange={(e) => updateName(e.target.value)} />
             <Container>
                 <Button variant="contained" onClick={() => onCreate()}>Create</Button>

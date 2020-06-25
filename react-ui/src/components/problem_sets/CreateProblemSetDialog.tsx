@@ -1,13 +1,13 @@
 import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { FoldersService } from "../../services/FoldersService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import { ProblemSetService } from "../../services/ProblemSetService";
 import CloseIcon from '@material-ui/icons/Close';
 import { VersionService } from "../../services/VersionService";
 import { ProblemSet } from "../../models/ProblemSet";
 import ProblemSetEditor from "./ProblemSetEditorView";
+import { FolderLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -30,7 +30,7 @@ export interface ICreateProblemSetDialogProps {
     foldersService: FoldersService;
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
-    fileExplorerState: FileExplorerState;
+    currentFolder: FolderLink;
 }
 
 export default function CreateProblemSetDialog(props: ICreateProblemSetDialogProps) {
@@ -74,15 +74,7 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
     };
 
     const onSave = async () => {
-        let curFolder = await props.fileExplorerState.currentFolderOrRoot();
-        if (!curFolder) {
-            return;
-        }
-
-        await props.problemSetService.create(curFolder.id, state.problemSet.title, state.problemSet);
-
-        props.fileExplorerState.syncFolder(curFolder.id);
-
+        await props.problemSetService.create(props.currentFolder.id, state.problemSet.title, state.problemSet);
         clean();
         props.onClose();
     };

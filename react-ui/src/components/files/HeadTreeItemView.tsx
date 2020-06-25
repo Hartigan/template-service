@@ -2,7 +2,6 @@ import * as React from 'react'
 import { makeStyles } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
 import { HeadLink } from '../../models/Folder';
-import { FileExplorerState } from '../../states/FileExplorerState';
 import HeadLabelView from './HeadLabelView';
 
 const useStyles = makeStyles(theme => ({
@@ -21,15 +20,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IHeadTreeItemViewProperties {
-    head: HeadLink
-    fileExplorerState: FileExplorerState;
+    head: HeadLink;
+    selected: HeadLink | null;
+    onSelect: (head: HeadLink) => void;
 }
 
 export default function HeadTreeItemView(props: IHeadTreeItemViewProperties) {
-    const fileExplorerState = props.fileExplorerState;
 
     const onClick = () => {
-        fileExplorerState.setCurrentHead(props.head);
+        props.onSelect(props.head);
     };
 
     const classes = useStyles();

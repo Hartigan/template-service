@@ -1,7 +1,6 @@
 import { makeStyles, TextField, Button, List, ListItem, FormControl, Grid, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { FoldersService } from "../../services/FoldersService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import ExplorerView from "../files/ExplorerView";
 import { VersionService } from "../../services/VersionService";
@@ -11,6 +10,8 @@ import DurationInput from "./DurationInput";
 import { ProblemSet } from "../../models/ProblemSet";
 import { Problem } from "../../models/Problem";
 import { Head } from "../../models/Head";
+import { HeadLink } from "../../models/Folder";
+import { HeadId } from "../../models/Identificators";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -54,7 +55,7 @@ interface IPreviewData {
 }
 
 interface IState {
-    explorer: FileExplorerState;
+    selectedHead: HeadLink | null;
     addPreview: IPreviewData | null;
     removePreview: IPreviewData | null;
     selectedSlot: number | null;
@@ -71,59 +72,57 @@ export interface IProblemSetEditorProps {
 
 export default function ProblemSetEditor(props: IProblemSetEditorProps) {
     const [ state, setState ] = React.useState<IState>({
-        explorer: new FileExplorerState(props.foldersService),
+        selectedHead: null,
         addPreview: null,
         removePreview: null,
         selectedSlot: null,
         selectedProblemInSlot: null,
     })
 
+    const onSelectHead = (head: HeadLink) => {
+        setState({
+            ...state,
+            selectedHead: head,
+            addPreview: null
+        });
+    };
+
+    const fetchProblemPreview = async (headId: HeadId) => {
+        const head = await props.versionService.getHead(headId);
+        const problem = await props.problemsService.get(head.commit.id);
+        return {
+            head: head,
+            problem: problem
+        };
+    };
+
     useEffect(() => {
         let canUpdate = true;
-        const headChangedSub = state.explorer
-            .currentHeadChanged()
-            .subscribe(async link => {
-                if (!link) {
-                    return;
+
+        if (state.selectedHead && state.addPreview === null) {
+            fetchProblemPreview(state.selectedHead.id).then(preview => {
+                if (canUpdate) {
+                    setState({
+                        ...state,
+                        addPreview: preview
+                    });
                 }
-
-                const head = await props.versionService.getHead(link.id);
-                const problem = await props.problemsService.get(head.commit.id);
-                setState({
-                    ...state,
-                    addPreview: {
-                        head: head,
-                        problem: problem
-                    }
-                });
-            });
-
+            })
+        }
 
         if (state.removePreview === null && state.selectedProblemInSlot !== null && state.selectedSlot !== null) {
             const headId = props.problemSet.slots[state.selectedSlot].head_ids[state.selectedProblemInSlot];
-            props.versionService
-                .getHead(headId)
-                .then(head => {
-                    props.problemsService
-                        .get(head.commit.id)
-                        .then(problem => {
-                            if (!canUpdate) {
-                                return;
-                            }
-
-                            setState({
-                                ...state,
-                                removePreview: {
-                                    head: head,
-                                    problem: problem
-                                }
-                            })
-                        });
-                })
+            fetchProblemPreview(headId).then(preview => {
+                if (canUpdate) {
+                    setState({
+                        ...state,
+                        removePreview: preview
+                    });
+                }
+            });
         }
 
         return () => {
-            headChangedSub.unsubscribe();
             canUpdate = false;
         };
     });
@@ -277,9 +276,14 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                         <Grid item className={classes.source}>
                             <ExplorerView
                                 foldersService={props.foldersService}
-                                state={state.explorer}
+                                selectedHead={state.selectedHead}
+                                onSelectHead={onSelectHead}
+                                selectedFolder={null}
+                                onSelectFolder={() => {}}
                                 filter={["problem"]}
-                                versionService={props.versionService} />
+                                versionService={props.versionService}
+                                onFolderUpdated={() => {}}
+                                updatedFolder={null} />
                         </Grid>
                         <Grid item className={classes.sourcePreview}>
                             <Button

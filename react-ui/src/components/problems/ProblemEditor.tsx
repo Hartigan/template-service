@@ -9,7 +9,6 @@ import { Controller } from "../../models/Controller";
 import { View } from "../../models/View";
 import { Validator } from "../../models/Validator";
 import { Problem } from "../../models/Problem";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SaveIcon from '@material-ui/icons/Save';
@@ -49,7 +48,7 @@ export interface IProblemEditorProps {
     commit: Commit;
     problemsService: ProblemsService;
     permissionsService: PermissionsService;
-    fileExplorerState: FileExplorerState;
+    onSync: () => void;
 }
 
 export default function ProblemEditor(props: IProblemEditorProps) {
@@ -185,7 +184,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
             problem: null,
             disabled: true
         });
-        props.fileExplorerState.syncHead(props.commit.head_id);
+        props.onSync();
     };
 
     const onTest = async () => {

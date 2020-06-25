@@ -4,11 +4,11 @@ import { VersionService } from "../../services/VersionService";
 import { FoldersService } from "../../services/FoldersService";
 import { ProblemsService } from "../../services/ProblemsService";
 import { ProblemSetService } from "../../services/ProblemSetService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import FileTreeView from "../files/FileTreeView";
 import FilePreview from "../files/FilePreview";
 import { UserService } from "../../services/UserService";
 import { PermissionsService } from "../../services/PermissionsService";
+import { HeadLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -25,6 +25,10 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+interface IState {
+    selectedHead: HeadLink | null;
+}
+
 export interface IEditorTabProps {
     versionService: VersionService;
     foldersService: FoldersService;
@@ -36,7 +40,16 @@ export interface IEditorTabProps {
 
 export default function EditorTab(props: IEditorTabProps) {
 
-    const [ fileExplorerState ] = React.useState(new FileExplorerState(props.foldersService));
+    const [ state, setState ] = React.useState<IState>({
+        selectedHead: null
+    });
+
+    const onSelectHead = (head: HeadLink) => {
+        setState({
+            ...state,
+            selectedHead: head
+        });
+    };
 
     const classes = useStyles();
 
@@ -49,11 +62,13 @@ export default function EditorTab(props: IEditorTabProps) {
                     problemsService={props.problemsService}
                     problemSetService={props.problemSetService}
                     userService={props.userService}
-                    state={fileExplorerState} />
+                    selected={state.selectedHead}
+                    onSelect={onSelectHead}
+                    />
             </Grid>
             <Grid item className={classes.content}>
                 <FilePreview
-                    fileExplorerState={fileExplorerState}
+                    current={state.selectedHead}
                     problemsService={props.problemsService}
                     foldersService={props.foldersService}
                     problemSetService={props.problemSetService}

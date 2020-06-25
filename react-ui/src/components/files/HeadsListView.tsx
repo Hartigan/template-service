@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { makeStyles, List, ListItem } from '@material-ui/core';
 import { Head } from '../../models/Head';
-import { fromHead } from '../../models/Folder';
-import { FileExplorerState } from '../../states/FileExplorerState';
+import { fromHead, HeadLink } from '../../models/Folder';
 import HeadLabelView from './HeadLabelView';
 
 const useStyles = makeStyles(theme => ({
@@ -13,14 +12,13 @@ const useStyles = makeStyles(theme => ({
 
 export interface IHeadsListViewProps {
     heads: Array<Head>;
-    state: FileExplorerState;
+    onSelect: (link: HeadLink) => void;
+    selected: HeadLink | null;
 };
 
 export default function HeadsListView(props: IHeadsListViewProps) {
 
     const classes = useStyles();
-
-    console.log(props.state.currentHead());
 
     return (
         <List className={classes.root}>
@@ -29,7 +27,8 @@ export default function HeadsListView(props: IHeadsListViewProps) {
                     <ListItem
                         button
                         key={"head_" + head.id}
-                        onClick={() => props.state.setCurrentHead(fromHead(head))}
+                        selected={props.selected?.id === head.id}
+                        onClick={() => props.onSelect(fromHead(head))}
                         >
                         <HeadLabelView
                             head={fromHead(head)}

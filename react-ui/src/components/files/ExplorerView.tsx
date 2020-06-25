@@ -5,8 +5,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { FoldersService } from '../../services/FoldersService';
 import FolderView from './FolderView';
-import { FileExplorerState } from '../../states/FileExplorerState';
-import { FolderLink } from '../../models/Folder';
+import { FolderLink, HeadLink } from '../../models/Folder';
 import { TargetType } from '../../models/Commit';
 import { VersionService } from '../../services/VersionService';
 
@@ -20,7 +19,12 @@ const useStyles = makeStyles(theme => ({
 export interface IExplorerViewProps {
     foldersService: FoldersService;
     versionService: VersionService;
-    state: FileExplorerState;
+    selectedFolder: FolderLink | null;
+    selectedHead: HeadLink | null;
+    updatedFolder: FolderLink | null;
+    onFolderUpdated: () => void;
+    onSelectFolder: (folder: FolderLink) => void;
+    onSelectHead: (head: HeadLink) => void
     filter?: Array<TargetType>;
 }
 
@@ -67,7 +71,12 @@ export default function ExplorerView(props: IExplorerViewProps) {
             folder={state.root}
             foldersService={props.foldersService}
             filter={props.filter}
-            fileExplorerState={props.state} />
+            selectedFolder={props.selectedFolder}
+            selectedHead={props.selectedHead}
+            updatedFolder={props.updatedFolder}
+            onFolderUpdated={props.onFolderUpdated}
+            onSelectFolder={props.onSelectFolder}
+            onSelectHead={props.onSelectHead} />
     ) : <div/>;
 
     const classes = useStyles();

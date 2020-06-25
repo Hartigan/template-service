@@ -2,7 +2,6 @@ import { makeStyles, Box, List, ListItem, Container, IconButton, Typography, Gri
 import React, { useEffect } from "react";
 import { ProblemsService } from "../../services/ProblemsService";
 import { Commit } from "../../models/Commit";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import EditIcon from '@material-ui/icons/Edit';
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { ProblemSet } from "../../models/ProblemSet";
@@ -56,8 +55,8 @@ export interface IProblemSetPreviewProps {
     problemSetService: ProblemSetService;
     versionService: VersionService;
     foldersService: FoldersService;
-    fileExplorerState: FileExplorerState;
     permissionsService: PermissionsService;
+    onSync: () => void;
 }
 
 export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
@@ -157,6 +156,14 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
         return (<div />);
     }
 
+    const onCloseEdit = () => {
+        setState({
+            ...state,
+            editOpened: false
+        });
+        props.onSync();
+    };
+
     const getPreview = () => {
         if (state.preview) {
             return (
@@ -184,12 +191,11 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                 open={state.editOpened}
                 headId={props.commit.head_id}
                 problemSet={state.problemSet.value}
-                onClose={() => setState({...state, editOpened: false})}
+                onClose={onCloseEdit}
                 versionService={props.versionService}
                 foldersService={props.foldersService}
                 problemsService={props.problemsService}
                 problemSetService={props.problemSetService}
-                fileExplorerState={props.fileExplorerState}
                 />
             <List
                 className={classes.list}>

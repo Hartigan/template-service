@@ -1,8 +1,6 @@
 import { makeStyles, Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { VersionService } from "../../services/VersionService";
-import { HeadId } from "../../models/Identificators";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import ProblemEditor from "../problems/ProblemEditor";
 import ProblemSetPreview from "../problem_sets/ProblemSetPreview";
@@ -11,6 +9,7 @@ import { FoldersService } from "../../services/FoldersService";
 import { Head } from "../../models/Head";
 import TagsEditorView from "../utils/TagsEditorView";
 import { PermissionsService } from "../../services/PermissionsService";
+import { HeadLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -24,7 +23,7 @@ interface IState {
 }
 
 export interface IFilePreviewProps {
-    fileExplorerState: FileExplorerState;
+    current: HeadLink | null;
     problemSetService: ProblemSetService;
     foldersService: FoldersService;
     versionService: VersionService;
@@ -38,40 +37,34 @@ export default function FilePreview(props: IFilePreviewProps) {
         head: null
     });
 
-    const sync = async (id: HeadId) => {
-        let head = await props.versionService.getHead(id);
-        setState({
-            ...state,
-            head: head
-        });
-    }
-
     useEffect(() => {
-        const onChangedSub = props.fileExplorerState
-            .currentHeadChanged()
-            .subscribe(async headLink => {
-                if (!headLink) {
-                    return;
+        if (!props.current || props.current.id === state.head?.id) {
+            return;
+        }
+
+        let canUpdate = true;
+        props.versionService
+            .getHead(props.current.id)
+            .then(head => {
+                if (canUpdate) {
+                    setState({
+                        ...state,
+                        head: head
+                    })
                 }
-
-                if (state.head && state.head.id === headLink.id) {
-                    return;
-                }
-
-                await sync(headLink.id);
-            });
-
-        const onUpdatedSub = props.fileExplorerState
-            .headUpdated()
-            .subscribe(async id => {
-                await sync(id);
             });
 
         return () => {
-            onChangedSub.unsubscribe();
-            onUpdatedSub.unsubscribe();
+            canUpdate = false;
         };
     })
+
+    const onSync = () => {
+        setState({
+            ...state,
+            head: null
+        });
+    };
 
     const classes = useStyles();
 
@@ -82,7 +75,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                     return (
                         <ProblemEditor
                             commit={state.head.commit}
-                            fileExplorerState={props.fileExplorerState}
+                            onSync={onSync}
                             permissionsService={props.permissionsService}
                             problemsService={props.problemsService} />
                     );
@@ -90,7 +83,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                     return (
                         <ProblemSetPreview
                             commit={state.head.commit}
-                            fileExplorerState={props.fileExplorerState}
+                            onSync={onSync}
                             versionService={props.versionService}
                             foldersService={props.foldersService}
                             problemSetService={props.problemSetService}
@@ -108,7 +101,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                     return;
                 }
                 await props.versionService.updateTags(state.head.id, state.head.tags.filter(x => x !== tag))
-                await sync(state.head.id);
+                onSync();
             };
 
             const onAdd = async (tag: string) => {
@@ -117,7 +110,7 @@ export default function FilePreview(props: IFilePreviewProps) {
                 }
                 const tags = [ ...state.head.tags, tag ];
                 await props.versionService.updateTags(state.head.id, tags);
-                await sync(state.head.id);
+                onSync();
             };
 
             return (

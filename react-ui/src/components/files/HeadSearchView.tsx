@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { makeStyles, Box, Container } from '@material-ui/core';
-import { FileExplorerState } from '../../states/FileExplorerState';
 import { VersionService } from '../../services/VersionService';
 import { UserId } from '../../models/Identificators';
 import TagsEditorView from '../utils/TagsEditorView';
@@ -10,6 +9,7 @@ import { UserService } from '../../services/UserService';
 import SearchField from '../common/SearchField';
 import HeadsListView from './HeadsListView';
 import { SearchNavigationView } from '../common/SearchNavigationView';
+import { HeadLink } from '../../models/Folder';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -48,7 +48,8 @@ interface IState {
 export interface IHeadSearchViewProps {
     userService: UserService;
     versionService: VersionService;
-    state: FileExplorerState;
+    selected: HeadLink | null;
+    onSelect: (head: HeadLink) => void;
 }
 
 export default function HeadSearchView(props: IHeadSearchViewProps) {
@@ -175,7 +176,8 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
             </Container>
             <HeadsListView
                 heads={state.heads ? state.heads : []}
-                state={props.state}
+                selected={props.selected}
+                onSelect={props.onSelect}
                 />
         </Box>
     );

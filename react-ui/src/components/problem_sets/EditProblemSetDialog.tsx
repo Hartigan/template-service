@@ -1,7 +1,6 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
 import { FoldersService } from "../../services/FoldersService";
-import { FileExplorerState } from "../../states/FileExplorerState";
 import { ProblemsService } from "../../services/ProblemsService";
 import { ProblemSetService } from "../../services/ProblemSetService";
 import CloseIcon from '@material-ui/icons/Close';
@@ -41,7 +40,6 @@ export interface IEditProblemSetDialogProps {
     foldersService: FoldersService;
     problemsService: ProblemsService;
     problemSetService: ProblemSetService;
-    fileExplorerState: FileExplorerState;
 }
 
 export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) {
@@ -68,7 +66,6 @@ export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) 
 
         clean();
         props.onClose();
-        props.fileExplorerState.syncHead(props.headId);
     };
 
     const setCommitDescription = (desc: string) => {
