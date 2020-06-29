@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.7.3" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.5" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.3.1" />
+    <ProjectReference Include="../CodeGeneratorContext/CodeGeneratorContext.fsproj" />
+    <ProjectReference Include="../Utils/Utils.fsproj" />
+    <Compile Include="Models.fs" />
+    <Compile Include="Generator.fs" />
+    <Compile Include="Processor.fs" />
+    <Compile Include="Controllers/GeneratorController.fs" />
+    <Compile Include="Startup.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>

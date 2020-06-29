@@ -21,6 +21,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DatabaseTypes", "DatabaseTy
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CodeGeneratorContext", "CodeGeneratorContext\CodeGeneratorContext.fsproj", "{1EF35C1A-F007-4A08-A6CF-F0217BB06015}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CSharpGenerator", "CSharpGenerator\CSharpGenerator.fsproj", "{9CE138B0-B07B-4ECB-A44F-F894896D6650}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,5 +156,17 @@ Global
 		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x64.Build.0 = Release|Any CPU
 		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x86.ActiveCfg = Release|Any CPU
 		{1EF35C1A-F007-4A08-A6CF-F0217BB06015}.Release|x86.Build.0 = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|x64.Build.0 = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Debug|x86.Build.0 = Debug|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x64.ActiveCfg = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x64.Build.0 = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x86.ActiveCfg = Release|Any CPU
+		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

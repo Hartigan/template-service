@@ -1,5 +1,15 @@
 version: '3'
 services:
+  cs-generator:
+    image: "cs-generator:latest"
+    container_name: "cs-generator"
+    build:
+      context: .
+      dockerfile: CSharpGenerator.Dockerfile
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+    - "8081:80"
   identity-server:
     image: "auth-service:latest"
     container_name: "auth-service"
@@ -25,6 +35,7 @@ services:
     links:
     - db:database
     - identity-server:identity-server
+    - cs-generator:cs-generator
   db:
     image: "database-service:latest"
     container_name: "database-service"

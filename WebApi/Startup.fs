@@ -51,6 +51,8 @@ type Startup private () =
         |> ignore
 
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
+        |> fun x -> x.Configure<GeneratorsOptions>(this.Configuration.GetSection("Generators"))
+        |> fun x -> x.AddHttpClient()
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()
         |> fun x -> x.AddSingleton<IContext<Folder>, FolderContext>()

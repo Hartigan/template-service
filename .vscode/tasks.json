@@ -16,6 +16,27 @@
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "recompose web-api",
+            "command": "docker-compose up -d --no-deps --build web",
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "recompose identity-server",
+            "command": "docker-compose up -d --no-deps --build identity-server",
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "recompose cs-generator",
+            "command": "docker-compose up -d --no-deps --build cs-generator",
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": "$msCompile"
         }
     ]
 }

@@ -1,9 +1,14 @@
 namespace Services.Problems
 
-open CodeGeneratorContext
 open Models.Problems
 open DatabaseTypes.Identificators
 open System
+
+type GeneratorEndpoint() =
+    member val Endpoint = "" with get, set
+
+type GeneratorsOptions() =
+    member val CSharp = GeneratorEndpoint() with get, set
 
 type IGeneratorService =
     abstract member Generate : ProblemId -> Async<Result<GeneratedProblemId, Exception>>

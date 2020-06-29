@@ -40,6 +40,24 @@
             }
         },
         {
+            "name": "Attach to Docker(cs-generator)",
+            "type": "coreclr",
+            "request": "attach",
+            "sourceFileMap": {
+                "/build": "${workspaceFolder}"
+            },
+            "processId" : "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeProgram": "docker",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false,
+                "pipeArgs": [
+                    "exec -i cs-generator"
+                ]
+            }
+        },
+        {
             "name": "Attach to Docker(IdentityServer)",
             "type": "coreclr",
             "request": "attach",

@@ -4,12 +4,14 @@ open System
 open DatabaseTypes
 open Models.Problems
 open Contexts
-open CodeGeneratorContext
-open System.Linq
 open Services.VersionControl
 open DatabaseTypes.Identificators
 open Models.Heads
 open Utils.ResultHelper
+open System.Net.Http
+open System.Text.Json.Serialization
+open Models.Code
+open Microsoft.Extensions.Options
 
 module Async = 
     let flatMap f x = async.Bind(x, f)
@@ -18,18 +20,20 @@ type GeneratorService(viewFormatter: IViewFormatter,
                       generatedProblemContext: IContext<GeneratedProblem>,
                       generatedProblemSetContext: IContext<GeneratedProblemSet>,
                       problemsService: IProblemsService,
-                      versionControlService: IVersionControlService) =
+                      versionControlService: IVersionControlService,
+                      clientFactory: IHttpClientFactory,
+                      generatorsOptions: IOptions<GeneratorsOptions>) =
 
-    let csharpGenerator = (CSharpDelegateGenerator() :> IDelegateGenerator)
+    let csharpConnector = GeneratorConnector(generatorsOptions.Value.CSharp.Endpoint, clientFactory)
     let random = Random(0)
+
 
     member this.CreateGeneratedProblem(problem: ProblemModel, seed: ProblemSeed): Async<Result<GeneratedProblem, Exception>> =
         match problem.Controller.Language.Language with
         | ControllerLanguage.CSharp ->
-            csharpGenerator.CreateDelegate(problem.Controller)
-            |> Async.TryMapResult(fun controllerDelegate -> controllerDelegate(Generator(seed.Value)))
+            csharpConnector.Generate(problem, seed)
             |> Async.BindResult(fun result -> 
-                viewFormatter.Format(result, problem.View)
+                viewFormatter.Format(result.Parameters, problem.View)
                 |> Async.MapResult(fun view -> (view, result))
             )
             |> Async.MapResult(fun (formattedView, result) ->
@@ -44,7 +48,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                             Code.Language = formattedView.Language.Name
                             Code.Content = formattedView.Content.Value
                         }
-                    Answer = result.Answer
+                    Answer = result.Answer.Value
                 }
             )
 
@@ -59,10 +63,8 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.BindResult(fun problem ->
                 match problem.Validator.Language.Language with
                 | ValidatorLanguage.CSharp ->
-                    csharpGenerator.CreateDelegate(problem.Validator)
-                    |> Async.TryMapResult(fun validator ->
-                        validator(Answer(actual.Value), Answer(expected.Value))
-                    )
+                    csharpConnector.Validate(problem, actual, expected)
+                    |> Async.MapResult(fun result -> result.IsCorrect)
             )
 
         member this.Validate(generatedProblemId, problemAnswer) =
@@ -72,10 +74,8 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 |> Async.BindResult(fun problem ->
                     match problem.Validator.Language.Language with
                     | ValidatorLanguage.CSharp ->
-                        csharpGenerator.CreateDelegate(problem.Validator)
-                        |> Async.TryMapResult(fun validator ->
-                            validator(Answer(problemAnswer.Value), Answer(generatedProblem.Answer.Value))
-                        )
+                        csharpConnector.Validate(problem, problemAnswer, generatedProblem.Answer)
+                        |> Async.MapResult(fun result -> result.IsCorrect)
                 )
             )
 

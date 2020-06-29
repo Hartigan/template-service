@@ -6,18 +6,18 @@
 
   <ItemGroup>
     <PackageReference Include="FSharpx.Async" Version="1.14.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.3.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.5" />
     <PackageReference Include="FSharp.Control.AsyncSeq" Version="2.0.23" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.7.3" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <ProjectReference Include="../DatabaseTypes/DatabaseTypes.fsproj" />
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
     <ProjectReference Include="../Model/Model.fsproj" />
-    <ProjectReference Include="../CodeGeneratorContext/CodeGeneratorContext.fsproj" />
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="VersionControl/IVersionControlService.fs" />
-    <Compile Include="Problems/IDelegateGenerator.fs" />
+    <Compile Include="Problems/GeneratorConnector.fs" />
     <Compile Include="Problems/IViewFormatter.fs" />
     <Compile Include="Problems/IGeneratorService.fs" />
     <Compile Include="Problems/IProblemsService.fs" />
@@ -27,7 +27,6 @@
     <Compile Include="Permissions/IUserService.fs" />
     <Compile Include="Folders/FolderService.fs" />
     <Compile Include="VersionControl/VersionControlService.fs" />
-    <Compile Include="Problems/CSharpDelegateGenerator.fs" />
     <Compile Include="Problems/ViewFormatter.fs" />
     <Compile Include="Problems/GeneratorService.fs" />
     <Compile Include="Problems/ProblemsService.fs" />

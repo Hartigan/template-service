@@ -2,7 +2,6 @@ namespace Services.Problems
 
 open System
 open System.Text.RegularExpressions
-open System.Collections.Generic
 open Models.Problems
 open Models.Code
 
@@ -10,20 +9,18 @@ type ViewFormatter() =
     let validateName = Regex("[A-Za-z0-9\\-_]+")
 
     interface IViewFormatter with
-        member this.Format(controllerResult, modelView) =
-            let rec format(enumerator: IEnumerator<KeyValuePair<string, string>>, source: string) =
-                    if enumerator.MoveNext() then
-                        let current = enumerator.Current
-                        if validateName.IsMatch(current.Key) then
-                            let parameterFinder = Regex("\\{\\{" + Regex.Escape(current.Key) + "\\}\\}")
-                            format(enumerator, parameterFinder.Replace(source, current.Value))
-                        else
-                            Error(InvalidOperationException(sprintf "Invalid parameter name format: %s" current.Key) :> Exception)
+        member this.Format(parameters, modelView) =
+            let rec format(items: List<ProblemParameter>, source: string) : Result<string, Exception> =
+                match items with
+                | [] -> Ok(source)
+                | head::tail ->
+                    if validateName.IsMatch(head.Name) then
+                        let parameterFinder = Regex("\\{\\{" + Regex.Escape(head.Name) + "\\}\\}")
+                        format(tail, parameterFinder.Replace(source, head.Value))
                     else
-                        Ok(source)
+                        Error(InvalidOperationException(sprintf "Invalid parameter name format: %s" head.Name) :> Exception)
 
-            let parametersEnumerator = (controllerResult.Parameters :> IEnumerable<KeyValuePair<string, string>>).GetEnumerator()
-            let formatResult = format(parametersEnumerator, modelView.Content.Value)
+            let formatResult = format(parameters, modelView.Content.Value)
 
             match formatResult with
             | Ok(contentString) -> async.Return(Ok(GeneratedViewModel.Create(modelView, ContentModel(contentString))))
