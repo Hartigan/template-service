@@ -16,7 +16,7 @@
     <Compile Include="Search.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.0.0" />
+    <PackageReference Include="CouchbaseNetClient" Version="3.0.2" />
     <PackageReference Include="FSharp.Control.AsyncSeq" Version="2.0.23" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
   </ItemGroup>

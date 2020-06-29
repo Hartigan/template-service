@@ -32,14 +32,14 @@ type CommonContext<'T>(couchbaseBuckets: CouchbaseBuckets) =
                                         updater: ('T -> Result<'T, Exception>)): Async<Result<unit, Exception>> =
         async {
             try
-                let! (getResult: IGetResult) = collection.GetAsync(key.Key, GetOptions())
+                let! (getResult: IGetResult) = collection.GetAsync(key.Key)
                 let item = getResult.ContentAs<'T>()
                 let replaceOptions = ReplaceOptions().Cas(getResult.Cas)
                 let updateResult = updater(item)
                 match updateResult with
                 | Error(error) -> return Error(error)
                 | Ok(updatedItem) ->
-                    let! replaceResult = collection.ReplaceAsync(key.Key, updatedItem)
+                    let! replaceResult = collection.ReplaceAsync(key.Key, updatedItem, replaceOptions)
                     return Ok()
 
             with ex -> return Error(ex)
