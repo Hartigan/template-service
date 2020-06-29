@@ -33,6 +33,31 @@ type HeadSearch(headContext: IHeadContext,
                 AsyncSeq.singleton(head)
         )
 
+    member this.FilterByTitle(patternOpt: string option, problemSet: ProblemSet) =
+        match patternOpt with
+        | None -> true
+        | Some(pattern) -> problemSet.Title.ToLower().Contains(pattern)
+
+    member this.FilterByProblemsCount(problemsCountOpt: SearchInterval<uint32> option, problemSet: ProblemSet) =
+        match problemsCountOpt with
+        | None -> true
+        | Some(interval) -> 
+            let length = uint32 problemSet.Slots.Length
+            length >= interval.From && length <= interval.To
+
+    member this.FilterByDuration(durationOpt: SearchInterval<int32> option, problemSet: ProblemSet) =
+        match durationOpt with
+        | None -> true
+        | Some(interval) -> 
+            let duration = problemSet.Duration
+            duration >= interval.From && duration <= interval.To
+
+    member this.HeadFilterByAuthor(authorIdOpt: UserId option) : AsyncSeq<Head> -> AsyncSeq<Head> =
+        match authorIdOpt with
+        | None -> id
+        | Some(authorId) ->
+            AsyncSeq.filter(fun head -> head.Permissions.OwnerId = authorId)
+
     interface IHeadSearch with
         member this.Search(patternOpt, ownerOpt, tags, headIds, offset, limit) = 
             headIds
@@ -57,21 +82,25 @@ type HeadSearch(headContext: IHeadContext,
             |> AsyncSeq.take(int limit)
             |> AsyncSeq.toListAsync
 
-        member this.SearchProblemSets(pattern, tags, headIds, offset, limit) =
+        member this.SearchProblemSets(pattern, tags, authorId, problemsCount, duration, headIds, offset, limit) =
             headIds
             |> AsyncSeq.ofSeq
             |> AsyncSeq.mapAsync (Head.CreateDocumentKey >> headContext.Get)
             |> this.SkipFailed()
+            |> this.HeadFilterByAuthor authorId
+            |> this.HeadFilter tags
             |> fun x ->
-                match pattern with
-                | None -> x
-                | Some(p) ->
-                    let normalizedPattern = p.ToLower()
+                match (pattern, authorId, problemsCount, duration) with
+                | (None, None, None, None) -> x
+                | _ ->
+                    let normalizedPattern = pattern |> Option.map(fun p -> p.ToLower())
                     x
                     |> AsyncSeq.filterAsync(fun head ->
                         problemSetContext.Get(ProblemSet.CreateDocumentKey(ProblemSetId(head.Commit.Target.Id.Value)))
                         |> Async.MapResult(fun problemSet ->
-                            problemSet.Title.ToLower().Contains(normalizedPattern)
+                            this.FilterByDuration(duration, problemSet) &&
+                            this.FilterByProblemsCount(problemsCount, problemSet) &&
+                            this.FilterByTitle(normalizedPattern, problemSet)
                         )
                         |> Async.Map(fun result ->
                             match result with
@@ -81,7 +110,6 @@ type HeadSearch(headContext: IHeadContext,
                             | Ok(filterResult) -> filterResult
                         )
                     )
-            |> this.HeadFilter tags
             |> AsyncSeq.skip(int offset)
             |> AsyncSeq.take(int limit)
             |> AsyncSeq.toListAsync

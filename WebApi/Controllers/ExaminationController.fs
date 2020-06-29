@@ -16,6 +16,7 @@ open Models.Permissions
 open Microsoft.Extensions.Logging
 open Models.Problems
 open Utils.ResultHelper
+open Contexts
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
@@ -40,6 +41,12 @@ type ProblemSetSearchRequest = {
     Pattern             : string option
     [<JsonPropertyName("tags")>]
     Tags                : List<TagModel>
+    [<JsonPropertyName("author_id")>]
+    AuthorId            : UserId option
+    [<JsonPropertyName("problems_count")>]
+    ProblemsCount       : SearchInterval<uint32> option
+    [<JsonPropertyName("duration")>]
+    Duration            : SearchInterval<int32> option
     [<JsonPropertyName("offset")>]
     Offset              : uint32
     [<JsonPropertyName("limit")>]
@@ -230,7 +237,14 @@ type ExaminationController(permissionsService: IPermissionsService,
     member this.GetProblemSetsByTags([<FromBody>] req: ProblemSetSearchRequest) =
         async {
             let userId = this.GetUserId()
-            match! examinationService.GetProblemSets(userId, req.Pattern, req.Tags, req.Offset, req.Limit) with
+            match! examinationService.GetProblemSets(userId,
+                                                     req.Pattern,
+                                                     req.Tags,
+                                                     req.AuthorId,
+                                                     req.ProblemsCount,
+                                                     req.Duration,
+                                                     req.Offset,
+                                                     req.Limit) with
             | Error(ex) ->
                 logger.LogError(ex, "Cannot get problem sets")
                 return (BadRequestResult() :> IActionResult)

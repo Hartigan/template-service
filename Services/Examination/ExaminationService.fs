@@ -58,6 +58,7 @@ type ExaminationService(reportContext: IReportContext,
         let toRemove = 
             submissions
             |> Seq.filter(fun submission -> submission.ReportId.IsSome)
+            |> List.ofSeq
 
         toRemove
         |> Seq.map(fun submission -> permissionsService.Remove(ProtectedId.Submission(submission.Id)))
@@ -101,19 +102,19 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
 
-        member this.GetProblemSets(userId, pattern, tags, offset, limit) = 
+        member this.GetProblemSets(userId, pattern, tags, authorId, problemsCount, duration, offset, limit) = 
             permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
             |> Async.MapResult(fun protectedIds ->
                 protectedIds
                 |> Seq.collect(fun protectedId ->
                     match protectedId with
-                    | ProtectedId.Head(id) -> seq { id }
+                    | ProtectedId.Head(id) -> Seq.singleton(id)
                     | _ -> Seq.empty
                 )
                 |> List.ofSeq
             )
             |> Async.BindResult(fun ids ->
-                headSearch.SearchProblemSets(pattern, tags |> Seq.map(fun x -> x.Value) |> List.ofSeq, ids, offset, limit)
+                headSearch.SearchProblemSets(pattern, tags |> List.map(fun x -> x.Value), authorId, problemsCount, duration, ids, offset, limit)
                 |> Async.Map(fun heads ->
                     heads
                     |> Seq.map HeadModel.Create

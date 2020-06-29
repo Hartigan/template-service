@@ -124,19 +124,17 @@ type PermissionsService(userService: IUserService,
             |> Async.BindResult(fun permissions ->
                 permissions.Members
                 |> Seq.map(fun m -> m.UserId)
-                |> Seq.append(seq { permissions.OwnerId })
+                |> Seq.append(Seq.singleton(permissions.OwnerId))
                 |> Seq.map(fun userId ->
                     userItemsContext.Update(UserItems.CreateDocumentKey(userId), fun userItems ->
                         {
                             userItems with
                                 Allowed =
                                     userItems.Allowed
-                                    |> Seq.filter(fun x -> x.Id <> rawId)
-                                    |> List.ofSeq
+                                    |> List.filter(fun x -> x.Id <> rawId)
                                 Owned =
                                     userItems.Owned
-                                    |> Seq.filter(fun x -> x.Id <> rawId)
-                                    |> List.ofSeq
+                                    |> List.filter(fun x -> x.Id <> rawId)
                         }
                     )
                 )
@@ -151,8 +149,7 @@ type PermissionsService(userService: IUserService,
                             groupItems with
                                 Allowed =
                                     groupItems.Allowed
-                                    |> Seq.filter(fun x -> x.Id <> rawId)
-                                    |> List.ofSeq
+                                    |> List.filter(fun x -> x.Id <> rawId)
                         }
                     )
                 )

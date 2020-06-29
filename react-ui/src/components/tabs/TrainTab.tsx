@@ -1,9 +1,9 @@
-import { makeStyles, Grid, Box } from "@material-ui/core";
+import { makeStyles, Grid, Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
 import SubmissionsListView from "../train/SubmissionsListView";
-import { SubmissionId } from "../../models/Identificators";
+import { SubmissionId, UserId } from "../../models/Identificators";
 import { Submission } from "../../models/Submission";
 import SubmissionDialog from "../train/SubmissionDialog";
 import { Head } from "../../models/Head";
@@ -11,6 +11,10 @@ import { Report } from "../../models/Report";
 import TagsEditorView from "../utils/TagsEditorView";
 import SearchField from "../common/SearchField";
 import { SearchNavigationView } from "../common/SearchNavigationView";
+import { SearchInterval } from "../../models/SearchInterval";
+import SearchIntervalView from "../common/SearchIntervalView";
+import UserSearchView from "../common/UserSearchView";
+import { UserService } from "../../services/UserService";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -26,11 +30,14 @@ const useStyles = makeStyles(theme => ({
     list: {
         margin: "auto",
         padding: "10px 0px 10px 0px",
-        width: "60%"
+        width: "80%"
     },
     searchNavigation: {
         margin: "auto",
         width: "auto"
+    },
+    tableHeaderCell: {
+        fontWeight: "bold"
     },
 }));
 
@@ -41,12 +48,16 @@ interface IState {
     problemSets: Array<Head> | null;
     searchString: string; 
     searchTags: Array<string>;
+    searchAuthorId: UserId | null;
+    searchProblemsCount: SearchInterval<number> | null;
+    searchDuration: SearchInterval<number> | null;
     searchPage: number;
     searchLimit: number;
 };
 
 export interface ITrainTabProps {
     examinationService: ExaminationService;
+    userService: UserService;
 }
 
 export default function TrainTab(props: ITrainTabProps) {
@@ -57,6 +68,9 @@ export default function TrainTab(props: ITrainTabProps) {
         problemSets: null,
         report: null,
         searchTags: [],
+        searchAuthorId: null,
+        searchProblemsCount: null,
+        searchDuration: null,
         searchString: "",
         searchPage: 1,
         searchLimit: 10
@@ -66,6 +80,9 @@ export default function TrainTab(props: ITrainTabProps) {
         let problemSets = await props.examinationService.getProblemSets(
             state.searchString,
             state.searchTags,
+            state.searchAuthorId,
+            state.searchProblemsCount,
+            state.searchDuration ? { from: state.searchDuration.from * 60, to: state.searchDuration.to * 60 } : null,
             (state.searchPage - 1) * state.searchLimit,
             state.searchLimit
         );
@@ -184,6 +201,30 @@ export default function TrainTab(props: ITrainTabProps) {
         })
     };
 
+    const onDurationInterval = (value: SearchInterval<number> | null) => {
+        setState({
+            ...state,
+            searchDuration: value,
+            problemSets: null
+        })
+    };
+
+    const onProblemsCountInterval = (value: SearchInterval<number> | null) => {
+        setState({
+            ...state,
+            searchProblemsCount: value,
+            problemSets: null
+        })
+    };
+
+    const onAuthorSelected = (value: UserId | null) => {
+        setState({
+            ...state,
+            searchAuthorId: value,
+            problemSets: null
+        })
+    };
+
     return (
         <Grid container className={classes.root}>
             {getSubmissionDialog()}
@@ -194,16 +235,59 @@ export default function TrainTab(props: ITrainTabProps) {
             </Grid>
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>
-                    <TagsEditorView
-                        tags={state.searchTags}
-                        onAdd={onAddSearchTag}
-                        onRemove={onRemoveSearchTag}
-                        />
-                    <SearchField
-                        placeholder="search..."
-                        color="primary"
-                        onSearch={(v) => onSearchUpdated(v)}
-                        />
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell className={classes.tableHeaderCell} align="right">Title search</TableCell>
+                                    <TableCell className={classes.tableHeaderCell} align="right">Duration interval</TableCell>
+                                    <TableCell className={classes.tableHeaderCell} align="right">Problems # interval</TableCell>
+                                    <TableCell className={classes.tableHeaderCell} align="right">Author</TableCell>
+                                    <TableCell className={classes.tableHeaderCell} align="right">Tags</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell align="right">
+                                        <SearchField
+                                            placeholder="title..."
+                                            color="primary"
+                                            onSearch={(v) => onSearchUpdated(v)}
+                                            />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <SearchIntervalView
+                                            interval={state.searchDuration}
+                                            defaultInterval={{from: 5, to: 10 }}
+                                            maxInterval={{from: 0, to: 120 }}
+                                            onChanged={onDurationInterval}
+                                            />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <SearchIntervalView
+                                            interval={state.searchProblemsCount}
+                                            defaultInterval={{from: 5, to: 10 }}
+                                            maxInterval={{from: 0, to: 50 }}
+                                            onChanged={onProblemsCountInterval}
+                                            />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <UserSearchView
+                                            userService={props.userService}
+                                            onUserSelected={onAuthorSelected}
+                                            />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <TagsEditorView
+                                            tags={state.searchTags}
+                                            onAdd={onAddSearchTag}
+                                            onRemove={onRemoveSearchTag}
+                                            />
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                     <SearchNavigationView
                         className={classes.searchNavigation}
                         page={state.searchPage}

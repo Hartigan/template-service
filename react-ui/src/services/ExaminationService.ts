@@ -7,6 +7,7 @@ import { HttpServiceFactory } from './HttpServiceFactory';
 import { ProblemSetPreview } from '../models/ProblemSetPreview';
 import { Head } from '../models/Head';
 import { SubmissionPreview } from '../models/SubmissionPreview';
+import { SearchInterval } from '../models/SearchInterval';
 
 export class ExaminationService {
     private http : HttpService;
@@ -56,12 +57,22 @@ export class ExaminationService {
         });
     }
 
-    getProblemSets(pattern: string | null, tags: Array<string> | null, offset: number, limit: number) {
+    getProblemSets(
+        pattern: string | null,
+        tags: Array<string> | null,
+        authorId: UserId | null,
+        problemsCount: SearchInterval<number> | null,
+        duration: SearchInterval<number> | null,
+        offset: number,
+        limit: number) {
         return this.http.post<Array<Head>>(
             `problem_sets`,
             {
                 pattern: pattern ? pattern : null,
                 tags: tags ? tags : null,
+                author_id: authorId,
+                problems_count: problemsCount,
+                duration: duration,
                 offset: offset,
                 limit: limit
             }

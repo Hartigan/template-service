@@ -62,6 +62,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
       </AppBar>
       <TabPanel value={value} index={0}>
         <TrainTab
+          userService={props.userService}
           examinationService={props.examinationService}
           />
       </TabPanel>
