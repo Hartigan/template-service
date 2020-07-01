@@ -3,6 +3,7 @@ import React from "react";
 import { Access, GroupAccess } from "../../models/Permissions";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { GroupId } from "../../models/Identificators";
+import { PermissionCapability } from "./PermissionCapability";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,6 +18,7 @@ export interface IGroupListItemViewProps {
     onRemove: (groupId: GroupId) => void;
     onUpdateAccess: (GroupId: GroupId, access: Access) => void;
     groupAccess: GroupAccess;
+    capability: Array<PermissionCapability>;
 }
 
 export default function GroupListItemView(props: IGroupListItemViewProps) {
@@ -70,26 +72,46 @@ export default function GroupListItemView(props: IGroupListItemViewProps) {
             <ListItemText primary={props.groupAccess.name}/>
             <ListItemSecondaryAction>
                 <Toolbar className={classes.toolbar}>
-                    <FormControlLabel
-                        control={<Checkbox color="primary" checked={access.generate} onChange={(event, value) => setGenerate(value)} />}
-                        label="Generate"
-                        labelPlacement="start"
-                        />
-                    <FormControlLabel
-                        control={<Checkbox color="primary" checked={access.read} onChange={(event, value) => setRead(value)}/>}
-                        label="Read"
-                        labelPlacement="start"
-                        />
-                    <FormControlLabel
-                        control={<Checkbox color="primary" checked={access.write} onChange={(event, value) => setWrite(value)}/>}
-                        label="Write"
-                        labelPlacement="start"
-                        />
-                    <FormControlLabel
-                        control={<Checkbox color="primary" checked={access.admin} onChange={(event, value) => setAdmin(value)}/>}
-                        label="Admin"
-                        labelPlacement="start"
-                        />
+                    {
+                        props.capability.map(p => {
+                            switch (p) {
+                                case PermissionCapability.Generate:
+                                    return (
+                                        <FormControlLabel
+                                            control={<Checkbox color="primary" checked={access.generate} onChange={(event, value) => setGenerate(value)} />}
+                                            label="Generate"
+                                            labelPlacement="start"
+                                            />
+                                    );
+                                case PermissionCapability.Read:
+                                    return (
+                                        <FormControlLabel
+                                            control={<Checkbox color="primary" checked={access.read} onChange={(event, value) => setRead(value)}/>}
+                                            label="Read"
+                                            labelPlacement="start"
+                                            />
+                                    );
+                                case PermissionCapability.Write:
+                                    return (
+                                        <FormControlLabel
+                                            control={<Checkbox color="primary" checked={access.write} onChange={(event, value) => setWrite(value)}/>}
+                                            label="Write"
+                                            labelPlacement="start"
+                                            />
+                                    );
+                                case PermissionCapability.Admin:
+                                    return (
+                                        <FormControlLabel
+                                            control={<Checkbox color="primary" checked={access.admin} onChange={(event, value) => setAdmin(value)}/>}
+                                            label="Admin"
+                                            labelPlacement="start"
+                                            />
+                                    );
+                                default:
+                                    return null;
+                            }
+                        })
+                    }
                     <IconButton aria-label="delete" onClick={() => props.onRemove(props.groupAccess.group_id)}>
                         <DeleteIcon />
                     </IconButton>

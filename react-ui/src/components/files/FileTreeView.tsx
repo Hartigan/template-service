@@ -15,6 +15,9 @@ import { TabPanel } from '../common/TabPanel';
 import HeadSearchView from './HeadSearchView';
 import { UserService } from '../../services/UserService';
 import { HeadLink, FolderLink } from '../../models/Folder';
+import { Report } from '../../models/Report';
+import { ExaminationService } from '../../services/ExaminationService';
+import ReportSearchView from './ReportSearchView';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -24,6 +27,9 @@ const useStyles = makeStyles(theme => ({
     },
     tabs: {
         width: "100%"
+    },
+    tab: {
+        minWidth: "100px"
     }
 }));
 
@@ -45,6 +51,11 @@ export interface IFileTreeViewProps {
     userService: UserService;
     selected: HeadLink | null;
     onSelect: (head: HeadLink) => void;
+    enableReports?: {
+        examinationService: ExaminationService;
+        selected: Report | null;
+        onSelect: (report: Report) => void;
+    };
 }
 
 export default function FileTreeView(props: IFileTreeViewProps) {
@@ -115,10 +126,14 @@ export default function FileTreeView(props: IFileTreeViewProps) {
             <Toolbar className={classes.tabs}>
                 <Tabs
                     variant="fullWidth"
+                    className={classes.tabs}
                     value={state.selectedTab}
                     onChange={(_, newValue) => selectTab(newValue)}>
-                    <Tab label="Tree" />
-                    <Tab label="Search" />
+                    <Tab className={classes.tab} label="My files" />
+                    <Tab className={classes.tab} label="All" />
+                    {props.enableReports
+                        ? <Tab className={classes.tab} label="Reports" />
+                        : null}
                 </Tabs>
             </Toolbar>
             <TabPanel
@@ -191,7 +206,19 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                     onSelect={props.onSelect}
                     />
             </TabPanel>
-
+            {props.enableReports
+                ? <TabPanel
+                        value={state.selectedTab}
+                        index={2}
+                        >
+                        <ReportSearchView
+                            userService={props.userService}
+                            examinationService={props.enableReports.examinationService}
+                            selected={props.enableReports.selected}
+                            onSelect={props.enableReports.onSelect}
+                            />
+                    </TabPanel>
+                : null}
         </div>
     );
 }

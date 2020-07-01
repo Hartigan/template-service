@@ -91,6 +91,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
       <TabPanel value={value} index={4}>
         <PermissionsTab
           permissionsService={props.permissionsService}
+          examinationService={props.examinationService}
           groupService={props.groupService}
           userService={props.userService}
           versionService={props.versionService}

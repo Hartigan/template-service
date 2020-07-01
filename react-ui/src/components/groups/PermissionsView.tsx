@@ -1,6 +1,6 @@
 import { makeStyles, Paper, Grid, IconButton, List, Typography } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { PermissionsService, Protected } from "../../services/PermissionsService";
+import { PermissionsService, Protected, ProtectedId } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
 import { Access, Permissions } from "../../models/Permissions";
 import UserSearchView from "../common/UserSearchView";
@@ -11,6 +11,8 @@ import MemberListItemView from "./MemberListItemView";
 import GroupSearchView from "../common/GroupSearchView";
 import GroupListItemView from "./GroupListItemView";
 import { GroupService } from "../../services/GroupService";
+import { PermissionCapability } from "./PermissionCapability";
+import { TargetType } from "../../models/Commit";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -46,11 +48,16 @@ interface IState {
     newGroupId: GroupId | null;
 }
 
+export interface ProtectedItem {
+    id: ProtectedId;
+    type: TargetType | "report";
+}
+
 export interface IPermissionsViewProps {
     permissionsService: PermissionsService;
     groupService: GroupService;
     userService: UserService;
-    protectedItem: Protected;
+    protectedItem: ProtectedItem;
     title: string;
 }
 
@@ -63,14 +70,30 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         newGroupId: null
     });
 
+    const fromProtectedItem = (item: ProtectedItem) => {
+        switch (item.type) {
+            case "report":
+                return {
+                    id: item.id,
+                    type: "report"
+                } as Protected;
+            case "problem":
+            case "problem_set":
+                return {
+                    id: item.id,
+                    type: "head"
+                } as Protected;
+        }
+    };
+
     const refresh = () => {
         props.permissionsService
-            .getPermissions(props.protectedItem)
+            .getPermissions(fromProtectedItem(props.protectedItem))
             .then(permissions => {
                 setState({
                     ...state,
                     permissions: permissions,
-                    protectedItem: props.protectedItem
+                    protectedItem: fromProtectedItem(props.protectedItem)
                 });
             });
     };
@@ -101,7 +124,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         }
 
         await props.permissionsService.addPermissionsMember(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 state.newUserId
             );
 
@@ -110,7 +133,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
 
     const onRemoveMember = async (userId: UserId) => {
         await props.permissionsService.removePermissionsMember(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 userId
             );
 
@@ -119,7 +142,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
 
     const onUpdateMemberAccess = async (userId: UserId, access: Access) => {
         await props.permissionsService.updatePermissionsMember(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 userId,
                 access
             );
@@ -133,7 +156,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         }
 
         await props.permissionsService.addPermissionsGroup(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 state.newGroupId
             );
 
@@ -142,7 +165,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
 
     const onRemoveGroup = async (groupId: GroupId) => {
         await props.permissionsService.removePermissionsGroup(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 groupId
             );
 
@@ -151,13 +174,24 @@ export default function PermissionsView(props: IPermissionsViewProps) {
 
     const onUpdateGroupAccess = async (groupId: GroupId, access: Access) => {
         await props.permissionsService.updatePermissionsGroup(
-                props.protectedItem,
+                fromProtectedItem(props.protectedItem),
                 groupId,
                 access
             );
 
         refresh();
     };
+
+    const capabilities = function() {
+        switch (props.protectedItem.type) {
+            case "report":
+                return [ PermissionCapability.Read, PermissionCapability.Admin ];
+            case "problem_set":
+                return [ PermissionCapability.Generate, PermissionCapability.Admin ];
+            case "problem":
+                return [ PermissionCapability.Generate, PermissionCapability.Read, PermissionCapability.Write, PermissionCapability.Admin ];
+        }
+    }();
 
     const classes = useStyles();
 
@@ -194,6 +228,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                                     <GroupListItemView 
                                         key={groupAccess.group_id}
                                         groupAccess={groupAccess}
+                                        capability={capabilities}
                                         onRemove={onRemoveGroup}
                                         onUpdateAccess={onUpdateGroupAccess}
                                         />
@@ -226,6 +261,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                                         key={member.user_id}
                                         member={member}
                                         onRemove={onRemoveMember}
+                                        capability={capabilities}
                                         onUpdateAccess={onUpdateMemberAccess}
                                         />
                                 )

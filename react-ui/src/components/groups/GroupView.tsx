@@ -7,6 +7,7 @@ import { UserService } from "../../services/UserService";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "./MemberListItemView";
 import { GroupService } from "../../services/GroupService";
+import { PermissionCapability } from "./PermissionCapability";
 
 
 
@@ -138,6 +139,12 @@ export default function GroupView(props: IGroupViewProps) {
                                     <MemberListItemView 
                                         key={member.user_id}
                                         member={member}
+                                        capability={[
+                                            PermissionCapability.Generate,
+                                            PermissionCapability.Read,
+                                            PermissionCapability.Write,
+                                            PermissionCapability.Admin,
+                                        ]}
                                         onRemove={onRemove}
                                         onUpdateAccess={onUpdateAccess}
                                         />

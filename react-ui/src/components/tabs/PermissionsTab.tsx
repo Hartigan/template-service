@@ -3,13 +3,15 @@ import React, { useEffect } from "react";
 import { PermissionsService } from "../../services/PermissionsService";
 import { UserService } from "../../services/UserService";
 import { FoldersService } from "../../services/FoldersService";
-import PermissionsView from "../groups/PermissionsView";
+import PermissionsView, { ProtectedItem } from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
 import { GroupService } from "../../services/GroupService";
 import { ProblemsService } from "../../services/ProblemsService";
 import FileTreeView from "../files/FileTreeView";
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { HeadLink } from "../../models/Folder";
+import { ExaminationService } from "../../services/ExaminationService";
+import { Report } from "../../models/Report";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -27,11 +29,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface IState {
-    current: HeadLink | null;
+    head: HeadLink | null;
+    report: Report | null;
+    item: ProtectedItem | null;
+    title: string;
 }
 
 export interface IPermissionsTabProps {
     permissionsService: PermissionsService;
+    examinationService: ExaminationService;
     userService: UserService;
     versionService: VersionService;
     foldersService: FoldersService;
@@ -43,13 +49,27 @@ export interface IPermissionsTabProps {
 export default function PermissionsTab(props: IPermissionsTabProps) {
 
     const [ state, setState ] = React.useState<IState>({
-        current: null,
+        head: null,
+        report: null,
+        item: null,
+        title: ""
     });
 
-    const changeCurrent = (current: HeadLink | null) => {
+    const changeCurrentHead = (current: HeadLink | null) => {
         setState({
             ...state,
-            current: current
+            head: current,
+            item: current ? { id: current.id, type: current.type } : null,
+            title: current ? current.name : ""
+        });
+    };
+
+    const changeCurrentReport = (current: Report | null) => {
+        setState({
+            ...state,
+            report: current,
+            item: current ? { id: current.id, type: "report" } : null,
+            title: current ? current.problem_set.title : ""
         });
     };
 
@@ -60,13 +80,13 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
 
     const classes = useStyles();
 
-    const permissionsView = state.current ? (
+    const permissionsView = state.item ? (
         <PermissionsView
             userService={props.userService}
             groupService={props.groupService}
             permissionsService={props.permissionsService}
-            protectedItem={{ id: state.current.id, type: "head"}}
-            title={state.current.name}
+            protectedItem={state.item}
+            title={state.title}
             />
     ) : null;
 
@@ -80,8 +100,13 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
                     problemsService={props.problemsService}
                     problemSetService={props.problemSetService}
                     userService={props.userService}
-                    selected={state.current}
-                    onSelect={changeCurrent} />
+                    selected={state.head}
+                    onSelect={changeCurrentHead}
+                    enableReports={{
+                        examinationService: props.examinationService,
+                        selected: state.report,
+                        onSelect: changeCurrentReport
+                    }}/>
             </Grid>
             <Grid item className={classes.content}>
                 {permissionsView}
