@@ -15,6 +15,7 @@ using Models.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Stores;
 using IdentityServer4.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace IdentityServer
 {
@@ -43,6 +44,11 @@ namespace IdentityServer
                     .AddSingleton<IUserRoleContext, UserRoleContext>();
 
             services.AddOidcStateDataFormatterCache();
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.All;
+            });
 
             services.AddIdentity<UserIdentity, RoleIdentity>()
                 .AddRoleStore<RoleStore>()
@@ -79,10 +85,9 @@ namespace IdentityServer
             }
 
             app.UseHttpsRedirection();
+            app.UseForwardedHeaders();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseIdentityServer();

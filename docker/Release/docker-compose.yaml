@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  cs-generator:
+    image: "cs-generator:0.1-alpha"
+    container_name: "cs-generator"
+    build:
+      context: ./../..
+      dockerfile: ./docker/Release/CSharpGenerator.Dockerfile
+    ports:
+    - "80"
+  identity-server:
+    image: "auth-service:0.1-alpha"
+    container_name: "auth-service"
+    build:
+      context: ./../..
+      dockerfile: ./docker/Release/IdentityServer.Dockerfile
+    ports:
+    - "80"
+    links:
+    - db:database
+  api:
+    image: "template-service:0.1-alpha"
+    container_name: "template-service"
+    build:
+      context: ./../..
+      dockerfile: ./docker/Release/WebApi.Dockerfile
+    ports:
+    - "80"
+    links:
+    - db:database
+    - identity-server:identity-server
+    - cs-generator:cs-generator
+  db:
+    image: "database-service:0.1-alpha"
+    container_name: "database-service"
+    volumes:
+      - db-volume:/opt/couchbase/var/lib/couchbase/data
+    build:
+      context: .
+      dockerfile: Couchbase.Dockerfile
+    ports:
+    - "8091:8091"
+  ui:
+    image: "react-ui:0.1-alpha"
+    container_name: "react-ui"
+    build:
+      context: ./../../react-ui
+      dockerfile: ./../docker/Release/ReactUI.Dockerfile
+    ports:
+    - "80"
+  master:
+    image: "master-node:0.1-alpha"
+    container_name: "master-node"
+    build:
+      context: .
+      dockerfile: Master.Dockerfile
+    ports:
+    - "80:80"
+    links:
+    - identity-server:auth-server
+    - api:api-server
+    - ui:ui-server
+volumes:
+  db-volume:

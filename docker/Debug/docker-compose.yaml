@@ -4,8 +4,8 @@ services:
     image: "cs-generator:latest"
     container_name: "cs-generator"
     build:
-      context: .
-      dockerfile: CSharpGenerator.Dockerfile
+      context: ./../..
+      dockerfile: ./docker/Debug/CSharpGenerator.Dockerfile
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     ports:
@@ -14,8 +14,8 @@ services:
     image: "auth-service:latest"
     container_name: "auth-service"
     build:
-      context: .
-      dockerfile: IdentityServer.Dockerfile
+      context: ./../..
+      dockerfile: ./docker/Debug/IdentityServer.Dockerfile
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     ports:
@@ -26,8 +26,8 @@ services:
     image: "template-service:latest"
     container_name: "template-service"
     build:
-      context: .
-      dockerfile: WebApi.Dockerfile
+      context: ./../..
+      dockerfile: ./docker/Debug/WebApi.Dockerfile
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     ports:
@@ -39,8 +39,12 @@ services:
   db:
     image: "database-service:latest"
     container_name: "database-service"
+    volumes:
+      - db-volume:/opt/couchbase/var/lib/couchbase/data
     build:
       context: .
-      dockerfile: Couchbase.Dockerfile
+      dockerfile: ./Couchbase.Dockerfile
     ports:
     - "8091:8091"
+volumes:
+  db-volume:

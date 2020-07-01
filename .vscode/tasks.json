@@ -13,6 +13,9 @@
         {
             "label": "compose",
             "command": "docker-compose up --build",
+            "options": {
+                "cwd": "${workspaceFolder}/docker/Debug"
+            },
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"
@@ -20,6 +23,9 @@
         {
             "label": "recompose web-api",
             "command": "docker-compose up -d --no-deps --build web",
+            "options": {
+                "cwd": "${workspaceFolder}/docker/Debug"
+            },
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"
@@ -27,6 +33,9 @@
         {
             "label": "recompose identity-server",
             "command": "docker-compose up -d --no-deps --build identity-server",
+            "options": {
+                "cwd": "${workspaceFolder}/docker/Debug"
+            },
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"
@@ -34,6 +43,9 @@
         {
             "label": "recompose cs-generator",
             "command": "docker-compose up -d --no-deps --build cs-generator",
+            "options": {
+                "cwd": "${workspaceFolder}/docker/Debug"
+            },
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"

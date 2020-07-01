@@ -19,9 +19,7 @@ couchbase-cli bucket-create -c localhost --bucket=main --bucket-type=couchbase -
 
 sleep 5
 
-cbq -e localhost -u administrator -p administrator --script="CREATE INDEX user_by_normalized_name ON \`main\`(\`normalized_name\`) WHERE (\`type\` = \"user\");"
-cbq -e localhost -u administrator -p administrator --script="CREATE INDEX submission_by_user ON \`main\`(\`permissions\`.\`owner_id\`) WHERE (\`type\` = \"submission\");"
-cbq -e localhost -u administrator -p administrator --script="CREATE INDEX report_by_user ON \`main\`(\`permissions\`.\`owner_id\`) WHERE (\`type\` = \"report\");"
+cbq -e localhost -u administrator -p administrator --script="CREATE INDEX documents_by_type ON \`main\`(\`type\`);"
 cbq -e localhost -u administrator -p administrator --script="CREATE PRIMARY INDEX primary_index ON \`main\`;"
 
 wait

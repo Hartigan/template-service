@@ -14,8 +14,8 @@ namespace IdentityServer
         {
             new Client
             {
-                ClientId = "react-ui",
-                ClientName = "React UI",
+                ClientId = "template-service-ui-debug",
+                ClientName = "Template service UI Debug",
                 AllowedGrantTypes = GrantTypes.Implicit,
                 RedirectUris = { "http://localhost:3000/signin-callback.html" },
                 PostLogoutRedirectUris = { "http://localhost:3000/signout-callback.html" },
@@ -29,6 +29,24 @@ namespace IdentityServer
                 },
                 AllowAccessTokensViaBrowser = true,
                 AllowedCorsOrigins = { "http://localhost:3000" },
+            },
+            new Client
+            {
+                ClientId = "template-service-ui",
+                ClientName = "Template service UI",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                RedirectUris = { "http://hartigan-pc/signin-callback.html" },
+                PostLogoutRedirectUris = { "http://hartigan-pc/signout-callback.html" },
+                AccessTokenLifetime = 60 * 60 * 24,
+                AllowedScopes = 
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    JwtClaimTypes.Role,
+                    "web_api"
+                },
+                AllowAccessTokensViaBrowser = true,
+                AllowedCorsOrigins = { "http://hartigan-pc" },
             }
         };
 

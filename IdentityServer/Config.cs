@@ -10,7 +10,7 @@ namespace IdentityServer
             {
                 new ApiResource(
                     "web_api",
-                    "My API Set #1",
+                    "Template service",
                     new[] { JwtClaimTypes.Subject, JwtClaimTypes.Role }
                 ),
             };
