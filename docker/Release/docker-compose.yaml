@@ -2,7 +2,7 @@ version: '3.8'
 services:
   cs-generator:
     image: "cs-generator:0.1-alpha"
-    container_name: "cs-generator"
+    container_name: "cs-generator-release"
     build:
       context: ./../..
       dockerfile: ./docker/Release/CSharpGenerator.Dockerfile
@@ -10,7 +10,7 @@ services:
     - "80"
   identity-server:
     image: "auth-service:0.1-alpha"
-    container_name: "auth-service"
+    container_name: "auth-service-release"
     build:
       context: ./../..
       dockerfile: ./docker/Release/IdentityServer.Dockerfile
@@ -20,7 +20,7 @@ services:
     - db:database
   api:
     image: "template-service:0.1-alpha"
-    container_name: "template-service"
+    container_name: "template-service-release"
     build:
       context: ./../..
       dockerfile: ./docker/Release/WebApi.Dockerfile
@@ -32,7 +32,7 @@ services:
     - cs-generator:cs-generator
   db:
     image: "database-service:0.1-alpha"
-    container_name: "database-service"
+    container_name: "database-service-release"
     volumes:
       - db-volume:/opt/couchbase/var/lib/couchbase/data
     build:
@@ -42,7 +42,7 @@ services:
     - "8091:8091"
   ui:
     image: "react-ui:0.1-alpha"
-    container_name: "react-ui"
+    container_name: "react-ui-release"
     build:
       context: ./../../react-ui
       dockerfile: ./../docker/Release/ReactUI.Dockerfile
@@ -50,7 +50,7 @@ services:
     - "80"
   master:
     image: "master-node:0.1-alpha"
-    container_name: "master-node"
+    container_name: "master-node-release"
     build:
       context: .
       dockerfile: Master.Dockerfile

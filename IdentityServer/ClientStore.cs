@@ -35,8 +35,8 @@ namespace IdentityServer
                 ClientId = "template-service-ui",
                 ClientName = "Template service UI",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "http://hartigan-pc/signin-callback.html" },
-                PostLogoutRedirectUris = { "http://hartigan-pc/signout-callback.html" },
+                RedirectUris = { "http://localserver/signin-callback.html" },
+                PostLogoutRedirectUris = { "http://localserver/signout-callback.html" },
                 AccessTokenLifetime = 60 * 60 * 24,
                 AllowedScopes = 
                 {
@@ -46,7 +46,7 @@ namespace IdentityServer
                     "web_api"
                 },
                 AllowAccessTokensViaBrowser = true,
-                AllowedCorsOrigins = { "http://hartigan-pc" },
+                AllowedCorsOrigins = { "http://localserver" },
             }
         };
 

@@ -1,3 +1,3 @@
 export class GlobalSettings {
-    public static ApiBaseUrl = 'http://localhost:8080';
+    public static ApiBaseUrl = process.env.REACT_APP_API_ENDPOINT ?? 'http://localhost:8080';
 }
