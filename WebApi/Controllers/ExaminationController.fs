@@ -114,7 +114,7 @@ type ExaminationController(permissionsService: IPermissionsService,
 
     [<HttpGet>]
     [<Route("complete")>]
-    member this.Complete([<FromQuery(Name = "id")>] id: string) =
+    member this.CompleteSubmission([<FromQuery(Name = "id")>] id: string) =
         async {
             let userId = this.GetUserId()
             let submissionId = SubmissionId(id)
@@ -133,7 +133,7 @@ type ExaminationController(permissionsService: IPermissionsService,
 
     [<HttpGet>]
     [<Route("start")>]
-    member this.Start([<FromQuery(Name = "id")>] id: string) =
+    member this.StartSubmission([<FromQuery(Name = "id")>] id: string) =
         async {
             let userId = this.GetUserId()
             let headId = HeadId(id)
@@ -234,7 +234,7 @@ type ExaminationController(permissionsService: IPermissionsService,
 
     [<HttpPost>]
     [<Route("problem_sets")>]
-    member this.GetProblemSetsByTags([<FromBody>] req: ProblemSetSearchRequest) =
+    member this.GetProblemSets([<FromBody>] req: ProblemSetSearchRequest) =
         async {
             let userId = this.GetUserId()
             match! examinationService.GetProblemSets(userId,
@@ -254,7 +254,7 @@ type ExaminationController(permissionsService: IPermissionsService,
 
     [<HttpGet>]
     [<Route("problem_set_preview")>]
-    member this.GetProblemSets([<FromQuery(Name = "id")>] id: string) =
+    member this.GetProblemSetPreview([<FromQuery(Name = "id")>] id: string) =
         async {
             let userId = this.GetUserId()
             let commitId = CommitId(id)
