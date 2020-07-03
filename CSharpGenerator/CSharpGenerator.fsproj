@@ -9,6 +9,10 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.5" />
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.5" />
+    <PackageReference Include="prometheus-net" Version="3.6.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="3.6.0" />
+    <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="3.6.0" />
     <ProjectReference Include="../CodeGeneratorContext/CodeGeneratorContext.fsproj" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <Compile Include="Models.fs" />

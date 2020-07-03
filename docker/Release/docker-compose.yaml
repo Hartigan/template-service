@@ -3,6 +3,7 @@ services:
   cs-generator:
     image: "cs-generator:0.1-alpha"
     container_name: "cs-generator-release"
+    restart: always
     build:
       context: ./../..
       dockerfile: ./docker/Release/CSharpGenerator.Dockerfile
@@ -11,6 +12,7 @@ services:
   identity-server:
     image: "auth-service:0.1-alpha"
     container_name: "auth-service-release"
+    restart: always
     build:
       context: ./../..
       dockerfile: ./docker/Release/IdentityServer.Dockerfile
@@ -21,6 +23,7 @@ services:
   api:
     image: "template-service:0.1-alpha"
     container_name: "template-service-release"
+    restart: always
     build:
       context: ./../..
       dockerfile: ./docker/Release/WebApi.Dockerfile
@@ -33,6 +36,7 @@ services:
   db:
     image: "database-service:0.1-alpha"
     container_name: "database-service-release"
+    restart: always
     volumes:
       - db-volume:/opt/couchbase/var/lib/couchbase/data
     build:
@@ -43,6 +47,7 @@ services:
   ui:
     image: "react-ui:0.1-alpha"
     container_name: "react-ui-release"
+    restart: always
     build:
       context: ./../../react-ui
       dockerfile: ./../docker/Release/ReactUI.Dockerfile
@@ -51,6 +56,7 @@ services:
   master:
     image: "master-node:0.1-alpha"
     container_name: "master-node-release"
+    restart: always
     build:
       context: .
       dockerfile: Master.Dockerfile
@@ -60,5 +66,52 @@ services:
     - identity-server:auth-server
     - api:api-server
     - ui:ui-server
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+    - 3000:3000
+    volumes:
+    - grafana-volume:/vol01/Docker/monitoring
+    links:
+    - influxdb:influxdb-server
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: always
+    ports:
+    - 8086:8086
+    volumes:
+    - influxdb-volume:/vol01/Docker/monitoring
+    environment:
+    - INFLUXDB_DB=telegraf
+    - INFLUXDB_USER=telegraf
+    - INFLUXDB_ADMIN_ENABLED=true
+    - INFLUXDB_ADMIN_USER=admin
+    - INFLUXDB_ADMIN_PASSWORD=telegraf
+  telegraf:
+    image: telegraf
+    container_name: telegraf
+    restart: always
+    links:
+    - identity-server:auth-server
+    - api:api-server
+    - db:couchbase-server
+    - master:master-server
+    - influxdb:influxdb-server
+    - cs-generator:cs-generator-server
+    environment:
+      HOST_PROC: /rootfs/proc
+      HOST_SYS: /rootfs/sys
+      HOST_ETC: /rootfs/etc
+    volumes:
+    - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /sys:/rootfs/sys:ro
+    - /proc:/rootfs/proc:ro
+    - /etc:/rootfs/etc:ro
 volumes:
   db-volume:
+  grafana-volume:
+  influxdb-volume:

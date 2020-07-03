@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication;
 using IdentityServer4.Stores;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.HttpOverrides;
+using Prometheus;
 
 namespace IdentityServer
 {
@@ -33,6 +34,9 @@ namespace IdentityServer
         {
             services.AddRazorPages();
             services.AddMvc();
+
+            services.AddHealthChecks()
+                .ForwardToPrometheus();
 
             services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
                     .AddSingleton<CouchbaseCluster>()
@@ -88,6 +92,7 @@ namespace IdentityServer
             app.UseForwardedHeaders();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseHttpMetrics();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseIdentityServer();
@@ -95,6 +100,8 @@ namespace IdentityServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
+                endpoints.MapMetrics();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }

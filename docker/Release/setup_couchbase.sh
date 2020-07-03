@@ -13,9 +13,17 @@ until [[ $(check_db) = 0 ]]; do
 done
 
 # setup cluster
-couchbase-cli cluster-init --cluster-username=administrator --cluster-password=administrator --cluster-port=8091 --cluster-ramsize=500 --cluster-index-ramsize=256 --services=data,index,query,analytics
 
-couchbase-cli bucket-create -c localhost --bucket=main --bucket-type=couchbase --bucket-ramsize=100 -u administrator -p administrator
+ADMIN_USER="administrator"
+ADMIN_PASS="administrator"
+TELEGRAF_USER="telegraf"
+TELEGRAF_PASS="telegraf"
+
+couchbase-cli cluster-init --cluster-username="${ADMIN_USER}" --cluster-password="${ADMIN_PASS}" --cluster-port=8091 --cluster-ramsize=500 --cluster-index-ramsize=256 --services=data,index,query,analytics
+
+couchbase-cli bucket-create -c localhost -u "${ADMIN_USER}" -p "${ADMIN_PASS}" --bucket=main --bucket-type=couchbase --bucket-ramsize=512
+
+couchbase-cli user-manage -c localhost -u "${ADMIN_USER}" -p "${ADMIN_PASS}" --set --auth-domain=local --rbac-username="${TELEGRAF_USER}" --rbac-password="${TELEGRAF_PASS}" --roles=data_monitoring[*]
 
 sleep 5
 

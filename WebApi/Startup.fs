@@ -26,6 +26,7 @@ open Services.VersionControl
 open Services.Examination
 open Services.Problems
 open System.Text.Json.Serialization
+open Prometheus
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -38,6 +39,10 @@ type Startup private () =
         services.AddControllers()
         |> fun x -> x.AddJsonOptions(fun options ->
                 options.JsonSerializerOptions.Converters.Add(JsonFSharpConverter()))
+        |> ignore
+
+        services.AddHealthChecks()
+        |> fun x -> x.ForwardToPrometheus()
         |> ignore
 
         let authConfig = this.Configuration.GetSection("Authentication").Get<AuthenticationSettings>()
@@ -96,6 +101,7 @@ type Startup private () =
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         app.UseHttpsRedirection() |> ignore
         app.UseRouting() |> ignore
+        app.UseHttpMetrics() |> ignore
         app.UseCors("_allowAll") |> ignore
 
         app.UseAuthentication() |> ignore
@@ -105,6 +111,8 @@ type Startup private () =
             endpoints.MapControllers()
             |> fun x -> x.RequireAuthorization()
             |> ignore
+            endpoints.MapMetrics() |> ignore
+            endpoints.MapHealthChecks("/health") |> ignore
             )
         |> ignore
 

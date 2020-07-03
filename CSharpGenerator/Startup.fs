@@ -7,6 +7,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open System.Text.Json.Serialization
 open Microsoft.Extensions.Caching.Memory
+open Prometheus
 
 
 type Startup private () =
@@ -22,6 +23,10 @@ type Startup private () =
                 options.JsonSerializerOptions.Converters.Add(JsonFSharpConverter()))
         |> ignore
 
+        services.AddHealthChecks()
+        |> fun x -> x.ForwardToPrometheus()
+        |> ignore
+
         services
         |> fun x -> x.AddSingleton<Processor>()
         |> fun x -> x.AddSingleton<CSharpGenerator>()
@@ -35,11 +40,14 @@ type Startup private () =
 
         app.UseHttpsRedirection() |> ignore
         app.UseRouting() |> ignore
+        app.UseHttpMetrics() |> ignore
 
         app.UseAuthorization() |> ignore
 
         app.UseEndpoints(fun endpoints ->
             endpoints.MapControllers() |> ignore
+            endpoints.MapMetrics() |> ignore
+            endpoints.MapHealthChecks("/health") |> ignore
             ) |> ignore
 
     member val Configuration : IConfiguration = null with get, set
