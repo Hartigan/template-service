@@ -1,16 +1,22 @@
-import { makeStyles, TextField, IconButton, Typography, List, ListItem } from "@material-ui/core";
+import { makeStyles, TextField, Typography, Card, CardContent, CardActions, Button } from "@material-ui/core";
 import React from "react";
 import { SubmissionProblem } from "../../models/Submission";
 import ProblemView from "./ProblemView";
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { GeneratedProblemId } from "../../models/Identificators";
 
 const useStyles = makeStyles(theme => ({
-    list: {
+    root: {
         width: '100%',
     },
     inputLabel: {
+        margin: "10px 0px 0px 0px",
         minWidth: 120,
+    },
+    title: {
+        margin: "0px 0px 10px 0px",
+    },
+    status: {
+        margin: "10px 0px 0px 0px",
     }
 }));
 
@@ -37,14 +43,12 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
     const answerStatus = () => {
         if (state.isAnswered) {
             return (
-                <ListItem>
-                        <Typography variant="body2">
-                            Answer aplied
-                        </Typography>
-                </ListItem>
+                <Typography className={classes.status} variant="body2">
+                    {state.answer} - answer aplied
+                </Typography>
             )
         }
-        return <ListItem />
+        return null;
     }
 
     const onAnswer = async () => {
@@ -56,30 +60,27 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
     };
 
     return (
-        <List
-            className={classes.list}>
-            <ListItem>
-                <Typography variant="h6">
+        <Card className={classes.root} variant="outlined">
+            <CardContent>
+                <Typography className={classes.title} variant="h6">
                     {props.problem.title}
                 </Typography>
-            </ListItem>
-            <ListItem>
                 <ProblemView view={props.problem.view} />
-            </ListItem>
-            <ListItem>
                 <TextField
                     className={classes.inputLabel}
                     label="Answer"
                     value={state.answer}
+                    onKeyDown={event => { if (event.keyCode === 13) { onAnswer(); } }}
                     onChange={(e) => setState({...state, answer: e.target.value})} />
-                <IconButton
-                    edge="end"
-                    color="inherit"
-                    onClick={onAnswer}>
-                    <PlayArrowIcon />
-                </IconButton>
-            </ListItem>
-            {answerStatus()}
-        </List>
+                {answerStatus()}
+            </CardContent>
+            <CardActions>
+                <Button
+                    color="primary"
+                    onClick={() => onAnswer()}>
+                    Apply
+                </Button>
+            </CardActions>
+        </Card>
     );
 };
