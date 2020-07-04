@@ -29,13 +29,6 @@ type ProtectedId =
     | Submission of SubmissionId
     | Report of ReportId
 
-    member this.ToEntity() =
-        match this with
-        | Folder(id) -> { ProtectedItem.Id = id.Value; Type = FolderType.Instance.Value }
-        | Head(id) -> { ProtectedItem.Id = id.Value; Type = HeadType.Instance.Value }
-        | Submission(id) -> { ProtectedItem.Id = id.Value; Type = SubmissionType.Instance.Value }
-        | Report(id) -> { ProtectedItem.Id = id.Value; Type = ReportType.Instance.Value }
-
     static member Create(id: string, typeName: string) =
         match ProtectedType.Create(typeName) with
             | Error(ex) -> Error(ex)
@@ -48,60 +41,54 @@ type ProtectedId =
                     | ProtectedType.Report(_) -> ProtectedId.Report(ReportId(id))
                 )
 
-    static member Create(protectedItem: ProtectedItem) =
-        ProtectedId.Create(protectedItem.Id, protectedItem.Type)
+type ProtectedItemsModel =
+    {
+        [<JsonPropertyName("heads")>]
+        Heads : List<HeadId>
+        [<JsonPropertyName("folders")>]
+        Folders : List<FolderId>
+        [<JsonPropertyName("submissions")>]
+        Submissions : List<SubmissionId>
+        [<JsonPropertyName("reports")>]
+        Reports : List<ReportId>
+    }
 
+    static member Create(entity: ProtectedItems) : ProtectedItemsModel =
+        {
+            Heads = entity.Heads
+            Folders = entity.Folders
+            Submissions = entity.Submissions
+            Reports = entity.Reports
+        }
 
 type UserItemsModel =
     {
         [<JsonPropertyName("user_id")>]
         UserId: UserId
         [<JsonPropertyName("allowed")>]
-        Allowed: List<ProtectedId>
+        Allowed: ProtectedItemsModel
         [<JsonPropertyName("owned")>]
-        Owned: List<ProtectedId>
+        Owned: ProtectedItemsModel
     }
 
-    static member Create(userItems: UserItems) : Result<UserItemsModel, Exception> =
-        let userId = userItems.UserId
-        let allowedResult =
-            userItems.Allowed
-            |> Seq.map ProtectedId.Create
-            |> ResultOfSeq
-
-        let ownedResult =
-            userItems.Owned
-            |> Seq.map ProtectedId.Create
-            |> ResultOfSeq
+    static member Create(userItems: UserItems) : UserItemsModel =
+        {
+            UserId = userItems.UserId
+            Allowed = ProtectedItemsModel.Create(userItems.Allowed)
+            Owned = ProtectedItemsModel.Create(userItems.Owned)
+        }
         
-        match (allowedResult, ownedResult) with
-        | (Ok(allowed), Ok(owned)) ->
-            Ok({
-                UserId = userId
-                Allowed = allowed
-                Owned = owned
-            })
-        | errors -> Error(ErrorOf2 errors)
 
 type GroupItemsModel =
     {
         [<JsonPropertyName("group_id")>]
         GroupId: GroupId
         [<JsonPropertyName("allowed")>]
-        Allowed: List<ProtectedId>
+        Allowed: ProtectedItemsModel
     }
 
-    static member Create(groupItems: GroupItems) : Result<GroupItemsModel, Exception> =
-        let groupId = groupItems.GroupId
-        let allowedResult =
-            groupItems.Allowed
-            |> Seq.map ProtectedId.Create
-            |> ResultOfSeq
-
-        match allowedResult with
-        | Ok(allowed) ->
-            Ok({
-                GroupId = groupId
-                Allowed = allowed
-            })
-        | Error(error) -> Error(error)
+    static member Create(groupItems: GroupItems) : GroupItemsModel =
+        {
+            GroupId = groupItems.GroupId
+            Allowed = ProtectedItemsModel.Create(groupItems.Allowed)
+        }

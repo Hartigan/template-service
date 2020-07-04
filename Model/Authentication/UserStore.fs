@@ -132,8 +132,18 @@ type UserStore(context: IUserContext,
                     {
                         UserItems.UserId = entity.Id
                         Type = UserItemsType.Instance
-                        Allowed = []
-                        Owned = []
+                        Allowed = {
+                            Heads = []
+                            Folders = []
+                            Reports = []
+                            Submissions = []
+                        }
+                        Owned = {
+                            Heads = []
+                            Folders = []
+                            Reports = []
+                            Submissions = []
+                        }
                     }
                 let userItemsResult = userItemsContext.Insert(userItems, userItems)
 

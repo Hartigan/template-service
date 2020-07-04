@@ -25,11 +25,11 @@ type PermissionsService(userService: IUserService,
 
     member this.GetUserItems(userId: UserId) =
         userItemsContext.Get(UserItems.CreateDocumentKey(userId))
-        |> Async.TryMapResult UserItemsModel.Create
+        |> Async.MapResult UserItemsModel.Create
 
     member this.GetGroupItems(groupId: GroupId) =
         groupItemsContext.Get(GroupItems.CreateDocumentKey(groupId))
-        |> Async.TryMapResult GroupItemsModel.Create
+        |> Async.MapResult GroupItemsModel.Create
 
     member this.CreateMember(m: Member) =
         userService.Get(m.UserId)
@@ -105,84 +105,107 @@ type PermissionsService(userService: IUserService,
         | ProtectedId.Submission(id) -> permissionsContext.Update(Submission.CreateDocumentKey(id), updater)
         | ProtectedId.Report(id) -> permissionsContext.Update(Report.CreateDocumentKey(id), updater)
 
-    interface IPermissionsService with
-        member this.Get(userId: UserId, protectedId: ProtectedId) =
-            this.GetPermissions(protectedId)
-            |> Async.BindResult(fun permissions ->
-                this.GetAccess(permissions, userId)
-            )
+    member this.RemoveProtectedId(protectedId: ProtectedId) : ProtectedItems -> ProtectedItems =
+        match protectedId with
+        | ProtectedId.Head(headId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Heads =
+                            protectedItems.Heads
+                            |> List.filter(fun x -> x <> headId)
+                }
+        | ProtectedId.Folder(folderId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Folders =
+                            protectedItems.Folders
+                            |> List.filter(fun x -> x <> folderId)
+                }
+        | ProtectedId.Report(reportId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Reports =
+                            protectedItems.Reports
+                            |> List.filter(fun x -> x <> reportId)
+                }
+        | ProtectedId.Submission(submissionId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Submissions =
+                            protectedItems.Submissions
+                            |> List.filter(fun x -> x <> submissionId)
+                }
 
-        member this.Remove(id: ProtectedId) =
-            let rawId =
-                match id with
-                | ProtectedId.Folder(folderId) -> folderId.Value
-                | ProtectedId.Head(headId) -> headId.Value
-                | ProtectedId.Submission(submissionId) -> submissionId.Value
-                | ProtectedId.Report(reportId) -> reportId.Value
+    member this.ContainsProtectedId(protectedId: ProtectedId) : ProtectedItems -> bool =
+        match protectedId with
+        | ProtectedId.Head(headId) ->
+            fun protectedItems -> protectedItems.Heads |> List.contains(headId)
+        | ProtectedId.Folder(folderId) ->
+            fun protectedItems -> protectedItems.Folders |> List.contains(folderId)
+        | ProtectedId.Report(reportId) ->
+            fun protectedItems -> protectedItems.Reports |> List.contains(reportId)
+        | ProtectedId.Submission(submissionId) -> 
+            fun protectedItems -> protectedItems.Submissions |> List.contains(submissionId)
 
-            this.GetPermissions(id)
-            |> Async.BindResult(fun permissions ->
-                permissions.Members
-                |> Seq.map(fun m -> m.UserId)
-                |> Seq.append(Seq.singleton(permissions.OwnerId))
-                |> Seq.map(fun userId ->
-                    userItemsContext.Update(UserItems.CreateDocumentKey(userId), fun userItems ->
-                        {
-                            userItems with
-                                Allowed =
-                                    userItems.Allowed
-                                    |> List.filter(fun x -> x.Id <> rawId)
-                                Owned =
-                                    userItems.Owned
-                                    |> List.filter(fun x -> x.Id <> rawId)
-                        }
-                    )
-                )
-                |> ResultOfAsyncSeq
-                |> Async.MapResult(fun _ -> permissions)
-            )
-            |> Async.BindResult(fun permissions ->
-                permissions.Groups
-                |> Seq.map(fun group ->
-                    groupItemsContext.Update(GroupItems.CreateDocumentKey(group.GroupId), fun groupItems ->
-                        {
-                            groupItems with
-                                Allowed =
-                                    groupItems.Allowed
-                                    |> List.filter(fun x -> x.Id <> rawId)
-                        }
-                    )
-                )
-                |> ResultOfAsyncSeq
-            )
-            |> Async.MapResult ignore
+    member this.AppendProtectedId(protectedId: ProtectedId) : ProtectedItems -> ProtectedItems =
+        match protectedId with
+        | ProtectedId.Head(headId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Heads = headId :: protectedItems.Heads
+                }
+        | ProtectedId.Folder(folderId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Folders = folderId :: protectedItems.Folders
+                }
+        | ProtectedId.Report(reportId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Reports = reportId :: protectedItems.Reports
+                }
+        | ProtectedId.Submission(submissionId) ->
+            fun protectedItems ->
+                {
+                    protectedItems with
+                        Submissions = submissionId :: protectedItems.Submissions
+                }
 
-        member this.GetOwner(protectedId) = 
-            this.GetPermissions(protectedId)
-            |> Async.MapResult(fun p -> p.OwnerId)
+    member this.AddIfNotExistsProtectedId(protectedId: ProtectedId) : ProtectedItems -> ProtectedItems =
+        let checker = this.ContainsProtectedId(protectedId)
+        let appender = this.AppendProtectedId(protectedId)
 
-        member this.Get(userId: UserId, access: AccessModel, protectedType: ProtectedType) : Async<Result<List<ProtectedId>, Exception>> =
-            this.GetUserGroups(userId)
+        fun protectedItems ->
+            if checker(protectedItems) then
+                protectedItems
+            else
+                appender(protectedItems)
+
+    member this.GetProtectedIdsByType<'T when 'T : equality>(userId: UserId,
+                                                             access: AccessModel,
+                                                             userItemsGetter: UserItemsModel -> List<'T>,
+                                                             groupsItemsGetter: GroupItemsModel -> List<'T>,
+                                                             permissionsGetter: 'T -> Async<Result<Permissions, Exception>>) =
+        this.GetUserGroups(userId)
             |> Async.BindResult(fun userGroups ->
                 userGroups.Allowed
                 |> Seq.map this.GetGroupItems
                 |> ResultOfAsyncSeq
                 |> Async.MapResult(fun groupsItems ->
                     groupsItems
-                    |> Seq.collect(fun x -> x.Allowed)
-                    |> Seq.filter(fun id ->
-                        match (id, protectedType) with
-                        | (ProtectedId.Folder(_), ProtectedType.Folder(_)) -> true
-                        | (ProtectedId.Head(_), ProtectedType.Head(_)) -> true
-                        | (ProtectedId.Submission(_), ProtectedType.Submission(_)) -> true
-                        | (ProtectedId.Report(_), ProtectedType.Report(_)) -> true
-                        | _ -> false
-                    )
+                    |> Seq.collect groupsItemsGetter
                 )
             )
             |> Async.BindResult(fun ids ->
                 this.GetUserItems(userId)
-                |> Async.MapResult(fun userItems -> userItems.Allowed @ userItems.Owned)
+                |> Async.MapResult userItemsGetter
                 |> Async.MapResult(fun userIds -> 
                     userIds
                     |> Seq.append ids
@@ -192,7 +215,7 @@ type PermissionsService(userService: IUserService,
             |> Async.BindResult(fun ids ->
                 ids
                 |> Seq.map(fun id ->
-                    this.GetPermissions(id)
+                    permissionsGetter(id)
                     |> Async.BindResult(fun permissions ->
                         async {
                             match! this.GetAccess(permissions, userId) with
@@ -210,6 +233,80 @@ type PermissionsService(userService: IUserService,
                 |> Seq.map(fun (id, _) -> id)
                 |> List.ofSeq
             )
+        
+
+    interface IPermissionsService with
+        member this.Get(userId: UserId, protectedId: ProtectedId) =
+            this.GetPermissions(protectedId)
+            |> Async.BindResult(fun permissions ->
+                this.GetAccess(permissions, userId)
+            )
+
+        member this.Remove(id: ProtectedId) =
+            let remover = this.RemoveProtectedId(id)
+
+            this.GetPermissions(id)
+            |> Async.BindResult(fun permissions ->
+                permissions.Members
+                |> Seq.map(fun m -> m.UserId)
+                |> Seq.append(Seq.singleton(permissions.OwnerId))
+                |> Seq.map(fun userId ->
+                    userItemsContext.Update(UserItems.CreateDocumentKey(userId), fun userItems ->
+                        {
+                            userItems with
+                                Allowed = remover(userItems.Allowed)
+                                Owned = remover(userItems.Owned)
+                        }
+                    )
+                )
+                |> ResultOfAsyncSeq
+                |> Async.MapResult(fun _ -> permissions)
+            )
+            |> Async.BindResult(fun permissions ->
+                permissions.Groups
+                |> Seq.map(fun group ->
+                    groupItemsContext.Update(GroupItems.CreateDocumentKey(group.GroupId), fun groupItems ->
+                        {
+                            groupItems with
+                                Allowed = remover(groupItems.Allowed)
+                        }
+                    )
+                )
+                |> ResultOfAsyncSeq
+            )
+            |> Async.MapResult ignore
+
+        member this.GetOwner(protectedId) = 
+            this.GetPermissions(protectedId)
+            |> Async.MapResult(fun p -> p.OwnerId)
+
+        member this.GetHeads(userId: UserId, access: AccessModel) : Async<Result<List<HeadId>, Exception>> =
+            this.GetProtectedIdsByType<HeadId>(userId,
+                                               access,
+                                               (fun x -> x.Allowed.Heads @ x.Owned.Heads),
+                                               (fun x -> x.Allowed.Heads),
+                                               (Head.CreateDocumentKey >> permissionsContext.Get))
+
+        member this.GetFolders(userId: UserId, access: AccessModel) : Async<Result<List<FolderId>, Exception>> =
+            this.GetProtectedIdsByType<FolderId>(userId,
+                                                 access,
+                                                 (fun x -> x.Allowed.Folders @ x.Owned.Folders),
+                                                 (fun x -> x.Allowed.Folders),
+                                                 (Folder.CreateDocumentKey >> permissionsContext.Get))
+        
+        member this.GetSubmissions(userId: UserId, access: AccessModel) : Async<Result<List<SubmissionId>, Exception>> =
+            this.GetProtectedIdsByType<SubmissionId>(userId,
+                                                     access,
+                                                     (fun x -> x.Allowed.Submissions @ x.Owned.Submissions),
+                                                     (fun x -> x.Allowed.Submissions),
+                                                     (Submission.CreateDocumentKey >> permissionsContext.Get))
+
+        member this.GetReports(userId: UserId, access: AccessModel) : Async<Result<List<ReportId>, Exception>> =
+            this.GetProtectedIdsByType<ReportId>(userId,
+                                                 access,
+                                                 (fun x -> x.Allowed.Reports @ x.Owned.Reports),
+                                                 (fun x -> x.Allowed.Reports),
+                                                 (Report.CreateDocumentKey >> permissionsContext.Get))
 
         member this.Get(userId: UserId, access: AccessModel) : Async<Result<List<GroupModel>, Exception>> =
             this.GetUserGroups(userId)
@@ -275,7 +372,6 @@ type PermissionsService(userService: IUserService,
             )
 
         member this.Add(id: ProtectedId, userId: UserId) =
-            let protectedItem = id.ToEntity()
             this.UpdatePermissions
                 (id,
                 (fun permissions ->
@@ -295,26 +391,20 @@ type PermissionsService(userService: IUserService,
                         }
                 ))
             |> Async.BindResult(fun _ ->
+                let adder = this.AddIfNotExistsProtectedId(id)
                 userItemsContext.Update
                     (UserItems.CreateDocumentKey(userId),
                     fun userItems ->
-                        let itemExists =
-                            userItems.Allowed
-                            |> Seq.exists(fun x -> x.Id = protectedItem.Id)
-                        if itemExists then
-                            userItems
-                        else
-                            {
-                                userItems with
-                                    Allowed = protectedItem :: userItems.Allowed
-                            }
+                        {
+                            userItems with
+                                Allowed = adder(userItems.Allowed)
+                        }
                     )
             )
             |> Async.MapResult ignore
             
 
         member this.Add(id: ProtectedId, groupId: GroupId) =
-            let protectedItem = id.ToEntity()
             this.UpdatePermissions
                 (id,
                 (fun permissions ->
@@ -334,25 +424,19 @@ type PermissionsService(userService: IUserService,
                         }
                 ))
             |> Async.BindResult(fun _ ->
+                let adder = this.AddIfNotExistsProtectedId(id)
                 groupItemsContext.Update
                     (GroupItems.CreateDocumentKey(groupId),
                     fun groupItems ->
-                        let itemExists =
-                            groupItems.Allowed
-                            |> Seq.exists(fun x -> x.Id = protectedItem.Id)
-                        if itemExists then
-                            groupItems
-                        else
-                            {
-                                groupItems with
-                                    Allowed = protectedItem :: groupItems.Allowed
-                            }
+                        {
+                            groupItems with
+                                Allowed = adder(groupItems.Allowed)
+                        }
                     )
             )
             |> Async.MapResult ignore
 
         member this.Remove(id: ProtectedId, userId: UserId) =
-            let protectedItem = id.ToEntity()
             this.UpdatePermissions
                 (id,
                 fun perm ->
@@ -365,14 +449,12 @@ type PermissionsService(userService: IUserService,
                     }
                 )
             |> Async.BindResult(fun _ ->
+                let remover = this.RemoveProtectedId(id)
                 userItemsContext.Update(UserItems.CreateDocumentKey(userId),
                                         fun x ->
                                             {
                                                 x with
-                                                    Allowed =
-                                                        x.Allowed
-                                                        |> Seq.filter(fun x -> x <> protectedItem)
-                                                        |> List.ofSeq
+                                                    Allowed = remover(x.Allowed)
                                             }
                                         )
             )
@@ -440,15 +522,12 @@ type PermissionsService(userService: IUserService,
                    )
             )
             |> Async.BindResult(fun _ ->
+                let adder = this.AddIfNotExistsProtectedId(id)
                 userItemsContext.Update(UserItems.CreateDocumentKey(userId),
                                         fun x ->
-                                            let protectedItem = id.ToEntity()
                                             {
                                                 x with
-                                                    Allowed = protectedItem :: (x.Allowed
-                                                    |> Seq.filter(fun item -> item.Id <> protectedItem.Id)
-                                                    |> List.ofSeq
-                                                    )
+                                                    Allowed = adder(x.Allowed)
                                             }
                                         )
             )
@@ -491,30 +570,27 @@ type PermissionsService(userService: IUserService,
                    )
             )
             |> Async.BindResult(fun _ ->
+                let adder = this.AddIfNotExistsProtectedId(id)
                 groupItemsContext.Update(GroupItems.CreateDocumentKey(groupId),
                                         fun x ->
-                                            let protectedItem = id.ToEntity()
                                             {
                                                 x with
-                                                    Allowed = protectedItem :: (x.Allowed
-                                                    |> Seq.filter(fun item -> item.Id <> protectedItem.Id)
-                                                    |> List.ofSeq
-                                                    )
+                                                    Allowed = adder(x.Allowed)
                                             }
                                         )
             )
 
         member this.UserItemsAppend(id, userId) =
+            let adder = this.AddIfNotExistsProtectedId(id)
             userItemsContext.Update(UserItems.CreateDocumentKey(userId),
                                     fun x ->
                                         {
                                             x with
-                                                Owned = id.ToEntity() :: x.Owned
+                                                Owned = adder(x.Owned)
                                         }
                                     )
 
         member this.Remove(id: ProtectedId, groupId: GroupId) =
-            let protectedItem = id.ToEntity()
             this.UpdatePermissions
                 (id,
                 fun perm ->
@@ -527,14 +603,12 @@ type PermissionsService(userService: IUserService,
                     }
                 )
             |> Async.BindResult(fun _ ->
+                let remover = this.RemoveProtectedId(id)
                 groupItemsContext.Update(GroupItems.CreateDocumentKey(groupId),
                                          fun x ->
                                              {
                                                  x with
-                                                     Allowed =
-                                                        x.Allowed
-                                                        |> Seq.filter(fun x -> x <> protectedItem)
-                                                        |> List.ofSeq
+                                                     Allowed = remover(x.Allowed)
                                              }
                                          )
             )

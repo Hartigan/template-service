@@ -82,16 +82,7 @@ type ExaminationService(reportContext: IReportContext,
         member this.Search(pattern, userId, targetId, offset, limit): Async<Result<List<ReportId>,Exception>> =
             (this :> IExaminationService).GetSubmissions(userId)
             |> Async.BindResult(fun _ ->
-                permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Report)
-            )
-            |> Async.MapResult(fun protectedIds ->
-                protectedIds
-                |> Seq.collect(fun protectedId ->
-                    match protectedId with
-                    | ProtectedId.Report(id) -> seq { id }
-                    | _ -> Seq.empty
-                )
-                |> List.ofSeq
+                permissionsService.GetReports(userId, AccessModel.CanRead)
             )
             |> Async.MapResultAsync(fun ids ->
                 reportSearch.Search(pattern, targetId, ids, offset, limit)
@@ -103,16 +94,7 @@ type ExaminationService(reportContext: IReportContext,
             )
 
         member this.GetProblemSets(userId, pattern, tags, authorId, problemsCount, duration, offset, limit) = 
-            permissionsService.Get(userId, AccessModel.CanGenerate, ProtectedType.Head)
-            |> Async.MapResult(fun protectedIds ->
-                protectedIds
-                |> Seq.collect(fun protectedId ->
-                    match protectedId with
-                    | ProtectedId.Head(id) -> Seq.singleton(id)
-                    | _ -> Seq.empty
-                )
-                |> List.ofSeq
-            )
+            permissionsService.GetHeads(userId, AccessModel.CanGenerate)
             |> Async.BindResult(fun ids ->
                 headSearch.SearchProblemSets(pattern, tags |> List.map(fun x -> x.Value), authorId, problemsCount, duration, ids, offset, limit)
                 |> Async.Map(fun heads ->
@@ -290,14 +272,9 @@ type ExaminationService(reportContext: IReportContext,
             )
 
         member this.GetSubmissions(userId: UserId) =
-            permissionsService.Get(userId, AccessModel.CanRead, ProtectedType.Submission)
+            permissionsService.GetSubmissions(userId, AccessModel.CanRead)
             |> Async.BindResult(fun ids ->
                 ids
-                |> Seq.collect(fun id ->
-                    match id with
-                    | Submission(submissionId) -> [ submissionId ]
-                    | _ -> []
-                )
                 |> Seq.map this.TryComplete
                 |> ResultOfAsyncSeq
             )

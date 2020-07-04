@@ -180,7 +180,12 @@ type GroupService(groupContext: IGroupContext,
             let groupItems = {
                     GroupItems.GroupId = groupId
                     Type = GroupItemsType.Instance
-                    Allowed = []
+                    Allowed = {
+                        Heads = []
+                        Folders = []
+                        Submissions = []
+                        Reports = []
+                    }
                 }
 
             groupContext.Insert(group, group)

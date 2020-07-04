@@ -9,7 +9,12 @@ open DatabaseTypes
 type IPermissionsService =
     abstract member CheckPermissions : ProtectedId * UserId * AccessModel -> Async<Result<unit, Exception>>
     abstract member CheckPermissions : GroupId * UserId * AccessModel -> Async<Result<unit, Exception>>
-    abstract member Get : UserId * AccessModel * ProtectedType -> Async<Result<List<ProtectedId>, Exception>>
+
+    abstract member GetHeads : UserId * AccessModel -> Async<Result<List<HeadId>, Exception>>
+    abstract member GetFolders : UserId * AccessModel -> Async<Result<List<FolderId>, Exception>>
+    abstract member GetReports : UserId * AccessModel -> Async<Result<List<ReportId>, Exception>>
+    abstract member GetSubmissions : UserId * AccessModel -> Async<Result<List<SubmissionId>, Exception>>
+
     abstract member Get : UserId * AccessModel -> Async<Result<List<GroupModel>, Exception>>
     abstract member Get : ProtectedId -> Async<Result<PermissionsModel, Exception>>
     abstract member Get : UserId * ProtectedId -> Async<Result<AccessModel, Exception>>

@@ -11,12 +11,16 @@ type GroupItemsType private () =
 and GroupItemsTypeConverter() =
     inherit StringConverter<GroupItemsType>((fun m -> m.Value), (fun _ -> GroupItemsType.Instance))
 
-type ProtectedItem =
+type ProtectedItems =
     {
-        [<JsonPropertyName("id")>]
-        Id : string
-        [<JsonPropertyName("type")>]
-        Type : string
+        [<JsonPropertyName("heads")>]
+        Heads : List<HeadId>
+        [<JsonPropertyName("folders")>]
+        Folders : List<FolderId>
+        [<JsonPropertyName("submissions")>]
+        Submissions : List<SubmissionId>
+        [<JsonPropertyName("reports")>]
+        Reports : List<ReportId>
     }
 
 type GroupItems = 
@@ -24,7 +28,7 @@ type GroupItems =
         [<JsonPropertyName("user_id")>]
         GroupId : GroupId
         [<JsonPropertyName("allowed")>]
-        Allowed: List<ProtectedItem>
+        Allowed: ProtectedItems
         [<JsonPropertyName("type")>]
         Type : GroupItemsType
     }
@@ -51,9 +55,9 @@ type UserItems =
         [<JsonPropertyName("user_id")>]
         UserId : UserId
         [<JsonPropertyName("owned")>]
-        Owned: List<ProtectedItem>
+        Owned: ProtectedItems
         [<JsonPropertyName("allowed")>]
-        Allowed: List<ProtectedItem>
+        Allowed: ProtectedItems
         [<JsonPropertyName("type")>]
         Type : UserItemsType
     }
