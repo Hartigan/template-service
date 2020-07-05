@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 
 interface IState {
     answer: string;
-    isAnswered: boolean;
+    submittedAnswer: string | undefined;
 }
 
 export interface ISubmissionProblemViewProps {
@@ -35,16 +35,16 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
 
     const [ state, setState ] = React.useState<IState>({
         answer: props.answer ? props.answer : "",
-        isAnswered: props.answer !== undefined
+        submittedAnswer: props.answer,
     }); 
 
     const classes = useStyles();
 
     const answerStatus = () => {
-        if (state.isAnswered) {
+        if (state.submittedAnswer) {
             return (
                 <Typography className={classes.status} variant="body2">
-                    {state.answer} - answer aplied
+                    {state.submittedAnswer} - answer aplied
                 </Typography>
             )
         }
@@ -52,11 +52,14 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
     }
 
     const onAnswer = async () => {
-        let result = await props.onAnswer(state.answer, props.problem.id);
-        setState({
-            ...state,
-            isAnswered: result
-        });
+        const answer = state.answer;
+        let result = await props.onAnswer(answer, props.problem.id);
+        if (result) {
+            setState({
+                ...state,
+                submittedAnswer: answer
+            });
+        }
     };
 
     return (
