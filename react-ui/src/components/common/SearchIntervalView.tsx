@@ -5,8 +5,10 @@ import { SearchInterval } from "../../models/SearchInterval";
 const useStyles = makeStyles(theme => ({
     root: {
         width: "100%",
-        minWidth: "320px"
     },
+    slider: {
+        minWidth: "200px"
+    }
 }));
 
 interface IState {
@@ -65,13 +67,16 @@ export default function SearchIntervalView(props: ISearchIntervalViewProps) {
                 onChange={handleChangeSwitch}
                 color="primary"
                 />
-            <Slider
-                value={state.value ? [ state.value.from, state.value.to ] : []}
-                onChange={handleChange}
-                valueLabelDisplay="auto"
-                min={props.maxInterval.from}
-                max={props.maxInterval.to}
-                />
+            {state.value
+                ? <Slider
+                    className={classes.slider}
+                    value={state.value ? [ state.value.from, state.value.to ] : []}
+                    onChange={handleChange}
+                    valueLabelDisplay="on"
+                    min={props.maxInterval.from}
+                    max={props.maxInterval.to}
+                    />
+                : null}
         </Container>
     );
 };

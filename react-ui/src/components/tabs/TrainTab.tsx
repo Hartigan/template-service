@@ -24,6 +24,9 @@ const useStyles = makeStyles(theme => ({
     problemSets: {
         width: "100%",
     },
+    problemSetsSearch: {
+        margin: "auto"
+    },
     submissions: {
         width: "100%",
     },
@@ -39,6 +42,9 @@ const useStyles = makeStyles(theme => ({
     tableHeaderCell: {
         fontWeight: "bold"
     },
+    searchTable: {
+        overflowX: "hidden"
+    }
 }));
 
 interface IState {
@@ -233,61 +239,63 @@ export default function TrainTab(props: ITrainTabProps) {
                     {getSubmissionsList()}
                 </Box>
             </Grid>
+            <Grid item className={classes.problemSetsSearch}>
+                <TableContainer component={Paper} className={classes.searchTable}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell className={classes.tableHeaderCell} align="right">Title search</TableCell>
+                                <TableCell className={classes.tableHeaderCell} align="right">Duration interval</TableCell>
+                                <TableCell className={classes.tableHeaderCell} align="right">Count interval</TableCell>
+                                <TableCell className={classes.tableHeaderCell} align="right">Author</TableCell>
+                                <TableCell className={classes.tableHeaderCell} align="right">Tags</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell align="right">
+                                    <SearchField
+                                        placeholder="title..."
+                                        color="primary"
+                                        onSearch={(v) => onSearchUpdated(v)}
+                                        />
+                                </TableCell>
+                                <TableCell align="right">
+                                    <SearchIntervalView
+                                        interval={state.searchDuration}
+                                        defaultInterval={{from: 5, to: 10 }}
+                                        maxInterval={{from: 0, to: 120 }}
+                                        onChanged={onDurationInterval}
+                                        />
+                                </TableCell>
+                                <TableCell align="right">
+                                    <SearchIntervalView
+                                        interval={state.searchProblemsCount}
+                                        defaultInterval={{from: 5, to: 10 }}
+                                        maxInterval={{from: 0, to: 50 }}
+                                        onChanged={onProblemsCountInterval}
+                                        />
+                                </TableCell>
+                                <TableCell align="right">
+                                    <UserSearchView
+                                        userService={props.userService}
+                                        onUserSelected={onAuthorSelected}
+                                        />
+                                </TableCell>
+                                <TableCell align="right">
+                                    <TagsEditorView
+                                        tags={state.searchTags}
+                                        onAdd={onAddSearchTag}
+                                        onRemove={onRemoveSearchTag}
+                                        />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Grid>
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell className={classes.tableHeaderCell} align="right">Title search</TableCell>
-                                    <TableCell className={classes.tableHeaderCell} align="right">Duration interval</TableCell>
-                                    <TableCell className={classes.tableHeaderCell} align="right">Problems # interval</TableCell>
-                                    <TableCell className={classes.tableHeaderCell} align="right">Author</TableCell>
-                                    <TableCell className={classes.tableHeaderCell} align="right">Tags</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell align="right">
-                                        <SearchField
-                                            placeholder="title..."
-                                            color="primary"
-                                            onSearch={(v) => onSearchUpdated(v)}
-                                            />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <SearchIntervalView
-                                            interval={state.searchDuration}
-                                            defaultInterval={{from: 5, to: 10 }}
-                                            maxInterval={{from: 0, to: 120 }}
-                                            onChanged={onDurationInterval}
-                                            />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <SearchIntervalView
-                                            interval={state.searchProblemsCount}
-                                            defaultInterval={{from: 5, to: 10 }}
-                                            maxInterval={{from: 0, to: 50 }}
-                                            onChanged={onProblemsCountInterval}
-                                            />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <UserSearchView
-                                            userService={props.userService}
-                                            onUserSelected={onAuthorSelected}
-                                            />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <TagsEditorView
-                                            tags={state.searchTags}
-                                            onAdd={onAddSearchTag}
-                                            onRemove={onRemoveSearchTag}
-                                            />
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
                     <SearchNavigationView
                         className={classes.searchNavigation}
                         page={state.searchPage}
