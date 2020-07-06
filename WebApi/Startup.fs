@@ -25,6 +25,7 @@ open Services.Permissions
 open Services.VersionControl
 open Services.Examination
 open Services.Problems
+open Services.Admin
 open System.Text.Json.Serialization
 open Prometheus
 
@@ -88,6 +89,7 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IGroupService, GroupService>()
         |> fun x -> x.AddSingleton<IReportSearch, ReportSearch>()
         |> fun x -> x.AddSingleton<IHeadSearch, HeadSearch>()
+        |> fun x -> x.AddSingleton<IAdminService, AdminService>()
         |> fun x -> x.AddCors(fun options -> 
                 options.AddPolicy("_allowAll", fun builder ->
                         builder.WithOrigins("*")

@@ -22,6 +22,7 @@ export interface ITagsEditorViewProps {
     tags: Array<string>;
     onRemove: (tag: string) => void;
     onAdd: (tag: string) => void;
+    placeholderText?: string;
 }
 
 export default function TagsEditorView(props: ITagsEditorViewProps) {
@@ -57,7 +58,7 @@ export default function TagsEditorView(props: ITagsEditorViewProps) {
                 color="primary"
                 label={<InputBase
                             className={classes.newTagInput}
-                            placeholder="new tag"
+                            placeholder={props.placeholderText ?? "new tag" }
                             onChange={(e) => setState({ ...state, newTag: e.target.value })}
                             value={state.newTag}
                         />}

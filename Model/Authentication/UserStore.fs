@@ -13,6 +13,7 @@ open System
 open Utils.ResultHelper
 open System.Threading
 open System.Collections.Generic
+open System.Linq
 
 type UserStore(context: IUserContext,
                userGroupsContext: IContext<UserGroups>,
@@ -176,6 +177,23 @@ type UserStore(context: IUserContext,
                     return ex.ToIdentityResult()
             }
 
+    interface IQueryableUserStore<UserIdentity> with
+        member this.Users: Linq.IQueryable<UserIdentity> = 
+            async {
+                match! context.GetAll() with
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot fetch users")
+                    return Array.Empty<UserIdentity>() |> fun x -> x.AsQueryable()
+                | Ok(users) ->
+                    return
+                        users
+                        |> Seq.map(fun x -> x.ToModel())
+                        |> Seq.toArray
+                        |> fun x -> x.AsQueryable()
+            } |> Async.RunSynchronously
+
+        
+
     interface IUserRoleStore<UserIdentity> with
         member this.AddToRoleAsync(user, roleName, cancellationToken) =
             taskUC cancellationToken {
@@ -190,7 +208,19 @@ type UserStore(context: IUserContext,
             }
 
         member this.GetUsersInRoleAsync(roleName, cancellationToken): Task<Collections.Generic.IList<UserIdentity>> = 
-            failwith "Not Implemented"
+            taskC cancellationToken {
+                cancellationToken.ThrowIfCancellationRequested()
+                match! context.GetUsersInRole(roleName) with
+                | Error(ex) ->
+                    logger.LogError(ex, sprintf "Cannot fetch users with role: %s" roleName)
+                    return Array.Empty<UserIdentity>() :> IList<UserIdentity>
+                | Ok(users) ->
+                    return
+                        users
+                        |> Seq.map(fun x -> x.ToModel())
+                        |> Seq.toArray
+                        |> fun x -> x :> IList<UserIdentity>
+            }
 
         member this.IsInRoleAsync(user, roleName, cancellationToken): Task<bool> = 
             taskC cancellationToken {

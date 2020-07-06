@@ -230,6 +230,47 @@ type UserContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                 with ex -> return Result.Error(ex)
             }
 
+        member this.GetUsersInRole(role: string): Async<Result<List<User>, Exception>> =
+            async {
+                try
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
+                    let! bucket = this.GetBucket()
+                    let queryOptions = 
+                        QueryOptions()
+                        |> fun x -> x.Parameter("type", UserType.Instance.Value)
+                        |> fun x -> x.Parameter("role", role)
+                    let! result = cluster.QueryAsync<User>
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type AND ARRAY_CONTAINS(roles, $role)" bucket.Name bucket.Name,
+                                       queryOptions)
+                    let (usersAsync : IQueryResult<User>) = result
+                    let! users =
+                        usersAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toListAsync
+                    return Ok(users)
+                with ex -> return Result.Error(ex)
+            }
+
+        member this.GetAll(): Async<Result<List<User>, Exception>> =
+            async {
+                try
+                    let! (cluster : ICluster) = couchbaseCluster.GetClusterAsync()
+                    let! bucket = this.GetBucket()
+                    let queryOptions = 
+                        QueryOptions()
+                        |> fun x -> x.Parameter("type", UserType.Instance.Value)
+                    let! result = cluster.QueryAsync<User>
+                                      (sprintf "SELECT `%s`.* FROM `%s` WHERE type = $type" bucket.Name bucket.Name,
+                                       queryOptions)
+                    let (usersAsync : IQueryResult<User>) = result
+                    let! users =
+                        usersAsync
+                        |> AsyncSeq.ofAsyncEnum
+                        |> AsyncSeq.toListAsync
+                    return Ok(users)
+                with ex -> return Result.Error(ex)
+            }
+
         member this.Search(pattern, offset, limit): Async<Result<List<User>, Exception>> =
             async {
                 try

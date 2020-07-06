@@ -15,6 +15,8 @@ import { UserService } from './services/UserService';
 import { ExaminationService } from './services/ExaminationService';
 import { User } from 'oidc-client';
 import { GroupService } from './services/GroupService';
+import { AdminService } from './services/AdminService';
+import AdminView from './components/admin/AdminView';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -44,6 +46,7 @@ const permissionsService = new PermissionsService(httpServiceFactory);
 const userService = new UserService(httpServiceFactory);
 const examinationService = new ExaminationService(httpServiceFactory);
 const groupService = new GroupService(httpServiceFactory);
+const adminService = new AdminService(httpServiceFactory);
 
 interface IState {
     isLoaded: boolean;
@@ -72,10 +75,19 @@ const App: React.FC = () => {
         });
     });
 
+    const checkRole = (roles: any, role: string) => {
+        return roles === role || roles.includes(role);
+    };
+
     const getMainView = () => {
         if (state.user === null) {
             return (
                 <div />
+            );
+        }
+        else if (checkRole(state.user.profile.role, "superadmin")) {
+            return (
+                <AdminView adminService={adminService} />
             );
         }
         else {
@@ -90,7 +102,7 @@ const App: React.FC = () => {
                     userService={userService}
                     examinationService={examinationService}
                     groupService={groupService}
-                    isAdmin={state.user.profile.role === "admin"}
+                    isAdmin={checkRole(state.user.profile.role, "admin")}
                     />
             );
         }
