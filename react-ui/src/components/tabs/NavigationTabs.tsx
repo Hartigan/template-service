@@ -17,6 +17,8 @@ import { ExaminationService } from '../../services/ExaminationService';
 import ReportsTab from './ReportsTab';
 import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
+import { AdminService } from '../../services/AdminService';
+import AdminTab from './AdminTab';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -34,7 +36,8 @@ export interface INavigationTabsProps {
     groupService: GroupService;
     userService: UserService;
     examinationService: ExaminationService;
-    isAdmin: boolean;
+    adminService: AdminService;
+    roles: Array<string>;
 }
 
 export default function NavigationTabs(props: INavigationTabsProps) {
@@ -55,9 +58,10 @@ export default function NavigationTabs(props: INavigationTabsProps) {
         >
           <Tab label="Train" />
           <Tab label="Reports" />
-          {props.isAdmin ? <Tab label="Editor" /> : null}
-          {props.isAdmin ? <Tab label="Groups" /> : null}
-          {props.isAdmin ? <Tab label="Permissions" />: null}
+          {props.roles.includes("admin") ? <Tab label="Editor" /> : null}
+          {props.roles.includes("admin") ? <Tab label="Groups" /> : null}
+          {props.roles.includes("admin") ? <Tab label="Permissions" />: null}
+          {props.roles.includes("superadmin") ? <Tab label="Admin" />: null}
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
@@ -98,6 +102,11 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           foldersService={props.foldersService}
           problemsService={props.problemsService}
           problemSetService={props.problemSetService}
+          />
+      </TabPanel>
+      <TabPanel value={value} index={5}>
+        <AdminTab
+          adminService={props.adminService}
           />
       </TabPanel>
     </div>

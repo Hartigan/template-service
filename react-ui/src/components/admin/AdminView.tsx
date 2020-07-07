@@ -13,7 +13,10 @@ const useStyles = makeStyles(theme => ({
         margin: "auto",
         width: "60%",
         overflowX: "hidden"
-    }
+    },
+    tableHeaderCell: {
+        fontWeight: "bold"
+    },
 }));
 
 interface IState {
@@ -117,11 +120,11 @@ export default function AdminView(props: IAdminViewProps) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="right">Username</TableCell>
-                            <TableCell align="right">First name</TableCell>
-                            <TableCell align="right">Last name</TableCell>
-                            <TableCell align="right">Email</TableCell>
-                            <TableCell align="right">Roles</TableCell>
+                            <TableCell className={classes.tableHeaderCell} align="right">Username</TableCell>
+                            <TableCell className={classes.tableHeaderCell} align="right">First name</TableCell>
+                            <TableCell className={classes.tableHeaderCell} align="right">Last name</TableCell>
+                            <TableCell className={classes.tableHeaderCell} align="right">Email</TableCell>
+                            <TableCell className={classes.tableHeaderCell} align="right">Roles</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

@@ -16,7 +16,6 @@ import { ExaminationService } from './services/ExaminationService';
 import { User } from 'oidc-client';
 import { GroupService } from './services/GroupService';
 import { AdminService } from './services/AdminService';
-import AdminView from './components/admin/AdminView';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -75,25 +74,26 @@ const App: React.FC = () => {
         });
     });
 
-    const checkRole = (roles: any, role: string) => {
-        return roles === role || roles.includes(role);
-    };
-
     const getMainView = () => {
         if (state.user === null) {
             return (
                 <div />
             );
         }
-        else if (checkRole(state.user.profile.role, "superadmin")) {
-            return (
-                <AdminView adminService={adminService} />
-            );
-        }
         else {
             console.log(state.user.profile.role);
+            const roles : Array<string> = [];
+
+            if (Array.isArray(state.user.profile.role)) {
+                roles.push(...(state.user.profile.role as Array<string>));
+            }
+            else if (state.user.profile.role) {
+                roles.push(state.user.profile.role as string);
+            }
+
             return (
                 <NavigationTabs
+                    adminService={adminService}
                     versionService={versionService}
                     foldersService={foldersService}
                     problemsService={problemsService}
@@ -102,7 +102,7 @@ const App: React.FC = () => {
                     userService={userService}
                     examinationService={examinationService}
                     groupService={groupService}
-                    isAdmin={checkRole(state.user.profile.role, "admin")}
+                    roles={roles}
                     />
             );
         }
