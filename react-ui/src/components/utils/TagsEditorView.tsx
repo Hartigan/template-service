@@ -33,6 +33,14 @@ export default function TagsEditorView(props: ITagsEditorViewProps) {
 
     const classes = useStyles();
 
+    const onAdd = () => {
+        props.onAdd(state.newTag);
+        setState({
+            ...state,
+            newTag: ""
+        });
+    };
+
     return (
         <div className={classes.root}>
             { 
@@ -60,10 +68,11 @@ export default function TagsEditorView(props: ITagsEditorViewProps) {
                             className={classes.newTagInput}
                             placeholder={props.placeholderText ?? "new tag" }
                             onChange={(e) => setState({ ...state, newTag: e.target.value })}
+                            onKeyDown={event => { if (event.keyCode === 13) { onAdd(); } }}
                             value={state.newTag}
                         />}
                 deleteIcon={<AddIcon />}
-                onDelete={() => { props.onAdd(state.newTag); setState({ ...state, newTag: "" }) }}
+                onDelete={() => onAdd()}
                 />
         </div>
     );
