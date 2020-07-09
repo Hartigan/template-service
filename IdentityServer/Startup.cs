@@ -49,13 +49,6 @@ namespace IdentityServer
 
             services.AddOidcStateDataFormatterCache();
 
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                options.KnownNetworks.Clear();
-                options.KnownProxies.Clear();
-            });
-
             services.AddIdentity<UserIdentity, RoleIdentity>()
                 .AddRoleStore<RoleStore>()
                 .AddUserStore<UserStore>();
@@ -89,7 +82,13 @@ namespace IdentityServer
             }
 
             app.UseHttpsRedirection();
-            app.UseForwardedHeaders();
+
+            ForwardedHeadersOptions forwardedHeadersOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            };
+
+            app.UseForwardedHeaders(forwardedHeadersOptions);
             app.UseStaticFiles();
             app.UseRouting();
             app.UseHttpMetrics();
