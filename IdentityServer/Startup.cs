@@ -62,9 +62,7 @@ namespace IdentityServer
 
             services.AddSingleton<ICorsPolicyService, CorsPolicyService>();
 
-            services.AddIdentityServer(options => { 
-                        options.IssuerUri = "https://issuer";
-                    })
+            services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
                     .AddInMemoryApiResources(Config.ApiResources)
                     .AddInMemoryIdentityResources(Config.IdentityResources)
