@@ -9,6 +9,9 @@ services:
       dockerfile: ./docker/Release/CSharpGenerator.Dockerfile
     ports:
     - "80"
+    networks:
+      default:
+        ipv4_address: 10.5.0.2
   identity-server:
     image: "auth-service:0.1-alpha"
     container_name: "auth-service"
@@ -20,6 +23,9 @@ services:
     - "80"
     links:
     - db:database
+    networks:
+      default:
+        ipv4_address: 10.5.0.3
   api:
     image: "template-service:0.1-alpha"
     container_name: "template-service"
@@ -33,6 +39,9 @@ services:
     - db:database
     - identity-server:identity-server
     - cs-generator:cs-generator
+    networks:
+      default:
+        ipv4_address: 10.5.0.4
   db:
     image: "database-service:0.1-alpha"
     container_name: "database-service"
@@ -44,6 +53,9 @@ services:
       dockerfile: Couchbase.Dockerfile
     ports:
     - "8091:8091"
+    networks:
+      default:
+        ipv4_address: 10.5.0.5
   ui:
     image: "react-ui:0.1-alpha"
     container_name: "react-ui-release"
@@ -53,6 +65,9 @@ services:
       dockerfile: ./../docker/Release/ReactUI.Dockerfile
     ports:
     - "80"
+    networks:
+      default:
+        ipv4_address: 10.5.0.6
   master:
     image: "master-node:0.1-alpha"
     container_name: "master-node"
@@ -62,7 +77,7 @@ services:
       dockerfile: Master.Dockerfile
     networks:
       default:
-        ipv4_address: 10.5.0.2
+        ipv4_address: 10.5.0.7
     ports:
     - "80:80"
     links:
@@ -80,6 +95,9 @@ services:
     - grafana-volume:/vol01/Docker/monitoring
     links:
     - influxdb:influxdb-server
+    networks:
+      default:
+        ipv4_address: 10.5.0.8
   influxdb:
     image: influxdb
     container_name: influxdb
@@ -94,6 +112,9 @@ services:
     - INFLUXDB_ADMIN_ENABLED=true
     - INFLUXDB_ADMIN_USER=admin
     - INFLUXDB_ADMIN_PASSWORD=telegraf
+    networks:
+      default:
+        ipv4_address: 10.5.0.9
   telegraf:
     image: telegraf
     container_name: telegraf
@@ -115,6 +136,9 @@ services:
     - /sys:/rootfs/sys:ro
     - /proc:/rootfs/proc:ro
     - /etc:/rootfs/etc:ro
+    networks:
+      default:
+        ipv4_address: 10.5.0.10
 networks:
   default:
     driver: bridge
@@ -122,7 +146,6 @@ networks:
       driver: default
       config:
       - subnet: 10.5.0.0/16
-        gateway: 10.5.0.1
 volumes:
   db-volume:
   grafana-volume:

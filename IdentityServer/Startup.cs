@@ -17,6 +17,7 @@ using IdentityServer4.Stores;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Prometheus;
+using System.Net;
 
 namespace IdentityServer
 {
@@ -83,7 +84,7 @@ namespace IdentityServer
                 ForwardedHeadersOptions forwardedHeadersOptions = new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
-                    KnownProxies = { IPAddress.Parse("10.5.0.2") }
+                    KnownProxies = { IPAddress.Parse("10.5.0.7") }
                 };
 
                 app.UseForwardedHeaders(forwardedHeadersOptions);
