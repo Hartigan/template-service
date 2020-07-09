@@ -2,7 +2,7 @@ version: '3.8'
 services:
   cs-generator:
     image: "cs-generator:0.1-alpha"
-    container_name: "cs-generator-release"
+    container_name: "cs-generator"
     restart: always
     build:
       context: ./../..
@@ -11,7 +11,7 @@ services:
     - "80"
   identity-server:
     image: "auth-service:0.1-alpha"
-    container_name: "auth-service-release"
+    container_name: "auth-service"
     restart: always
     build:
       context: ./../..
@@ -22,7 +22,7 @@ services:
     - db:database
   api:
     image: "template-service:0.1-alpha"
-    container_name: "template-service-release"
+    container_name: "template-service"
     restart: always
     build:
       context: ./../..
@@ -35,7 +35,7 @@ services:
     - cs-generator:cs-generator
   db:
     image: "database-service:0.1-alpha"
-    container_name: "database-service-release"
+    container_name: "database-service"
     restart: always
     volumes:
       - db-volume:/opt/couchbase/var/lib/couchbase/data
@@ -55,7 +55,7 @@ services:
     - "80"
   master:
     image: "master-node:0.1-alpha"
-    container_name: "master-node-release"
+    container_name: "master-node"
     restart: always
     build:
       context: .
@@ -66,6 +66,7 @@ services:
     - identity-server:auth-server
     - api:api-server
     - ui:ui-server
+    - grafana:grafana-server
   grafana:
     image: grafana/grafana
     container_name: grafana
