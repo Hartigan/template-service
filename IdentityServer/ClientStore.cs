@@ -35,8 +35,8 @@ namespace IdentityServer
                 ClientId = "template-service-ui",
                 ClientName = "Template service UI",
                 AllowedGrantTypes = GrantTypes.Implicit,
-                RedirectUris = { "http://quiz-gen.org/signin-callback.html" },
-                PostLogoutRedirectUris = { "http://quiz-gen.org/signout-callback.html" },
+                RedirectUris = { "https://quiz-gen.org/signin-callback.html" },
+                PostLogoutRedirectUris = { "https://quiz-gen.org/signout-callback.html" },
                 AccessTokenLifetime = 60 * 60 * 24,
                 AllowedScopes = 
                 {
@@ -46,7 +46,7 @@ namespace IdentityServer
                     "web_api"
                 },
                 AllowAccessTokensViaBrowser = true,
-                AllowedCorsOrigins = { "http://quiz-gen.org" },
+                AllowedCorsOrigins = { "https://quiz-gen.org" },
             }
         };
 
