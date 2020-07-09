@@ -84,6 +84,7 @@ namespace IdentityServer
                 ForwardedHeadersOptions forwardedHeadersOptions = new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                    KnownNetworks = { new IPNetwork(IPAddress.Parse("10.5.0.0"), 16) },
                     KnownProxies = { IPAddress.Parse("10.5.0.7") }
                 };
 
