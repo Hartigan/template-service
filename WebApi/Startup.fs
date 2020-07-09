@@ -52,7 +52,7 @@ type Startup private () =
         |> fun x -> x.AddJwtBearer(fun options ->
             options.Authority <- authConfig.Authority
             options.Audience <- authConfig.Audience
-            options.RequireHttpsMetadata <- false
+            options.RequireHttpsMetadata <- authConfig.UseHttps
         )
         |> ignore
 
