@@ -79,16 +79,18 @@ namespace IdentityServer
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+
+                ForwardedHeadersOptions forwardedHeadersOptions = new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                    KnownProxies = { IPAddress.Parse("10.5.0.2") }
+                };
+
+                app.UseForwardedHeaders(forwardedHeadersOptions);
             }
 
             app.UseHttpsRedirection();
 
-            ForwardedHeadersOptions forwardedHeadersOptions = new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            };
-
-            app.UseForwardedHeaders(forwardedHeadersOptions);
             app.UseStaticFiles();
             app.UseRouting();
             app.UseHttpMetrics();

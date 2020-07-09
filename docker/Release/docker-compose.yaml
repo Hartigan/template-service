@@ -60,6 +60,9 @@ services:
     build:
       context: .
       dockerfile: Master.Dockerfile
+    networks:
+      default:
+        ipv4_address: 10.5.0.2
     ports:
     - "80:80"
     links:
@@ -112,6 +115,14 @@ services:
     - /sys:/rootfs/sys:ro
     - /proc:/rootfs/proc:ro
     - /etc:/rootfs/etc:ro
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.5.0.0/16
+        gateway: 10.5.0.1
 volumes:
   db-volume:
   grafana-volume:
