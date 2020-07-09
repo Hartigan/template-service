@@ -19,7 +19,7 @@ ADMIN_PASS="administrator"
 TELEGRAF_USER="telegraf"
 TELEGRAF_PASS="telegraf"
 
-couchbase-cli cluster-init --cluster-username="${ADMIN_USER}" --cluster-password="${ADMIN_PASS}" --cluster-port=8091 --cluster-ramsize=500 --cluster-index-ramsize=256 --services=data,index,query,analytics
+couchbase-cli cluster-init --cluster-username="${ADMIN_USER}" --cluster-password="${ADMIN_PASS}" --cluster-port=8091 --cluster-ramsize=512 --cluster-index-ramsize=256 --services=data,index,query,analytics
 
 couchbase-cli bucket-create -c localhost -u "${ADMIN_USER}" -p "${ADMIN_PASS}" --bucket=main --bucket-type=couchbase --bucket-ramsize=512
 

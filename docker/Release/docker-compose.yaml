@@ -148,5 +148,8 @@ networks:
       - subnet: 10.5.0.0/16
 volumes:
   db-volume:
+    external: true
   grafana-volume:
+    external: true
   influxdb-volume:
+    external: true
