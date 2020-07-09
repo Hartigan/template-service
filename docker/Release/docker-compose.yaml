@@ -58,7 +58,7 @@ services:
         ipv4_address: 10.5.0.5
   ui:
     image: "react-ui:0.1-alpha"
-    container_name: "react-ui-release"
+    container_name: "react-ui"
     restart: always
     build:
       context: ./../../react-ui
