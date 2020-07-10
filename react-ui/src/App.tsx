@@ -115,7 +115,7 @@ const App: React.FC = () => {
                     <AppBar>
                         <Toolbar>
                             <Typography variant="h6" noWrap={true} className={classes.title}>
-                                Testing service
+                                Quiz generator
               </Typography>
                             <AuthContent authService={authService} />
                         </Toolbar>
