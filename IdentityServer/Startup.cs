@@ -40,6 +40,7 @@ namespace IdentityServer
                 .ForwardToPrometheus();
 
             services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
+                    .Configure<ClientConfig>(this.Configuration.GetSection("Client"))
                     .AddSingleton<CouchbaseCluster>()
                     .AddSingleton<CouchbaseBuckets>()
                     .AddSingleton<IUserContext, UserContext>()

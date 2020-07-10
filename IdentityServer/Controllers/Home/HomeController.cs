@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 
 namespace IdentityServer
@@ -19,12 +20,19 @@ namespace IdentityServer
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger _logger;
+        private readonly string _clientUrl;
 
-        public HomeController(IIdentityServerInteractionService interaction, IWebHostEnvironment environment, ILogger<HomeController> logger)
+        public HomeController(
+            IIdentityServerInteractionService interaction,
+            IWebHostEnvironment environment,
+            ILogger<HomeController> logger,
+            IOptions<ClientConfig> clientConfig
+        )
         {
             _interaction = interaction;
             _environment = environment;
             _logger = logger;
+            _clientUrl = clientConfig.Value.BaseUrl;
         }
 
         public IActionResult Index()
@@ -35,8 +43,8 @@ namespace IdentityServer
                 return View();
             }
 
-            _logger.LogInformation("Homepage is disabled in production. Returning 404.");
-            return NotFound();
+            _logger.LogInformation("Redirect to client");
+            return Redirect(_clientUrl);
         }
 
         /// <summary>
