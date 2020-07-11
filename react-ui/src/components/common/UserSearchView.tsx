@@ -38,7 +38,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
     useEffect(() => {
         let active = true;
 
-        if (state.users === null) {
+        if (state.users === null && state.open) {
             props.userService
                 .search(state.pattern, 0, 10)
                 .then(users => {

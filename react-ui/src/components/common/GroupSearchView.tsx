@@ -38,7 +38,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
     useEffect(() => {
         let active = true;
 
-        if (state.groups === null) {
+        if (state.groups === null && state.open) {
             props.groupService
                 .search(state.pattern, 0, 10)
                 .then(groups => {
