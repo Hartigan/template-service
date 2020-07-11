@@ -82,37 +82,47 @@ export default function TrainTab(props: ITrainTabProps) {
         searchLimit: 10
     });
 
-    const fetchProblemSets = async () => {
-        let problemSets = await props.examinationService.getProblemSets(
-            state.searchString,
-            state.searchTags,
-            state.searchAuthorId,
-            state.searchProblemsCount,
-            state.searchDuration ? { from: state.searchDuration.from * 60, to: state.searchDuration.to * 60 } : null,
-            (state.searchPage - 1) * state.searchLimit,
-            state.searchLimit
-        );
-        setState({
-            ...state,
-            problemSets: problemSets,
-        });
-    };
-
-    const fetchSubmissionsIds = async () => {
-        let submissionsIds = await props.examinationService.getSubmissions();
-        setState({
-            ...state,
-            submissionsIds: submissionsIds
-        });
-    };
-
-    React.useEffect(() => {
-        if (state.submissionsIds === null) {
-            fetchSubmissionsIds();
+    const fetchData = async () => {
+        let problemSets = state.problemSets;
+        let submissionsIds = state.submissionsIds;
+        if (problemSets === null) {
+            problemSets = await props.examinationService.getProblemSets(
+                state.searchString,
+                state.searchTags,
+                state.searchAuthorId,
+                state.searchProblemsCount,
+                state.searchDuration ? { from: state.searchDuration.from * 60, to: state.searchDuration.to * 60 } : null,
+                (state.searchPage - 1) * state.searchLimit,
+                state.searchLimit
+            );
         }
 
-        if (state.problemSets === null) {
-            fetchProblemSets();
+        if (submissionsIds === null) {
+            submissionsIds = await props.examinationService.getSubmissions();
+        }
+
+        return {
+            problemSets: problemSets,
+            submissionsIds: submissionsIds
+        };
+    }
+
+    React.useEffect(() => {
+        if (state.submissionsIds === null || state.problemSets === null) {
+            let canUpdate = true;
+
+            fetchData().then(data => {
+                if (canUpdate) {
+                    setState({
+                        ...state,
+                        ...data
+                    });
+                }
+            });
+
+            return () => {
+                canUpdate = false;
+            };
         }
     });
 
