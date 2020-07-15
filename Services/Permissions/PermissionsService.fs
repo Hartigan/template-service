@@ -236,6 +236,15 @@ type PermissionsService(userService: IUserService,
         
 
     interface IPermissionsService with
+
+        member this.SetIsPublic(protectedId, isPublic) =
+            this.UpdatePermissions(protectedId, fun permissions ->
+                {
+                    permissions with
+                        IsPublic = isPublic
+                }
+            )
+
         member this.Get(userId: UserId, protectedId: ProtectedId) =
             this.GetPermissions(protectedId)
             |> Async.BindResult(fun permissions ->
@@ -354,6 +363,7 @@ type PermissionsService(userService: IUserService,
                             PermissionsModel.OwnerId = permissions.OwnerId
                             Groups = groupsList
                             Members = membersList
+                            IsPublic = permissions.IsPublic
                         }
                     )
                 )
@@ -362,14 +372,18 @@ type PermissionsService(userService: IUserService,
         member this.CheckPermissions(protectedId : ProtectedId, userId, access) =
             this.GetPermissions(protectedId)
             |> Async.BindResult(fun permissions ->
-                this.GetAccess(permissions, userId)
-            )
-            |> Async.TryMapResult(fun x ->
-                if x.IsAllowed(access) then
-                    Ok()
+                if access = AccessModel.CanGenerate && permissions.IsPublic then
+                    async.Return(Result.Ok())
                 else
-                    Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
+                    this.GetAccess(permissions, userId)
+                    |> Async.TryMapResult(fun x ->
+                        if x.IsAllowed(access) then
+                            Ok()
+                        else
+                            Error(UnauthorizedAccessException(sprintf "UserId = %s" userId.Value) :> Exception)
+                    )
             )
+            
 
         member this.Add(id: ProtectedId, userId: UserId) =
             this.UpdatePermissions

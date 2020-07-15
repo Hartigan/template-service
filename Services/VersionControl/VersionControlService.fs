@@ -66,6 +66,7 @@ type VersionControlService(commitContext: IContext<Commit>,
                         OwnerId = userId
                         Groups = []
                         Members = []
+                        IsPublic = false
                     }
                     Tags = []
                     Commit = commit

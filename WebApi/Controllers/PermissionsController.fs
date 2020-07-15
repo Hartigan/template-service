@@ -43,6 +43,11 @@ type AddPermissionsGroupRequest = {
     GroupId: GroupId
 }
 
+type SetIsPublicRequest = {
+    [<JsonPropertyName("is_public")>]
+    IsPublic: bool
+}
+
 [<Authorize(Roles="admin")>]
 [<Route("permissions")>]
 type PermissionsController(permissionsService: IPermissionsService,
@@ -69,6 +74,31 @@ type PermissionsController(permissionsService: IPermissionsService,
                     match! permissionsService.Get(protectedId) with
                     | Error(ex) ->
                         logger.LogError(ex, "Cannot get permissions")
+                        return (BadRequestResult() :> IActionResult)
+                    | Ok(model) ->
+                        return (JsonResult(model) :> IActionResult)
+        }
+
+    [<HttpPost>]
+    [<Route("set_is_public")>]
+    member this.SetIsPublic([<FromQuery(Name = "id")>] id: string,
+                            [<FromQuery(Name = "type")>] typeName: string,
+                            [<FromBody>] req: SetIsPublicRequest) =
+        async {
+            match ProtectedId.Create(id, typeName) with
+            | Error(ex) ->
+                logger.LogError(ex, "Cannot get permissions")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(protectedId) ->
+                let userId = this.GetUserId()
+                match! permissionsService.CheckPermissions(protectedId, userId, AccessModel.CanAdministrate) with
+                | Error(ex) ->
+                    logger.LogError(ex, "Access denied")
+                    return (UnauthorizedResult() :> IActionResult)
+                | Ok() ->
+                    match! permissionsService.SetIsPublic(protectedId, req.IsPublic) with
+                    | Error(ex) ->
+                        logger.LogError(ex, "Cannot set is public")
                         return (BadRequestResult() :> IActionResult)
                     | Ok(model) ->
                         return (JsonResult(model) :> IActionResult)

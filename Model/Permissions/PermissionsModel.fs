@@ -12,6 +12,8 @@ type PermissionsModel =
         Groups: List<GroupAccessModel>
         [<JsonPropertyName("members")>]
         Members: List<MemberModel>
+        [<JsonPropertyName("is_public")>]
+        IsPublic: bool
     }
 
     static member Create(ownerId: UserId) : PermissionsModel =
@@ -19,4 +21,5 @@ type PermissionsModel =
             OwnerId = ownerId
             Groups = []
             Members = []
+            IsPublic = false
         }

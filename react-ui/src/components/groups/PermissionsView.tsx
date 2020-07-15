@@ -1,4 +1,4 @@
-import { makeStyles, Paper, Grid, IconButton, List, Typography } from "@material-ui/core";
+import { makeStyles, Paper, Grid, IconButton, List, Typography, FormControlLabel, Checkbox } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { PermissionsService, Protected, ProtectedId } from "../../services/PermissionsService";
 import { GroupId, UserId } from "../../models/Identificators";
@@ -182,6 +182,15 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         refresh();
     };
 
+    const setIsPublic = async (isPublic: boolean) => {
+        await props.permissionsService.setIsPublic(
+            fromProtectedItem(props.protectedItem),
+            isPublic
+        );
+
+        refresh();
+    };
+
     const capabilities = function() {
         switch (props.protectedItem.type) {
             case "report":
@@ -206,6 +215,21 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                                     {props.title}
                                 </Typography>
                             </Grid>
+                            {props.protectedItem.type === "problem_set"
+                                ? (
+                                    <Grid item className={classes.searchButtons}>
+                                        <FormControlLabel
+                                            control={<Checkbox color="primary" checked={state.permissions.is_public} onChange={(event, value) => setIsPublic(value)}/>}
+                                            label="Public generate"
+                                            labelPlacement="start"
+                                            />
+                                    </Grid>
+                                )
+                                : null}
+                        </Grid>
+                    </Grid>
+                    <Grid item className={classes.header}>
+                        <Grid container className={classes.search}>
                             <Grid item className={classes.searchCell}>
                                 <GroupSearchView
                                     groupService={props.groupService}

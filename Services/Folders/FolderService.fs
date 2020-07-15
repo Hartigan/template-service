@@ -224,6 +224,7 @@ type FoldersService(folderContext: IContext<Folder>,
                     Permissions.OwnerId = userId
                     Groups = []
                     Members = []
+                    IsPublic = false
                 }
                 Heads = []
                 Folders = []
@@ -249,6 +250,7 @@ type FoldersService(folderContext: IContext<Folder>,
                             Permissions.OwnerId = userId
                             Groups = []
                             Members = []
+                            IsPublic = false
                         }
                         Folders = []
                         Heads = []

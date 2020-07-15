@@ -31,4 +31,5 @@ export interface Permissions {
     owner_id: UserId;
     groups: Array<GroupAccess>;
     members: Array<Member>;
+    is_public: boolean;
 }

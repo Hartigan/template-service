@@ -29,3 +29,5 @@ type IPermissionsService =
     abstract member UserItemsAppend : ProtectedId * UserId -> Async<Result<unit, Exception>>
     abstract member Remove : ProtectedId -> Async<Result<unit, Exception>>
     abstract member GetOwner : ProtectedId -> Async<Result<UserId, Exception>>
+
+    abstract member SetIsPublic : ProtectedId * bool -> Async<Result<unit, Exception>>

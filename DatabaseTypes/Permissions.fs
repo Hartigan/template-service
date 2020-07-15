@@ -10,4 +10,6 @@ type Permissions = {
     Groups: List<GroupAccess>
     [<JsonPropertyName("members")>]
     Members: List<Member>
+    [<JsonPropertyName("is_public")>]
+    IsPublic: bool
 }

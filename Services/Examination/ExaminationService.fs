@@ -234,6 +234,7 @@ type ExaminationService(reportContext: IReportContext,
                         Permissions.OwnerId = userId
                         Groups = []
                         Members = []
+                        IsPublic = false
                     }
                     StartedAt = startedAt
                     Deadline = deadline

@@ -49,4 +49,8 @@ export class PermissionsService {
     addPermissionsMember(item: Protected, userId: GroupId) {
         return this.http.post<void>(`add_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
     }
+
+    setIsPublic(item: Protected, isPublic: boolean) {
+        return this.http.post<void>(`set_is_public?id=${item.id}&type=${item.type}`, { is_public: isPublic });
+    }
 }
