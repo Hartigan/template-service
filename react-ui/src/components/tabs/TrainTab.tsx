@@ -1,4 +1,4 @@
-import { makeStyles, Grid, Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { makeStyles, Grid, Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Switch } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
@@ -52,6 +52,7 @@ interface IState {
     report: Report | null;
     submissionsIds: Array<SubmissionId> | null;
     problemSets: Array<Head> | null;
+    searchIsPublic: boolean;
     searchString: string; 
     searchTags: Array<string>;
     searchAuthorId: UserId | null;
@@ -79,7 +80,8 @@ export default function TrainTab(props: ITrainTabProps) {
         searchDuration: null,
         searchString: "",
         searchPage: 1,
-        searchLimit: 10
+        searchLimit: 10,
+        searchIsPublic: true
     });
 
     const fetchData = async () => {
@@ -87,6 +89,7 @@ export default function TrainTab(props: ITrainTabProps) {
         let submissionsIds = state.submissionsIds;
         if (problemSets === null) {
             problemSets = await props.examinationService.getProblemSets(
+                state.searchIsPublic,
                 state.searchString,
                 state.searchTags,
                 state.searchAuthorId,
@@ -141,6 +144,14 @@ export default function TrainTab(props: ITrainTabProps) {
             ...state,
             problemSets: null,
             searchLimit: limit
+        });
+    };
+
+    const onIsPublicChanged = (value: boolean) => {
+        setState({
+            ...state,
+            problemSets: null,
+            searchIsPublic: value
         });
     };
 
@@ -254,6 +265,7 @@ export default function TrainTab(props: ITrainTabProps) {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell className={classes.tableHeaderCell} align="right">Is public</TableCell>
                                 <TableCell className={classes.tableHeaderCell} align="right">Title search</TableCell>
                                 <TableCell className={classes.tableHeaderCell} align="right">Duration interval</TableCell>
                                 <TableCell className={classes.tableHeaderCell} align="right">Count interval</TableCell>
@@ -263,6 +275,13 @@ export default function TrainTab(props: ITrainTabProps) {
                         </TableHead>
                         <TableBody>
                             <TableRow>
+                                <TableCell align="right">
+                                    <Switch
+                                        checked={state.searchIsPublic}
+                                        onChange={(_, value) => onIsPublicChanged(value)}
+                                        color="primary"
+                                        />
+                                </TableCell>
                                 <TableCell align="right">
                                     <SearchField
                                         placeholder="title..."

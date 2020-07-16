@@ -58,6 +58,7 @@ export class ExaminationService {
     }
 
     getProblemSets(
+        isPublic: boolean,
         pattern: string | null,
         tags: Array<string> | null,
         authorId: UserId | null,
@@ -68,6 +69,7 @@ export class ExaminationService {
         return this.http.post<Array<Head>>(
             `problem_sets`,
             {
+                is_public: isPublic,
                 pattern: pattern ? pattern : null,
                 tags: tags ? tags : null,
                 author_id: authorId,

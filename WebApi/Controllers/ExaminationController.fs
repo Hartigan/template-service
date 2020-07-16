@@ -37,6 +37,8 @@ type ShareReportRequest = {
 }
 
 type ProblemSetSearchRequest = {
+    [<JsonPropertyName("is_public")>]
+    IsPublic            : bool
     [<JsonPropertyName("pattern")>]
     Pattern             : string option
     [<JsonPropertyName("tags")>]
@@ -237,7 +239,8 @@ type ExaminationController(permissionsService: IPermissionsService,
     member this.GetProblemSets([<FromBody>] req: ProblemSetSearchRequest) =
         async {
             let userId = this.GetUserId()
-            match! examinationService.GetProblemSets(userId,
+            match! examinationService.GetProblemSets(req.IsPublic,
+                                                     userId,
                                                      req.Pattern,
                                                      req.Tags,
                                                      req.AuthorId,

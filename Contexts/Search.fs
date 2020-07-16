@@ -59,6 +59,22 @@ type HeadSearch(headContext: IHeadContext,
             AsyncSeq.filter(fun head -> head.Permissions.OwnerId = authorId)
 
     interface IHeadSearch with
+        member this.SearchPublicProblemSets(pattern, tags, ownerId, problemsCount, duration, offset, limit): Async<List<Head>> = 
+            headContext.SearchPublicProblemSets(pattern,
+                                                tags,
+                                                ownerId,
+                                                problemsCount |> Option.map(fun x -> { From = x.From; To = x.To }),
+                                                duration |> Option.map(fun x -> { From = x.From; To = x.To }),
+                                                offset,
+                                                limit)
+            |> Async.Map(fun r ->
+                match r with
+                | Ok(heads) -> heads
+                | Error(ex) ->
+                    logger.LogError(ex, "Cannot fetch heads with public problem sets")
+                    []
+            )
+
         member this.Search(patternOpt, ownerOpt, tags, headIds, offset, limit) = 
             headIds
             |> AsyncSeq.ofSeq
@@ -82,7 +98,7 @@ type HeadSearch(headContext: IHeadContext,
             |> AsyncSeq.take(int limit)
             |> AsyncSeq.toListAsync
 
-        member this.SearchProblemSets(pattern, tags, authorId, problemsCount, duration, headIds, offset, limit) =
+        member this.SearchPrivateProblemSets(pattern, tags, authorId, problemsCount, duration, headIds, offset, limit) =
             headIds
             |> AsyncSeq.ofSeq
             |> AsyncSeq.mapAsync (Head.CreateDocumentKey >> headContext.Get)

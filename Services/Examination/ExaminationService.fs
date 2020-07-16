@@ -93,15 +93,22 @@ type ExaminationService(reportContext: IReportContext,
                 |> List.ofSeq
             )
 
-        member this.GetProblemSets(userId, pattern, tags, authorId, problemsCount, duration, offset, limit) = 
-            permissionsService.GetHeads(userId, AccessModel.CanGenerate)
-            |> Async.BindResult(fun ids ->
-                headSearch.SearchProblemSets(pattern, tags |> List.map(fun x -> x.Value), authorId, problemsCount, duration, ids, offset, limit)
-                |> Async.Map(fun heads ->
-                    heads
-                    |> Seq.map HeadModel.Create
-                    |> ResultOfSeq
-                )
+        member this.GetProblemSets(isPublic, userId, pattern, tags, authorId, problemsCount, duration, offset, limit) =
+            let headsResult =
+                if isPublic then
+                    headSearch.SearchPublicProblemSets(pattern, tags |> List.map(fun x -> x.Value), authorId, problemsCount, duration, offset, limit)
+                    |> Async.Map(fun x -> Result<List<Head>, Exception>.Ok(x))
+                else
+                    permissionsService.GetHeads(userId, AccessModel.CanGenerate)
+                    |> Async.BindResult(fun ids ->
+                        headSearch.SearchPrivateProblemSets(pattern, tags |> List.map(fun x -> x.Value), authorId, problemsCount, duration, ids, offset, limit)
+                        |> Async.Map(fun x -> Result<List<Head>, Exception>.Ok(x))
+                    )
+            headsResult
+            |> Async.TryMapResult(fun heads ->
+                heads
+                |> Seq.map HeadModel.Create
+                |> ResultOfSeq
             )
             |> Async.MapResult(fun heads ->
                 heads

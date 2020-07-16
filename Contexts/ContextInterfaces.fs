@@ -4,6 +4,12 @@ open DatabaseTypes
 open System
 open DatabaseTypes.Identificators
 
+type Interval<'T> =
+    {
+        From : 'T
+        To : 'T
+    }
+
 type IContext<'T> =
     abstract member Get : IDocumentKey -> Async<Result<'T, Exception>>
     abstract member Insert : IDocumentKey * 'T -> Async<Result<unit, Exception>>
@@ -35,6 +41,7 @@ type IGroupContext =
 
 type IHeadContext =
     inherit IContext<Head>
+    abstract member SearchPublicProblemSets : string option * List<string> * UserId option * problemsCount:Interval<uint32> option * duration:Interval<int32> option * offset:UInt32 * limit:UInt32 -> Async<Result<List<Head>, Exception>>
 
 type IReportContext =
     inherit IContext<Report>
