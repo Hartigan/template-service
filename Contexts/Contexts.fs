@@ -135,6 +135,11 @@ type HeadContext(couchbaseBuckets: CouchbaseBuckets, couchbaseCluster: Couchbase
                         | None -> String.Empty
                         | Some(_) -> "AND p.duration BETWEEN $duration_from AND $duration_to"
 
+                    let ownerFilter =
+                        match ownerIdOpt with
+                        | None -> String.Empty
+                        | Some(_) -> "AND h.permissions.owner_id = $owner_id"
+
                     let! result = cluster.QueryAsync<Head>
                                       (sprintf "
 SELECT RAW h FROM `%s` h
@@ -150,10 +155,11 @@ AND p.type = $problem_set_type
 %s
 %s
 %s
+%s
 ORDER BY p.title
 OFFSET $offset
 LIMIT $limit
-" bucket.Name bucket.Name tagsFilter patternFilter countFilter durationFilter,
+" bucket.Name bucket.Name tagsFilter patternFilter countFilter durationFilter ownerFilter,
                                        queryOptions)
                     let (headsAsync : IQueryResult<Head>) = result
                     let heads =
