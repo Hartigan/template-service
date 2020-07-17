@@ -94,6 +94,7 @@ type Startup private () =
         |> fun x -> x.AddCors(fun options -> 
                 options.AddPolicy("_allowAll", fun builder ->
                         builder.WithOrigins("*")
+                        |> fun x -> x.SetPreflightMaxAge(TimeSpan.FromDays(30.0))
                         |> fun x -> x.AllowAnyHeader()
                         |> ignore
                     )
