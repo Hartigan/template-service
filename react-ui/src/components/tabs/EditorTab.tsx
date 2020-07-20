@@ -16,6 +16,7 @@ const useStyles = makeStyles(theme => ({
         height: "100%",
     },
     tree: {
+        minWidth: "320px",
         width: "30%",
         height: "100%",
     },
