@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import AuthContent from './components/auth/AuthContent'
 import './App.css';
-import { Toolbar, Typography, makeStyles, Grid } from '@material-ui/core';
+import { Toolbar, Typography, makeStyles, Grid, IconButton } from '@material-ui/core';
 import { AuthService } from './services/AuthService';
 import { HttpServiceFactory } from './services/HttpServiceFactory';
 import { FoldersService } from './services/FoldersService';
@@ -16,6 +16,7 @@ import { ExaminationService } from './services/ExaminationService';
 import { User } from 'oidc-client';
 import { GroupService } from './services/GroupService';
 import { AdminService } from './services/AdminService';
+import MenuIcon from '@material-ui/icons/Menu';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -33,6 +34,9 @@ const useStyles = makeStyles(theme => ({
         minWidth: 200,
         flexGrow: 1,
     },
+    menuButton: {
+        color: "white"
+    }
 }));
 
 const authService = new AuthService();
@@ -50,15 +54,24 @@ const adminService = new AdminService(httpServiceFactory);
 interface IState {
     isLoaded: boolean;
     user: User | null;
+    drawlerOpened: boolean;
 }
 
 const App: React.FC = () => {
     const [ state, setState ] = React.useState<IState>({
         isLoaded: false,
-        user: null
-    })
+        user: null,
+        drawlerOpened: false
+    });
 
     const classes = useStyles();
+
+    const changeDrawlerState = (value: boolean) => {
+        setState({
+            ...state,
+            drawlerOpened: value
+        });
+    };
 
     useEffect(() => {
         if (state.isLoaded) {
@@ -73,6 +86,8 @@ const App: React.FC = () => {
             })
         });
     });
+
+
 
     const getMainView = () => {
         if (state.user === null) {
@@ -93,6 +108,8 @@ const App: React.FC = () => {
 
             return (
                 <NavigationTabs
+                    drawlerIsOpened={state.drawlerOpened}
+                    closeDrawler={() => changeDrawlerState(false)}
                     adminService={adminService}
                     versionService={versionService}
                     foldersService={foldersService}
@@ -114,9 +131,17 @@ const App: React.FC = () => {
                 <Grid item>
                     <AppBar>
                         <Toolbar>
+                            {state.user
+                                ? (
+                                    <IconButton
+                                        className={classes.menuButton}
+                                        onClick={() => changeDrawlerState(true)}>
+                                        <MenuIcon />
+                                    </IconButton>
+                                ) : null}
                             <Typography variant="h6" noWrap={true} className={classes.title}>
                                 Quiz generator
-              </Typography>
+                            </Typography>
                             <AuthContent authService={authService} />
                         </Toolbar>
                     </AppBar>

@@ -1,8 +1,5 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import EditorTab from './EditorTab';
 import { VersionService } from '../../services/VersionService';
 import { FoldersService } from '../../services/FoldersService';
@@ -19,6 +16,7 @@ import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
 import { AdminService } from '../../services/AdminService';
 import AdminTab from './AdminTab';
+import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -38,6 +36,8 @@ export interface INavigationTabsProps {
     examinationService: ExaminationService;
     adminService: AdminService;
     roles: Array<string>;
+    drawlerIsOpened: boolean;
+    closeDrawler: () => void;
 }
 
 export default function NavigationTabs(props: INavigationTabsProps) {
@@ -46,24 +46,44 @@ export default function NavigationTabs(props: INavigationTabsProps) {
 
   const handleChange = (newValue: number) => {
     setValue(newValue);
+    props.closeDrawler();
   };
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
-        <Tabs
-          variant="fullWidth"
-          value={value}
-          onChange={(_, newValue) => handleChange(newValue)}
-        >
-          <Tab label="Train" />
-          <Tab label="Reports" />
-          {props.roles.includes("admin") ? <Tab label="Editor" /> : null}
-          {props.roles.includes("admin") ? <Tab label="Groups" /> : null}
-          {props.roles.includes("admin") ? <Tab label="Permissions" />: null}
-          {props.roles.includes("superadmin") ? <Tab label="Admin" />: null}
-        </Tabs>
-      </AppBar>
+      <Drawer
+        anchor={"left"}
+        open={props.drawlerIsOpened}
+        onClose={() => props.closeDrawler()}>
+        <List>
+          <ListItem button onClick={() => handleChange(0)}>
+            <ListItemText>Tests</ListItemText>
+          </ListItem>
+          <ListItem button onClick={() => handleChange(1)}>
+            <ListItemText>Reports</ListItemText>
+          </ListItem>
+          {props.roles.includes("admin")
+            ? <ListItem button onClick={() => handleChange(2)}>
+                <ListItemText>Editor</ListItemText>
+              </ListItem>
+            : null}
+          {props.roles.includes("admin")
+            ? <ListItem button onClick={() => handleChange(3)}>
+                <ListItemText>Groups</ListItemText>
+              </ListItem>
+            : null}
+          {props.roles.includes("admin")
+            ? <ListItem button onClick={() => handleChange(4)}>
+                <ListItemText>Permissions</ListItemText>
+              </ListItem>
+            : null}
+          {props.roles.includes("superadmin")
+            ? <ListItem button onClick={() => handleChange(5)}>
+                <ListItemText>Admin</ListItemText>
+              </ListItem>
+            : null}
+        </List>
+      </Drawer>
       <TabPanel value={value} index={0}>
         <TrainTab
           userService={props.userService}
