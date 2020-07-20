@@ -26,7 +26,8 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'left'
     },
     tabs: {
-        width: "100%"
+        flexGrow: 1,
+        margin: "auto"
     },
     tab: {
         minWidth: "100px"
@@ -129,7 +130,7 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                     className={classes.tabs}
                     value={state.selectedTab}
                     onChange={(_, newValue) => selectTab(newValue)}>
-                    <Tab className={classes.tab} label="My files" />
+                    <Tab className={classes.tab} label="My" />
                     <Tab className={classes.tab} label="All" />
                     {props.enableReports
                         ? <Tab className={classes.tab} label="Reports" />

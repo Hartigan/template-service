@@ -24,15 +24,17 @@ const useStyles = makeStyles(theme => ({
         width: "100%",
         height: "100%",
     },
+    appBarCell: {
+        flexGrow: 1,
+    },
     contentCell: {
         marginTop: 64,
         width: "100%",
         height: "100%",
     },
     title: {
-        align: "left",
-        minWidth: 200,
         flexGrow: 1,
+        overflow: "visible",
     },
     menuButton: {
         color: "white"
@@ -128,7 +130,7 @@ const App: React.FC = () => {
     return (
         <div className="App">
             <Grid container className={classes.main}>
-                <Grid item>
+                <Grid item className={classes.appBarCell}>
                     <AppBar>
                         <Toolbar>
                             {state.user

@@ -10,18 +10,19 @@ import { UserService } from "../../services/UserService";
 import { PermissionsService } from "../../services/PermissionsService";
 import { HeadLink } from "../../models/Folder";
 
+const treeWidth = 320;
+
 const useStyles = makeStyles(theme => ({
     root: {
         width: "100%",
         height: "100%",
     },
     tree: {
-        minWidth: "320px",
-        width: "30%",
+        width: `${treeWidth}px`,
         height: "100%",
     },
     content: {
-        width: "70%",
+        width: `calc(100% - ${treeWidth}px)`,
         height: "100%",
     },
 }));

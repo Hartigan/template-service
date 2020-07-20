@@ -13,17 +13,19 @@ import { HeadLink } from "../../models/Folder";
 import { ExaminationService } from "../../services/ExaminationService";
 import { Report } from "../../models/Report";
 
+const treeWidth = 360;
+
 const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: "100%",
     },
     tree: {
-        width: "30%",
+        width: `${treeWidth}px`,
         height: "100%",
     },
     content: {
-        width: "70%",
+        width: `calc(100% - ${treeWidth}px)`,
         height: "100%",
     },
 }));

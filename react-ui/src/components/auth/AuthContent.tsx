@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { User } from 'oidc-client';
-import { Typography, Button, Grid, makeStyles } from '@material-ui/core';
+import { Typography, Button, makeStyles, Toolbar } from '@material-ui/core';
 import { AuthService } from '../../services/AuthService';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        flexGrow: 1,
     },
-    cell: {
+    username: {
+        marginRight: "12px"
     }
 }));
 
@@ -57,22 +57,21 @@ export default function AuthContent(props: IAuthContentProps) {
     const classes = useStyles();
 
     return (
-        <Grid direction="row-reverse" className={classes.root} container spacing={2}>
-            <Grid item hidden={state.user !== null} className={classes.cell}>
-                <Button onClick={login} variant="contained" color="primary">
-                    Login
-                </Button>
-            </Grid>
-            <Grid item hidden={state.user === null} className={classes.cell}>
-                <Button onClick={logout} variant="contained" color="primary">
-                    Logout
-                </Button>
-            </Grid>
-            <Grid item hidden={state.user === null} className={classes.cell}>
-                <Typography variant="h6">
-                    {state.name}
-                </Typography>
-            </Grid>
-        </Grid>
+        <Toolbar className={classes.root}>
+            <Typography hidden={state.user === null} variant="h6" className={classes.username}>
+                {state.name}
+            </Typography>
+            {state.user
+                ? (
+                    <Button onClick={logout} color="inherit">
+                        Logout
+                    </Button>
+                )
+                : (
+                    <Button onClick={login} color="inherit">
+                        Login
+                    </Button>
+                )}
+        </Toolbar>
     );
 }

@@ -26,7 +26,11 @@ const useStyles = makeStyles(theme => ({
     },
     titleSearch: {
         width: "320px",
-        margin: "10px",
+        marginTop: "12px",
+        marginBottom: "12px",
+        marginLeft: "auto",
+        marginRight: "auto",
+        display: "flex"
     },
     searchNavigation: {
         margin: "auto",
