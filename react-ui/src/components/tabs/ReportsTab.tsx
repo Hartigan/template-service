@@ -148,7 +148,7 @@ export default function ReportsTab(props: IReportsTabProps) {
                 </div>
                 <SearchField
                     className={classes.titleSearch}
-                    placeholder="search..."
+                    placeholder="title..."
                     color="primary"
                     onSearch={(v) => onSearchUpdated(v)}
                     />
