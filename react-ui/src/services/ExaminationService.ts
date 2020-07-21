@@ -40,10 +40,11 @@ export class ExaminationService {
         return this.http.get<Array<SubmissionId>>(`submissions`);
     }
 
-    getReports(pattern: string | null, userId: UserId | null, offset: number, limit: number) {
+    getReports(pattern: string | null, userId: UserId | null, date: SearchInterval<Date> | null, offset: number, limit: number) {
         return this.http.post<Array<ReportId>>(`reports`, {
             pattern: pattern ? pattern : null,
             user_id: userId,
+            date: date,
             offset: offset,
             limit: limit
         });

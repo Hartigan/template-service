@@ -146,12 +146,37 @@ type ReportSearch(reportContext: IReportContext,
                 AsyncSeq.singleton(head)
         )
 
+    member this.SearchByUser(userOpt: UserId option) : AsyncSeq<Report> -> AsyncSeq<Report> =
+        match userOpt with
+        | None -> id
+        | Some(ownerId) ->
+            AsyncSeq.filter(fun report ->
+                report.Permissions.OwnerId = ownerId
+            )
+    
+    member this.SearchByDate(dateOpt: SearchInterval<DateTimeOffset> option) : AsyncSeq<Report> -> AsyncSeq<Report> =
+        match dateOpt with
+        | None -> id
+        | Some(interval) ->
+            AsyncSeq.filter(fun report ->
+                interval.From.Date <= report.FinishedAt.Date && report.FinishedAt.Date <= interval.To.Date
+            )
+
+    member this.TitleFilter(patternOpt: string option) : GeneratedProblemSet -> Boolean =
+        match patternOpt with
+        | None -> fun _ -> true
+        | Some(pattern) ->
+            let normalized = pattern.ToLower()
+            fun generatedProblemSet -> generatedProblemSet.Title.ToLower().Contains(normalized)
+
     interface IReportSearch with
-        member this.Search(pattern, userId, reportIds, offset, limit) =
+        member this.Search(pattern, userOpt, dateOpt, reportIds, offset, limit) =
             reportIds
             |> AsyncSeq.ofSeq
             |> AsyncSeq.mapAsync (Report.CreateDocumentKey >> reportContext.Get)
             |> this.SkipFailed()
+            |> this.SearchByDate(dateOpt)
+            |> this.SearchByUser(userOpt)
             |> fun x ->
                 match pattern with
                 | None -> x
@@ -170,14 +195,6 @@ type ReportSearch(reportContext: IReportContext,
                                 false
                             | Ok(filterResult) -> filterResult
                         )
-                    )
-            |> fun x ->
-                match userId with
-                | None -> x
-                | Some(ownerId) ->
-                    x
-                    |> AsyncSeq.filter(fun report ->
-                        report.Permissions.OwnerId = ownerId
                     )
             |> AsyncSeq.skip(int offset)
             |> AsyncSeq.take(int limit)

@@ -1,4 +1,4 @@
-import { makeStyles, Grid } from "@material-ui/core";
+import { makeStyles, Grid, Paper, Toolbar, Typography, Switch, Box } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { Report } from "../../models/Report";
@@ -8,6 +8,8 @@ import UserSearchView from "../common/UserSearchView";
 import ReportsListView from "../reports/ReportsListView";
 import SearchField from "../common/SearchField";
 import { SearchNavigationView } from "../common/SearchNavigationView";
+import { SearchInterval } from "../../models/SearchInterval";
+import SearchDateIntervalView from "../common/SearchDateIntervalView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -36,6 +38,25 @@ const useStyles = makeStyles(theme => ({
         margin: "auto",
         width: "auto"
     },
+    searchTitle: {
+        flexGrow: 1,
+        fontSize: 14,
+    },
+    searchPaper: {
+        flexGrow: 1,
+        padding: "12px",
+        width: "50%",
+        margin: "auto",
+        display: "flex-inline",
+        minWidth: "320px",
+        maxWidth: "480px",
+    },
+    searchToolbar: {
+        flexGrow: 1,
+    },
+    searchField: {
+        width: "100%"
+    },
     list: {
         margin: "auto",
         width: "80%"
@@ -47,6 +68,8 @@ interface IState {
     search : {
         userId: UserId | null;
         pattern: string;
+        advanced: boolean;
+        date: SearchInterval<Date> | null;
         page: number;
         limit: number;
     }
@@ -64,6 +87,8 @@ export default function ReportsTab(props: IReportsTabProps) {
         search: {
             userId: null,
             pattern: "",
+            date: null,
+            advanced: false,
             page: 1,
             limit: 10
         }
@@ -73,6 +98,7 @@ export default function ReportsTab(props: IReportsTabProps) {
         const reportIds = await props.examinationService.getReports(
             state.search.pattern,
             state.search.userId,
+            state.search.date,
             (state.search.page - 1) * state.search.limit,
             state.search.limit
         );
@@ -113,6 +139,27 @@ export default function ReportsTab(props: IReportsTabProps) {
         })
     };
 
+    const onDateChanged = (date: SearchInterval<Date> | null) => {
+        setState({
+            ...state,
+            reports: null,
+            search: {
+                ...state.search,
+                date: date,
+            }
+        })
+    };
+
+    const onAdvancedSearchChanged = (value: boolean) => {
+        setState({
+            ...state,
+            search: {
+                ...state.search,
+                advanced: value
+            }
+        });
+    };
+
     const onPageChanged = (page: number) => {
         setState({
             ...state,
@@ -140,18 +187,38 @@ export default function ReportsTab(props: IReportsTabProps) {
     return (
         <Grid container className={classes.root}>
             <Grid item className={classes.reports}>
-                <div className={classes.userSearch}>
-                    <UserSearchView
-                        userService={props.userService}
-                        onUserSelected={onUserChanged}
-                        />
-                </div>
-                <SearchField
-                    className={classes.titleSearch}
-                    placeholder="title..."
-                    color="primary"
-                    onSearch={(v) => onSearchUpdated(v)}
-                    />
+                <Paper className={classes.searchPaper}>
+                    <Toolbar className={classes.searchToolbar}>
+                        <SearchField
+                            className={classes.searchField}
+                            placeholder="title..."
+                            color="primary"
+                            onSearch={(v) => onSearchUpdated(v)}
+                            />
+                    </Toolbar>
+                    <Toolbar className={classes.searchToolbar}>
+                        <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
+                            Advanced search
+                        </Typography>
+                        <Switch
+                            checked={state.search.advanced}
+                            onChange={(_, value) => onAdvancedSearchChanged(value)}
+                            color="primary"
+                            />
+                    </Toolbar>
+                    <Box hidden={!state.search.advanced}>
+                        <SearchDateIntervalView
+                            label="Date"
+                            interval={state.search.date}
+                            defaultInterval={{from: new Date(), to: new Date() }}
+                            onChanged={onDateChanged}
+                            />
+                        <UserSearchView
+                            userService={props.userService}
+                            onUserSelected={onUserChanged}
+                            />
+                    </Box>
+                </Paper>
                 <SearchNavigationView
                     className={classes.searchNavigation}
                     page={state.search.page}

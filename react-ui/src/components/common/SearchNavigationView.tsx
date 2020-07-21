@@ -1,5 +1,5 @@
 import React from "react";
-import { IconButton, makeStyles, Button, Typography, Container, ContainerProps } from "@material-ui/core";
+import { IconButton, makeStyles, Button, Typography, Container } from "@material-ui/core";
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import FirstPageIcon from '@material-ui/icons/FirstPage';
@@ -23,7 +23,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export interface ISearchNavigationViewProps extends ContainerProps {
+export interface ISearchNavigationViewProps {
+    className?: string;
     page: number;
     size: number;
     onPageChanged: (value: number) => void;
@@ -32,7 +33,7 @@ export interface ISearchNavigationViewProps extends ContainerProps {
 
 export function SearchNavigationView(props: ISearchNavigationViewProps) {
 
-    const { page, size, onPageChanged, onSizeChanged, ...toolbarProps } = props;
+    const { className, page, size, onPageChanged, onSizeChanged } = props;
 
     const onBack = () => {
         onPageChanged(page - 1);
@@ -45,7 +46,7 @@ export function SearchNavigationView(props: ISearchNavigationViewProps) {
     const classes = useStyles();
 
     return (
-        <Container {...toolbarProps}>
+        <Container className={className}>
             <Container className={classes.root}>
                 <IconButton
                     className={classes.navigationButton}

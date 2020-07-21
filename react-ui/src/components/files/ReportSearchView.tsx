@@ -64,6 +64,7 @@ export default function ReportSearchView(props: IReportSearchViewProps) {
             .getReports(
                 state.pattern,
                 state.ownerId,
+                null,
                 (state.page - 1) * state.limit,
                 state.limit
             );

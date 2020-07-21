@@ -79,13 +79,13 @@ type ExaminationService(reportContext: IReportContext,
 
     interface IExaminationService with
 
-        member this.Search(pattern, userId, targetId, offset, limit): Async<Result<List<ReportId>,Exception>> =
+        member this.Search(pattern, userId, targetId, date, offset, limit): Async<Result<List<ReportId>,Exception>> =
             (this :> IExaminationService).GetSubmissions(userId)
             |> Async.BindResult(fun _ ->
                 permissionsService.GetReports(userId, AccessModel.CanRead)
             )
             |> Async.MapResultAsync(fun ids ->
-                reportSearch.Search(pattern, targetId, ids, offset, limit)
+                reportSearch.Search(pattern, targetId, date, ids, offset, limit)
             )
             |> Async.MapResult(fun reports ->
                 reports

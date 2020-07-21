@@ -17,6 +17,7 @@ open Microsoft.Extensions.Logging
 open Models.Problems
 open Utils.ResultHelper
 open Contexts
+open System
 
 type ApplyAnswerRequest = {
     [<JsonPropertyName("id")>]
@@ -60,6 +61,8 @@ type ReportSearchRequest = {
     Pattern             : string option
     [<JsonPropertyName("user_id")>]
     UserId              : UserId option
+    [<JsonPropertyName("date")>]
+    Date                : SearchInterval<DateTimeOffset> option
     [<JsonPropertyName("offset")>]
     Offset              : uint32
     [<JsonPropertyName("limit")>]
@@ -199,7 +202,7 @@ type ExaminationController(permissionsService: IPermissionsService,
     member this.GetReports([<FromBody>] req: ReportSearchRequest) =
         async {
             let userId = this.GetUserId()
-            match! examinationService.Search(req.Pattern, userId, req.UserId, req.Offset, req.Limit) with
+            match! examinationService.Search(req.Pattern, userId, req.UserId, req.Date, req.Offset, req.Limit) with
             | Error(ex) ->
                 logger.LogError(ex, "Cannot get reports by author")
                 return (BadRequestResult() :> IActionResult)

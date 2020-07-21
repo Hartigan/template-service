@@ -49,7 +49,6 @@ const useStyles = makeStyles(theme => ({
     },
     searchPaper: {
         flexGrow: 1,
-
         padding: "12px",
     },
     searchToolbar: {
