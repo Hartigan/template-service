@@ -54,11 +54,6 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
         });
     }
 
-    const onAnswer = async () => {
-        const answer = state.answer;
-        
-    };
-
     return (
         <Card className={classes.root} variant="outlined">
             <CardContent>
