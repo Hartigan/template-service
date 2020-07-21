@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
         width: '60%',
         minWidth: "360px",
         margin: "auto",
-    },,
+    },
     inputLabel: {
         minWidth: 120,
     },
