@@ -15,9 +15,10 @@ const useStyles = makeStyles(theme => ({
         flex: 1,
     },
     list: {
-        margin: "auto",
         width: '60%',
-    },
+        minWidth: "360px",
+        margin: "auto",
+    },,
     inputLabel: {
         minWidth: 120,
     },
