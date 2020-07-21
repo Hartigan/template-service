@@ -41,7 +41,7 @@ export class ExaminationService {
     }
 
     getReports(pattern: string | null, userId: UserId | null, date: SearchInterval<Date> | null, offset: number, limit: number) {
-        return this.http.post<Array<ReportId>>(`reports`, {
+        return this.http.post<Array<Report>>(`reports`, {
             pattern: pattern ? pattern : null,
             user_id: userId,
             date: date,

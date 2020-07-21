@@ -95,15 +95,13 @@ export default function ReportsTab(props: IReportsTabProps) {
     });
 
     const fetchReports = async () => {
-        const reportIds = await props.examinationService.getReports(
+        const reports = await props.examinationService.getReports(
             state.search.pattern,
             state.search.userId,
             state.search.date,
             (state.search.page - 1) * state.search.limit,
             state.search.limit
         );
-
-        let reports = await Promise.all(reportIds.map(id => props.examinationService.getReport(id)));
 
         setState({
             ...state,

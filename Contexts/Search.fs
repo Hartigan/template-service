@@ -196,6 +196,10 @@ type ReportSearch(reportContext: IReportContext,
                             | Ok(filterResult) -> filterResult
                         )
                     )
-            |> AsyncSeq.skip(int offset)
-            |> AsyncSeq.take(int limit)
             |> AsyncSeq.toListAsync
+            |> Async.Map(fun x ->
+                x
+                |> List.sortByDescending(fun report -> report.FinishedAt)
+                |> List.skip(int offset)
+                |> List.take(int limit)
+            )

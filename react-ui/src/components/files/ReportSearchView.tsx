@@ -60,7 +60,7 @@ export default function ReportSearchView(props: IReportSearchViewProps) {
     });
 
     const fetchReports = async () => {
-        const reportIds = await props.examinationService
+        const reports = await props.examinationService
             .getReports(
                 state.pattern,
                 state.ownerId,
@@ -69,7 +69,7 @@ export default function ReportSearchView(props: IReportSearchViewProps) {
                 state.limit
             );
 
-        return await Promise.all(reportIds.map(id => props.examinationService.getReport(id)));
+        return reports;
     };
 
     React.useEffect(() => {

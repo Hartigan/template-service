@@ -77,9 +77,32 @@ type ExaminationService(reportContext: IReportContext,
             |> List.ofSeq
         )
 
+    member this.CreateReportModel(report: Report) : Async<Result<ReportModel, Exception>> =
+        generatorService.Get(report.GeneratedProblemSetId)
+        |> Async.BindResult(fun problemSet ->
+            report.Answers
+            |> Seq.map(fun ans ->
+                generatorService.Get(ans.GeneratedProblemId)
+                |> Async.TryMapResult(fun problem ->
+                    ProblemReportModel.Create(ans, problem)
+                )
+            )
+            |> ResultOfAsyncSeq
+            |> Async.TryMapResult(fun problems ->
+                ProblemSetReportModel.Create(problemSet, problems)
+            )
+        )
+        |> Async.BindResult(fun problemSetReport ->
+            permissionsService.GetOwner(ProtectedId.Report(report.Id))
+            |> Async.BindResult userService.Get
+            |> Async.TryMapResult(fun author ->
+                ReportModel.Create(report, problemSetReport, author)
+            )
+        )
+
     interface IExaminationService with
 
-        member this.Search(pattern, userId, targetId, date, offset, limit): Async<Result<List<ReportId>,Exception>> =
+        member this.Search(pattern, userId, targetId, date, offset, limit): Async<Result<List<ReportModel>,Exception>> =
             (this :> IExaminationService).GetSubmissions(userId)
             |> Async.BindResult(fun _ ->
                 permissionsService.GetReports(userId, AccessModel.CanRead)
@@ -87,10 +110,10 @@ type ExaminationService(reportContext: IReportContext,
             |> Async.MapResultAsync(fun ids ->
                 reportSearch.Search(pattern, targetId, date, ids, offset, limit)
             )
-            |> Async.MapResult(fun reports ->
+            |> Async.BindResult(fun reports ->
                 reports
-                |> Seq.map(fun report -> report.Id)
-                |> List.ofSeq
+                |> Seq.map this.CreateReportModel
+                |> ResultOfAsyncSeq
             )
 
         member this.GetProblemSets(isPublic, userId, pattern, tags, authorId, problemsCount, duration, offset, limit) =
@@ -255,29 +278,7 @@ type ExaminationService(reportContext: IReportContext,
 
         member this.Get(id: ReportId) =
             reportContext.Get(Report.CreateDocumentKey(id))
-            |> Async.BindResult(fun report ->
-                generatorService.Get(report.GeneratedProblemSetId)
-                |> Async.BindResult(fun problemSet ->
-                    report.Answers
-                    |> Seq.map(fun ans ->
-                        generatorService.Get(ans.GeneratedProblemId)
-                        |> Async.TryMapResult(fun problem ->
-                            ProblemReportModel.Create(ans, problem)
-                        )
-                    )
-                    |> ResultOfAsyncSeq
-                    |> Async.TryMapResult(fun problems ->
-                        ProblemSetReportModel.Create(problemSet, problems)
-                    )
-                )
-                |> Async.BindResult(fun problemSetReport ->
-                    permissionsService.GetOwner(ProtectedId.Report(id))
-                    |> Async.BindResult userService.Get
-                    |> Async.TryMapResult(fun author ->
-                        ReportModel.Create(report, problemSetReport, author)
-                    )
-                )
-            )
+            |> Async.BindResult this.CreateReportModel
 
         member this.GetSubmissions(userId: UserId) =
             permissionsService.GetSubmissions(userId, AccessModel.CanRead)
