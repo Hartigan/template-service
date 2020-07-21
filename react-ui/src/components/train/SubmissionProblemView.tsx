@@ -1,4 +1,4 @@
-import { makeStyles, TextField, Typography, Card, CardContent, CardActions, Button } from "@material-ui/core";
+import { makeStyles, TextField, Typography, Card, CardContent } from "@material-ui/core";
 import React from "react";
 import { SubmissionProblem } from "../../models/Submission";
 import ProblemView from "./ProblemView";
@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 
 interface IState {
     answer: string;
-    submittedAnswer: string | undefined;
+    sub: NodeJS.Timeout | null;
 }
 
 export interface ISubmissionProblemViewProps {
@@ -35,31 +35,28 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
 
     const [ state, setState ] = React.useState<IState>({
         answer: props.answer ? props.answer : "",
-        submittedAnswer: props.answer,
+        sub: null
     }); 
 
     const classes = useStyles();
 
-    const answerStatus = () => {
-        if (state.submittedAnswer) {
-            return (
-                <Typography className={classes.status} variant="body2">
-                    {state.submittedAnswer} - answer aplied
-                </Typography>
-            )
-        }
-        return null;
+    const onAnswerChanged = (ans: string) => {
+        if (state.sub) {
+            clearTimeout(state.sub);
+        };
+
+        setState({
+            ...state,
+            sub: setTimeout(async () => {
+                await props.onAnswer(ans, props.problem.id);
+            }, 200),
+            answer: ans
+        });
     }
 
     const onAnswer = async () => {
         const answer = state.answer;
-        let result = await props.onAnswer(answer, props.problem.id);
-        if (result) {
-            setState({
-                ...state,
-                submittedAnswer: answer
-            });
-        }
+        
     };
 
     return (
@@ -73,17 +70,8 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
                     className={classes.inputLabel}
                     label="Answer"
                     value={state.answer}
-                    onKeyDown={event => { if (event.keyCode === 13) { onAnswer(); } }}
-                    onChange={(e) => setState({...state, answer: e.target.value})} />
-                {answerStatus()}
+                    onChange={(e) => onAnswerChanged(e.target.value)} />
             </CardContent>
-            <CardActions>
-                <Button
-                    color="primary"
-                    onClick={() => onAnswer()}>
-                    Apply
-                </Button>
-            </CardActions>
         </Card>
     );
 };

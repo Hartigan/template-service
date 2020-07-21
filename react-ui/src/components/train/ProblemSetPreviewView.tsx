@@ -1,4 +1,4 @@
-import { makeStyles, Button, TableCell, TableRow } from "@material-ui/core";
+import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { CommitId, SubmissionId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";
@@ -8,8 +8,14 @@ import TagsView from "../utils/TagsView";
 
 
 const useStyles = makeStyles(theme => ({
-    row: {
-    }
+    root: {
+        width: 320,
+        flexGrow: 1,
+        margin: "8px"
+    },
+    title: {
+        fontSize: 14,
+    },
 }));
 
 interface IState {
@@ -62,12 +68,35 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
 
     if (state.preview) {
         return (
-            <TableRow className={classes.row}>
-                <TableCell align="right">{state.preview.title}</TableCell>
-                <TableCell align="right">{state.preview.duration / 60}</TableCell>
-                <TableCell align="right">{state.preview.problems_count}</TableCell>
-                <TableCell align="right">{state.preview.author.username}</TableCell>
-                <TableCell align="right">
+            <Card className={classes.root}>
+                <CardContent>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Title
+                    </Typography>
+                    <Typography variant="h5" component="h2">
+                        {state.preview.title}
+                    </Typography>
+                    <TagsView tags={props.head.tags} />
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Duration
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.duration / 60}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Problems count
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.problems_count}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Author
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.author.username}
+                    </Typography>
+                </CardContent>
+                <CardActions>
                     <Button
                         size="small"
                         color="primary"
@@ -75,11 +104,8 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                         >
                         Start
                     </Button>
-                </TableCell>
-                <TableCell align="right">
-                    <TagsView tags={props.head.tags} />
-                </TableCell>
-            </TableRow>
+                </CardActions>
+            </Card>
         );
     }
 

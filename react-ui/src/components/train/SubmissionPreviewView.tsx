@@ -1,4 +1,4 @@
-import { makeStyles, Button, TableRow, TableCell } from "@material-ui/core";
+import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { SubmissionPreview } from "../../models/SubmissionPreview";
@@ -6,8 +6,14 @@ import { SubmissionId } from "../../models/Identificators";
 import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({
-    row: {
-    }
+    root: {
+        width: 320,
+        flexGrow: 1,
+        margin: "8px"
+    },
+    title: {
+        fontSize: 14,
+    },
 }));
 
 interface IState {
@@ -51,17 +57,30 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
 
     if (state.preview) {
         return (
-            <TableRow
-                className={classes.row}>
-                <TableCell align="right">{state.preview.title}</TableCell>
-                <TableCell align="right">{state.preview.author.username}</TableCell>
-                <TableCell align="right">
+            <Card className={classes.root}>
+                <CardContent>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Title
+                    </Typography>
+                    <Typography variant="h5" component="h2">
+                        {state.preview.title}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Author
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        {state.preview.author.username}
+                    </Typography>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Started at
+                    </Typography>
                     <DateView date={state.preview.started_at} />
-                </TableCell>
-                <TableCell align="right">
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Deadline
+                    </Typography>
                     <DateView date={state.preview.deadline} />
-                </TableCell>
-                <TableCell align="right">
+                </CardContent>
+                <CardActions>
                     <Button
                         size="small"
                         color="primary"
@@ -69,8 +88,8 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                         >
                         Continue
                     </Button>
-                </TableCell>
-            </TableRow>
+                </CardActions>
+            </Card>
         );
     }
 

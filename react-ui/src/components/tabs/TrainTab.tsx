@@ -1,4 +1,4 @@
-import { makeStyles, Grid, Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Switch } from "@material-ui/core";
+import { makeStyles, Grid, Box, Paper, Switch, Typography, Toolbar } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import ProblemSetsListView from "../train/ProblemSetsListView";
@@ -25,7 +25,11 @@ const useStyles = makeStyles(theme => ({
         width: "100%",
     },
     problemSetsSearch: {
-        margin: "auto"
+        width: "50%",
+        margin: "auto",
+        display: "flex",
+        minWidth: "320px",
+        maxWidth: "480px",
     },
     submissions: {
         width: "100%",
@@ -39,12 +43,21 @@ const useStyles = makeStyles(theme => ({
         margin: "auto",
         width: "auto"
     },
-    tableHeaderCell: {
-        fontWeight: "bold"
+    searchTitle: {
+        flexGrow: 1,
+        fontSize: 14,
     },
-    searchTable: {
-        overflowX: "hidden"
-    }
+    searchPaper: {
+        flexGrow: 1,
+
+        padding: "12px",
+    },
+    searchToolbar: {
+        flexGrow: 1,
+    },
+    searchField: {
+        width: "100%"
+    },
 }));
 
 interface IState {
@@ -54,6 +67,7 @@ interface IState {
     problemSets: Array<Head> | null;
     searchIsPublic: boolean;
     searchString: string; 
+    advancedSearch: boolean;
     searchTags: Array<string>;
     searchAuthorId: UserId | null;
     searchProblemsCount: SearchInterval<number> | null;
@@ -81,7 +95,8 @@ export default function TrainTab(props: ITrainTabProps) {
         searchString: "",
         searchPage: 1,
         searchLimit: 10,
-        searchIsPublic: true
+        searchIsPublic: true,
+        advancedSearch: false
     });
 
     const fetchData = async () => {
@@ -152,6 +167,13 @@ export default function TrainTab(props: ITrainTabProps) {
             ...state,
             problemSets: null,
             searchIsPublic: value
+        });
+    };
+
+    const onAdvancedSearchChanged = (value: boolean) => {
+        setState({
+            ...state,
+            advancedSearch: value
         });
     };
 
@@ -261,67 +283,66 @@ export default function TrainTab(props: ITrainTabProps) {
                 </Box>
             </Grid>
             <Grid item className={classes.problemSetsSearch}>
-                <TableContainer component={Paper} className={classes.searchTable}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell className={classes.tableHeaderCell} align="right">Is public</TableCell>
-                                <TableCell className={classes.tableHeaderCell} align="right">Title search</TableCell>
-                                <TableCell className={classes.tableHeaderCell} align="right">Duration interval</TableCell>
-                                <TableCell className={classes.tableHeaderCell} align="right">Count interval</TableCell>
-                                <TableCell className={classes.tableHeaderCell} align="right">Author</TableCell>
-                                <TableCell className={classes.tableHeaderCell} align="right">Tags</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell align="right">
-                                    <Switch
-                                        checked={state.searchIsPublic}
-                                        onChange={(_, value) => onIsPublicChanged(value)}
-                                        color="primary"
-                                        />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <SearchField
-                                        placeholder="title..."
-                                        color="primary"
-                                        onSearch={(v) => onSearchUpdated(v)}
-                                        />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <SearchIntervalView
-                                        interval={state.searchDuration}
-                                        defaultInterval={{from: 5, to: 10 }}
-                                        maxInterval={{from: 0, to: 120 }}
-                                        onChanged={onDurationInterval}
-                                        />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <SearchIntervalView
-                                        interval={state.searchProblemsCount}
-                                        defaultInterval={{from: 5, to: 10 }}
-                                        maxInterval={{from: 0, to: 50 }}
-                                        onChanged={onProblemsCountInterval}
-                                        />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <UserSearchView
-                                        userService={props.userService}
-                                        onUserSelected={onAuthorSelected}
-                                        />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <TagsEditorView
-                                        tags={state.searchTags}
-                                        onAdd={onAddSearchTag}
-                                        onRemove={onRemoveSearchTag}
-                                        />
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <Paper className={classes.searchPaper}>
+                    <Toolbar className={classes.searchToolbar}>
+                        <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
+                            Is public
+                        </Typography>
+                        <Switch
+                            checked={state.searchIsPublic}
+                            onChange={(_, value) => onIsPublicChanged(value)}
+                            color="primary"
+                            />
+                    </Toolbar>
+                    <Toolbar className={classes.searchToolbar}>
+                        <SearchField
+                            className={classes.searchField}
+                            placeholder="title..."
+                            color="primary"
+                            onSearch={(v) => onSearchUpdated(v)}
+                            />
+                    </Toolbar>
+                    <Toolbar className={classes.searchToolbar}>
+                        <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
+                            Advanced search
+                        </Typography>
+                        <Switch
+                            checked={state.advancedSearch}
+                            onChange={(_, value) => onAdvancedSearchChanged(value)}
+                            color="primary"
+                            />
+                    </Toolbar>
+                    <Box hidden={!state.advancedSearch}>
+                        <SearchIntervalView
+                            label="Duration"
+                            interval={state.searchDuration}
+                            defaultInterval={{from: 5, to: 10 }}
+                            maxInterval={{from: 0, to: 120 }}
+                            onChanged={onDurationInterval}
+                            />
+                        <SearchIntervalView
+                            label="Problems count"
+                            interval={state.searchProblemsCount}
+                            defaultInterval={{from: 5, to: 10 }}
+                            maxInterval={{from: 0, to: 50 }}
+                            onChanged={onProblemsCountInterval}
+                            />
+                        <Toolbar className={classes.searchToolbar}>
+                            <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
+                                Author
+                            </Typography>
+                        </Toolbar>
+                        <UserSearchView
+                            userService={props.userService}
+                            onUserSelected={onAuthorSelected}
+                            />
+                        <TagsEditorView
+                            tags={state.searchTags}
+                            onAdd={onAddSearchTag}
+                            onRemove={onRemoveSearchTag}
+                            />
+                    </Box>
+                </Paper>
             </Grid>
             <Grid item className={classes.problemSets}>
                 <Box className={classes.list}>

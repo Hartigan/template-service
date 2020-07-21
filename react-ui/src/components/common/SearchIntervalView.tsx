@@ -1,4 +1,4 @@
-import { makeStyles, Slider, Switch, Container } from "@material-ui/core";
+import { makeStyles, Slider, Switch, Container, Toolbar, Typography } from "@material-ui/core";
 import React from "react";
 import { SearchInterval } from "../../models/SearchInterval";
 
@@ -8,7 +8,17 @@ const useStyles = makeStyles(theme => ({
     },
     slider: {
         minWidth: "200px"
-    }
+    },
+    toolbar: {
+        flexGrow: 1,
+        marginBottom: "32px",
+        padding: 0
+    },
+    label: {
+        flexGrow: 1,
+        fontSize: 14,
+    },
+
 }));
 
 interface IState {
@@ -17,6 +27,7 @@ interface IState {
 }
 
 export interface ISearchIntervalViewProps {
+    label: string;
     interval: SearchInterval<number> | null;
     defaultInterval: SearchInterval<number>;
     maxInterval: SearchInterval<number>;
@@ -62,21 +73,25 @@ export default function SearchIntervalView(props: ISearchIntervalViewProps) {
 
     return (
         <Container className={classes.root}>
-            <Switch
-                checked={state.value !== null}
-                onChange={handleChangeSwitch}
-                color="primary"
-                />
-            {state.value
-                ? <Slider
-                    className={classes.slider}
-                    value={state.value ? [ state.value.from, state.value.to ] : []}
-                    onChange={handleChange}
-                    valueLabelDisplay="on"
-                    min={props.maxInterval.from}
-                    max={props.maxInterval.to}
+            <Toolbar className={classes.toolbar}>
+                <Typography className={classes.label} color="textSecondary">
+                    {props.label}
+                </Typography>
+                <Switch
+                    checked={state.value !== null}
+                    onChange={handleChangeSwitch}
+                    color="primary"
                     />
-                : null}
+            </Toolbar>
+            <Slider
+                className={classes.slider}
+                disabled={state.value === null}
+                value={state.value ? [ state.value.from, state.value.to ] : []}
+                onChange={handleChange}
+                valueLabelDisplay="on"
+                min={props.maxInterval.from}
+                max={props.maxInterval.to}
+                />
         </Container>
     );
 };

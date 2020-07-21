@@ -38,7 +38,7 @@ const useStyles = makeStyles(theme => ({
     },
     list: {
         margin: "auto",
-        width: "60%"
+        width: "80%"
     }
 }));
 
