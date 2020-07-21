@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { User } from 'oidc-client';
-import { Typography, Button, makeStyles, Toolbar } from '@material-ui/core';
+import { Button, makeStyles, Toolbar, Menu, MenuItem } from '@material-ui/core';
 import { AuthService } from '../../services/AuthService';
 
 const useStyles = makeStyles(theme => ({
@@ -14,6 +14,7 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     user: User | null;
     name: string | null | undefined;
+    anchorElement: null | HTMLElement;
     isLoaded: boolean;
 }
 
@@ -28,7 +29,8 @@ export default function AuthContent(props: IAuthContentProps) {
     const [ state, setState ] = React.useState<IState>({
         user: null,
         name: null,
-        isLoaded: false
+        isLoaded: false,
+        anchorElement: null
     });
   
     React.useEffect(() => {
@@ -39,6 +41,7 @@ export default function AuthContent(props: IAuthContentProps) {
             .getUser()
             .then(user => {
                 setState({
+                    ...state,
                     user: user,
                     name: user?.profile.name,
                     isLoaded: true
@@ -54,24 +57,46 @@ export default function AuthContent(props: IAuthContentProps) {
         authService.logout();
     };
 
+    const openMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setState({
+            ...state,
+            anchorElement: event.currentTarget
+        });
+    };
+
+    const closeMenu = () => {
+        setState({
+            ...state,
+            anchorElement: null
+        });
+    };
+
     const classes = useStyles();
 
     return (
         <Toolbar className={classes.root}>
-            <Typography hidden={state.user === null} variant="h6" className={classes.username}>
+            <Button
+                hidden={state.user === null}
+                className={classes.username}
+                onClick={openMenu}
+                color="inherit">
                 {state.name}
-            </Typography>
-            {state.user
+            </Button>
+            <Menu
+                anchorEl={state.anchorElement}
+                keepMounted
+                open={Boolean(state.anchorElement)}
+                onClose={closeMenu}>
+                <MenuItem onClick={logout}>
+                    Logout
+                </MenuItem>
+            </Menu>
+            {state.user === null 
                 ? (
-                    <Button onClick={logout} color="inherit">
-                        Logout
-                    </Button>
-                )
-                : (
                     <Button onClick={login} color="inherit">
                         Login
                     </Button>
-                )}
+                ) : null}
         </Toolbar>
     );
 }
