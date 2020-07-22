@@ -16,6 +16,9 @@ const useStyles = makeStyles(theme => ({
     title: {
         fontSize: 14,
     },
+    tags: {
+        margin: "8px 0px 8px 0px"
+    }
 }));
 
 interface IState {
@@ -76,7 +79,9 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                     <Typography variant="h5" component="h2">
                         {state.preview.title}
                     </Typography>
-                    <TagsView tags={props.head.tags} />
+                    <div className={classes.tags}>
+                        <TagsView tags={props.head.tags} />
+                    </div>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Duration
                     </Typography>

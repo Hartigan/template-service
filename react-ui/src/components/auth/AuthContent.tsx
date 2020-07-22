@@ -80,7 +80,7 @@ export default function AuthContent(props: IAuthContentProps) {
                 className={classes.username}
                 onClick={openMenu}
                 color="inherit">
-                {state.name}
+                {state.name ?? ""}
             </Button>
             <Menu
                 anchorEl={state.anchorElement}

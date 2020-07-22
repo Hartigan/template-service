@@ -5,6 +5,7 @@ import { Report } from "../../models/Report";
 import ReportProblemView from "./ReportProblemView";
 import ReportProblemSetView from "./ReportProblemSetView";
 import TimeSpanView from "../utils/TimeSpanView";
+import StatusView from "./StatusView";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -28,42 +29,12 @@ const useStyles = makeStyles(theme => ({
     tableHeaderCell: {
         fontWeight: "bold"
     },
-    correctStatus: {
-        color: "green"
-    },
-    wrongStatus: {
-        color: "red"
-    }
-    
 }));
 
 export interface IReportDialogProps {
     open: boolean;
     onClose: () => void;
     report: Report;
-}
-
-function StatusView(props: { isCorrect: boolean; }) {
-
-    const classes = useStyles();
-
-    if (props.isCorrect) {
-        return (
-            <Typography
-                className={classes.correctStatus}
-                variant="body2">
-                Correct
-            </Typography>
-        );
-    } else {
-        return (
-            <Typography
-                className={classes.wrongStatus}
-                variant="body2">
-                Wrong
-            </Typography>
-        );
-    }
 }
 
 export default function ReportDialog(props: IReportDialogProps) {

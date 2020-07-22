@@ -16,7 +16,13 @@ const useStyles = makeStyles(theme => ({
         flexGrow: 1,
         fontSize: 14,
     },
-
+    datePicker: {
+        flexGrow: 1
+    },
+    datePickerParent: {
+        width: "100%",
+        display: "flex-inline"
+    }
 }));
 
 interface IState {
@@ -95,28 +101,32 @@ export default function SearchDateIntervalView(props: ISearchDateIntervalViewPro
                     />
             </Toolbar>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardDatePicker
-                    disableToolbar
-                    disabled={state.value === null}
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    margin="normal"
-                    id="date-picker-inline"
-                    label="From"
-                    value={state.value?.from}
-                    onChange={handleChangeFrom}
-                    />
-                <KeyboardDatePicker
-                    disableToolbar
-                    disabled={state.value === null}
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    margin="normal"
-                    id="date-picker-inline"
-                    label="To"
-                    value={state.value?.to}
-                    onChange={handleChangeTo}
-                    />
+                <div className={classes.datePickerParent}>
+                    <KeyboardDatePicker
+                        className={classes.datePicker}
+                        disableToolbar
+                        disabled={state.value === null}
+                        variant="inline"
+                        format="MM/dd/yyyy"
+                        margin="normal"
+                        id="date-picker-inline"
+                        label="From"
+                        value={state.value?.from}
+                        onChange={handleChangeFrom}
+                        />
+                    <KeyboardDatePicker
+                        className={classes.datePicker}
+                        disableToolbar
+                        disabled={state.value === null}
+                        variant="inline"
+                        format="MM/dd/yyyy"
+                        margin="normal"
+                        id="date-picker-inline"
+                        label="To"
+                        value={state.value?.to}
+                        onChange={handleChangeTo}
+                        />
+                </div>
             </MuiPickersUtilsProvider>
         </Container>
     );

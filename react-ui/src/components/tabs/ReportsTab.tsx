@@ -1,4 +1,4 @@
-import { makeStyles, Grid, Paper, Toolbar, Typography, Switch, Box } from "@material-ui/core";
+import { makeStyles, Grid, Paper, Toolbar, Typography, Switch, Box, Container } from "@material-ui/core";
 import React from "react";
 import { ExaminationService } from "../../services/ExaminationService";
 import { Report } from "../../models/Report";
@@ -20,7 +20,14 @@ const useStyles = makeStyles(theme => ({
         width: "80%",
         height: "100%",
         margin: "auto",
-        padding: "10px"
+    },
+    searchContainer: {
+        width: "50%",
+        margin: "auto",
+        display: "flex",
+        minWidth: "320px",
+        maxWidth: "480px",
+        padding: 0
     },
     userSearch: {
         margin: "auto",
@@ -45,17 +52,12 @@ const useStyles = makeStyles(theme => ({
     searchPaper: {
         flexGrow: 1,
         padding: "12px",
-        width: "50%",
-        margin: "auto",
-        display: "flex-inline",
-        minWidth: "320px",
-        maxWidth: "480px",
     },
     searchToolbar: {
         flexGrow: 1,
     },
     searchField: {
-        width: "100%"
+        flexGrow: 1
     },
     list: {
         margin: "auto",
@@ -185,38 +187,40 @@ export default function ReportsTab(props: IReportsTabProps) {
     return (
         <Grid container className={classes.root}>
             <Grid item className={classes.reports}>
-                <Paper className={classes.searchPaper}>
-                    <Toolbar className={classes.searchToolbar}>
-                        <SearchField
-                            className={classes.searchField}
-                            placeholder="title..."
-                            color="primary"
-                            onSearch={(v) => onSearchUpdated(v)}
-                            />
-                    </Toolbar>
-                    <Toolbar className={classes.searchToolbar}>
-                        <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
-                            Advanced search
-                        </Typography>
-                        <Switch
-                            checked={state.search.advanced}
-                            onChange={(_, value) => onAdvancedSearchChanged(value)}
-                            color="primary"
-                            />
-                    </Toolbar>
-                    <Box hidden={!state.search.advanced}>
-                        <SearchDateIntervalView
-                            label="Date"
-                            interval={state.search.date}
-                            defaultInterval={{from: new Date(), to: new Date() }}
-                            onChanged={onDateChanged}
-                            />
-                        <UserSearchView
-                            userService={props.userService}
-                            onUserSelected={onUserChanged}
-                            />
-                    </Box>
-                </Paper>
+                <Container className={classes.searchContainer}>
+                    <Paper className={classes.searchPaper}>
+                        <Toolbar className={classes.searchToolbar}>
+                            <SearchField
+                                className={classes.searchField}
+                                placeholder="title..."
+                                color="primary"
+                                onSearch={(v) => onSearchUpdated(v)}
+                                />
+                        </Toolbar>
+                        <Toolbar className={classes.searchToolbar}>
+                            <Typography className={classes.searchTitle} color="textSecondary" gutterBottom>
+                                Advanced search
+                            </Typography>
+                            <Switch
+                                checked={state.search.advanced}
+                                onChange={(_, value) => onAdvancedSearchChanged(value)}
+                                color="primary"
+                                />
+                        </Toolbar>
+                        <Box hidden={!state.search.advanced}>
+                            <SearchDateIntervalView
+                                label="Date"
+                                interval={state.search.date}
+                                defaultInterval={{from: new Date(), to: new Date() }}
+                                onChanged={onDateChanged}
+                                />
+                            <UserSearchView
+                                userService={props.userService}
+                                onUserSelected={onUserChanged}
+                                />
+                        </Box>
+                    </Paper>
+                </Container>
                 <SearchNavigationView
                     className={classes.searchNavigation}
                     page={state.search.page}

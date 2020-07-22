@@ -3,6 +3,7 @@ import React from "react";
 import { ProblemReport } from "../../models/Report";
 import ProblemView from "../train/ProblemView";
 import TimeSpanView from "../utils/TimeSpanView";
+import StatusView from "./StatusView";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -60,7 +61,7 @@ export default function ReportProblemView(props: IReportProblemViewProps) {
                         Status
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.problem.is_correct ? "Correct" : "Incorrect"}
+                        <StatusView isCorrect={props.problem.is_correct} />
                     </Typography>
                 </CardContent>
             </CardActionArea>
