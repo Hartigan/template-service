@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
         fontSize: 14,
     },
     datePicker: {
-        flexGrow: 1
+        width: "100%"
     },
     datePickerParent: {
         width: "100%",
