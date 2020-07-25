@@ -23,6 +23,7 @@ const useStyles = makeStyles(theme => ({
         maxWidth: 120,
     },
     codeEditor: {
+        width: "100%",
         marginTop: 10,
     },
 }));
@@ -95,6 +96,7 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
             </Select>
             <AceEditor
                 className={classes.codeEditor}
+                style={{ width: "100%" }}
                 mode={languageToMode(props.value.language)}
                 theme="monokai"
                 value={props.value.content}
