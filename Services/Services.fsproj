@@ -19,6 +19,7 @@
     <Compile Include="Folders/IFolderService.fs" />
     <Compile Include="VersionControl/IVersionControlService.fs" />
     <Compile Include="Problems/GeneratorConnector.fs" />
+    <Compile Include="Problems/ValidatorConnector.fs" />
     <Compile Include="Problems/IViewFormatter.fs" />
     <Compile Include="Problems/IGeneratorService.fs" />
     <Compile Include="Problems/IProblemsService.fs" />

@@ -22,16 +22,18 @@ type GeneratorService(viewFormatter: IViewFormatter,
                       problemsService: IProblemsService,
                       versionControlService: IVersionControlService,
                       clientFactory: IHttpClientFactory,
-                      generatorsOptions: IOptions<GeneratorsOptions>) =
+                      generatorsOptions: IOptions<GeneratorsOptions>,
+                      validatorsOptions: IOptions<ValidatorsOptions>) =
 
-    let csharpConnector = GeneratorConnector(generatorsOptions.Value.CSharp.Endpoint, clientFactory)
+    let csharpGenerator = GeneratorConnector(generatorsOptions.Value.CSharp.Endpoint, "csharp", clientFactory)
+    let csharpValidator = ValidatorConnector(validatorsOptions.Value.CSharp.Endpoint, "csharp", clientFactory)
     let random = Random(0)
 
 
     member this.CreateGeneratedProblem(problem: ProblemModel, seed: ProblemSeed): Async<Result<GeneratedProblem, Exception>> =
         match problem.Controller.Language.Language with
         | ControllerLanguage.CSharp ->
-            csharpConnector.Generate(problem, seed)
+            csharpGenerator.Generate(problem, seed)
             |> Async.BindResult(fun result -> 
                 viewFormatter.Format(result.Parameters, problem.View)
                 |> Async.MapResult(fun view -> (view, result))
@@ -63,7 +65,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.BindResult(fun problem ->
                 match problem.Validator.Language.Language with
                 | ValidatorLanguage.CSharp ->
-                    csharpConnector.Validate(problem, actual, expected)
+                    csharpValidator.Validate(problem, actual, expected)
                     |> Async.MapResult(fun result -> result.IsCorrect)
             )
 
@@ -74,7 +76,7 @@ type GeneratorService(viewFormatter: IViewFormatter,
                 |> Async.BindResult(fun problem ->
                     match problem.Validator.Language.Language with
                     | ValidatorLanguage.CSharp ->
-                        csharpConnector.Validate(problem, problemAnswer, generatedProblem.Answer)
+                        csharpValidator.Validate(problem, problemAnswer, generatedProblem.Answer)
                         |> Async.MapResult(fun result -> result.IsCorrect)
                 )
             )

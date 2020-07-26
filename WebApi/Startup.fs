@@ -59,6 +59,7 @@ type Startup private () =
 
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
         |> fun x -> x.Configure<GeneratorsOptions>(this.Configuration.GetSection("Generators"))
+        |> fun x -> x.Configure<ValidatorsOptions>(this.Configuration.GetSection("Validators"))
         |> fun x -> x.AddHttpClient()
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()

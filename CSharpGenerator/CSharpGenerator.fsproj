@@ -18,7 +18,7 @@
     <Compile Include="Models.fs" />
     <Compile Include="Generator.fs" />
     <Compile Include="Processor.fs" />
-    <Compile Include="Controllers/GeneratorController.fs" />
+    <Compile Include="Controllers/CSharpController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

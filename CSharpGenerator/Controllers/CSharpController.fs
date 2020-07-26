@@ -6,8 +6,8 @@ open CSharpGenerator
 
 [<ApiController>]
 [<Route("[controller]")>]
-type GeneratorController (logger : ILogger<GeneratorController>,
-                          processor: Processor) =
+type CSharpController(logger : ILogger<CSharpController>,
+                      processor: Processor) =
     inherit ControllerBase()
 
     [<HttpPost>]

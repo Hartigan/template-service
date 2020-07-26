@@ -4,11 +4,14 @@ open Models.Problems
 open DatabaseTypes.Identificators
 open System
 
-type GeneratorEndpoint() =
+type Endpoint() =
     member val Endpoint = "" with get, set
 
 type GeneratorsOptions() =
-    member val CSharp = GeneratorEndpoint() with get, set
+    member val CSharp = Endpoint() with get, set
+
+type ValidatorsOptions() =
+    member val CSharp = Endpoint() with get, set
 
 type IGeneratorService =
     abstract member Generate : ProblemId -> Async<Result<GeneratedProblemId, Exception>>
