@@ -12,6 +12,9 @@ type Language =
     | CSharp
     | PlainText
     | Tex
+    | IntegerValidator
+    | FloatValidator
+    | StringValidator
 
 [<JsonConverter(typeof<LanguageModelConverter>)>]
 type LanguageModel private (name: string,  language: Language) =
@@ -25,6 +28,9 @@ type LanguageModel private (name: string,  language: Language) =
         | "markdown" -> Ok(LanguageModel(language, Language.Markdown))
         | "plain_text" -> Ok(LanguageModel(language, Language.PlainText))
         | "tex" -> Ok(LanguageModel(language, Language.Tex))
+        | "integer_validator" -> Ok(LanguageModel(language, Language.IntegerValidator))
+        | "float_validator" -> Ok(LanguageModel(language, Language.FloatValidator))
+        | "string_validator" -> Ok(LanguageModel(language, Language.StringValidator))
         | _ -> Error(InvalidOperationException(sprintf "Cannot create LanguageModel" ) :> Exception)
 
 and LanguageModelConverter() =

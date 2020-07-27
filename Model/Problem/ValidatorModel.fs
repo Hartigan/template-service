@@ -7,6 +7,9 @@ open System
 
 type ValidatorLanguage =
     | CSharp
+    | IntegerValidator
+    | FloatValidator
+    | StringValidator
 
 [<JsonConverter(typeof<ValidatorLanguageModelConverter>)>]
 type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model: LanguageModel) =
@@ -17,6 +20,9 @@ type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model
     static member Create(model: LanguageModel) : Result<ValidatorLanguageModel, Exception> =
         match model.Language with
         | Language.CSharp -> Ok(ValidatorLanguageModel(ValidatorLanguage.CSharp, model))
+        | Language.IntegerValidator -> Ok(ValidatorLanguageModel(ValidatorLanguage.IntegerValidator, model))
+        | Language.FloatValidator -> Ok(ValidatorLanguageModel(ValidatorLanguage.FloatValidator, model))
+        | Language.StringValidator -> Ok(ValidatorLanguageModel(ValidatorLanguage.StringValidator, model))
         | _ -> Error(InvalidOperationException(sprintf "cannot create ValidatorLanguageModel") :> Exception)
 
 and ValidatorLanguageModelConverter() =

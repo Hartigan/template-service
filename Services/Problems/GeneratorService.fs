@@ -27,6 +27,10 @@ type GeneratorService(viewFormatter: IViewFormatter,
 
     let csharpGenerator = GeneratorConnector(generatorsOptions.Value.CSharp.Endpoint, "csharp", clientFactory)
     let csharpValidator = ValidatorConnector(validatorsOptions.Value.CSharp.Endpoint, "csharp", clientFactory)
+    let integerValidator = ValidatorConnector(validatorsOptions.Value.Integer.Endpoint, "integer", clientFactory)
+    let floatValidator = ValidatorConnector(validatorsOptions.Value.Float.Endpoint, "float", clientFactory)
+    let stringValidator = ValidatorConnector(validatorsOptions.Value.String.Endpoint, "string", clientFactory)
+    
     let random = Random(0)
 
 
@@ -63,10 +67,15 @@ type GeneratorService(viewFormatter: IViewFormatter,
         member this.TestValidate(problemId, expected, actual) =
             problemsService.Get(problemId)
             |> Async.BindResult(fun problem ->
-                match problem.Validator.Language.Language with
-                | ValidatorLanguage.CSharp ->
-                    csharpValidator.Validate(problem, actual, expected)
-                    |> Async.MapResult(fun result -> result.IsCorrect)
+                let validator =
+                    match problem.Validator.Language.Language with
+                    | ValidatorLanguage.CSharp -> csharpValidator
+                    | ValidatorLanguage.FloatValidator -> floatValidator
+                    | ValidatorLanguage.IntegerValidator -> integerValidator
+                    | ValidatorLanguage.StringValidator -> stringValidator
+                validator.Validate(problem, actual, expected)
+                |> Async.MapResult(fun result -> result.IsCorrect)
+                    
             )
 
         member this.Validate(generatedProblemId, problemAnswer) =
@@ -74,10 +83,14 @@ type GeneratorService(viewFormatter: IViewFormatter,
             |> Async.BindResult(fun generatedProblem ->
                 problemsService.Get(generatedProblem.ProblemId)
                 |> Async.BindResult(fun problem ->
-                    match problem.Validator.Language.Language with
-                    | ValidatorLanguage.CSharp ->
-                        csharpValidator.Validate(problem, problemAnswer, generatedProblem.Answer)
-                        |> Async.MapResult(fun result -> result.IsCorrect)
+                    let validator =
+                        match problem.Validator.Language.Language with
+                        | ValidatorLanguage.CSharp -> csharpValidator
+                        | ValidatorLanguage.FloatValidator -> floatValidator
+                        | ValidatorLanguage.IntegerValidator -> integerValidator
+                        | ValidatorLanguage.StringValidator -> stringValidator
+                    validator.Validate(problem, problemAnswer, generatedProblem.Answer)
+                    |> Async.MapResult(fun result -> result.IsCorrect)
                 )
             )
 

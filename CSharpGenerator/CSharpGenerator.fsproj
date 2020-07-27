@@ -18,7 +18,9 @@
     <Compile Include="Models.fs" />
     <Compile Include="Generator.fs" />
     <Compile Include="Processor.fs" />
+    <Compile Include="SimpleValidators.fs" />
     <Compile Include="Controllers/CSharpController.fs" />
+    <Compile Include="Controllers/SimpleValidatorsController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

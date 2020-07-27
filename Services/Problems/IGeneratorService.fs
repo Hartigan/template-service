@@ -12,6 +12,9 @@ type GeneratorsOptions() =
 
 type ValidatorsOptions() =
     member val CSharp = Endpoint() with get, set
+    member val Integer = Endpoint() with get, set
+    member val Float = Endpoint() with get, set
+    member val String = Endpoint() with get, set
 
 type IGeneratorService =
     abstract member Generate : ProblemId -> Async<Result<GeneratedProblemId, Exception>>

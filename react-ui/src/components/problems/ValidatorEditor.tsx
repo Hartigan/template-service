@@ -1,7 +1,7 @@
 import { Validator } from "../../models/Validator";
 import CodeEditor from "./CodeEditor";
 import React from "react";
-import { CodeLanguage } from "../../models/Code";
+import { ValidatorLanguage } from "../../models/Code";
 
 export interface IValidatorEditorProps {
     value: Validator;
@@ -12,7 +12,10 @@ export interface IValidatorEditorProps {
 export default function ValidatorEditor(props: IValidatorEditorProps) {
 
     const languages = [
-        { value: CodeLanguage.CSharp, title: "C#"}
+        { value: ValidatorLanguage.CSharp, title: "C#"},
+        { value: ValidatorLanguage.IntegerValidator, title: "Integer validator"},
+        { value: ValidatorLanguage.FloatValidator, title: "Float validator"},
+        { value: ValidatorLanguage.StringValidator, title: "String validator"}
     ];
 
     return (

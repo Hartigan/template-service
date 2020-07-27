@@ -10,7 +10,7 @@ import { Validator } from "../../models/Validator";
 import ControllerEditor from "./ControllerEditor";
 import ViewEditor from "./ViewEditor";
 import ValidatorEditor from "./ValidatorEditor";
-import { CodeLanguage, ViewLanguage } from "../../models/Code";
+import { ControllerLanguage, ViewLanguage, ValidatorLanguage } from "../../models/Code";
 import { FolderLink } from "../../models/Folder";
 
 const useStyles = makeStyles(theme => ({
@@ -45,7 +45,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
 
     const [ title, setTitle ] = React.useState<string>(""); 
     const [ controller, setController ] = React.useState<Controller>({
-        language: CodeLanguage.CSharp,
+        language: ControllerLanguage.CSharp,
         content: ""
     });
     const [ view, setView ] = React.useState<View>({
@@ -53,14 +53,14 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
         content: ""
     });
     const [ validator, setValidator ] = React.useState<Validator>({
-        language: CodeLanguage.CSharp,
+        language: ValidatorLanguage.CSharp,
         content: ""
     });
 
     const clean = () => {
         setTitle("");
         setController({
-            language: CodeLanguage.CSharp,
+            language: ControllerLanguage.CSharp,
             content: ""
         });
         setView({
@@ -68,7 +68,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
             content: ""
         });
         setValidator({
-            language: CodeLanguage.CSharp,
+            language: ValidatorLanguage.CSharp,
             content: ""
         });
     };

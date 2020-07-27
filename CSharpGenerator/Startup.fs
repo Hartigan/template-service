@@ -31,6 +31,9 @@ type Startup private () =
         |> fun x -> x.AddSingleton<Processor>()
         |> fun x -> x.AddSingleton<CSharpGenerator>()
         |> fun x -> x.AddSingleton<IMemoryCache, MemoryCache>()
+        |> fun x -> x.AddSingleton<ISimpleValidator<IntValidatorOptions>, IntValidator>()
+        |> fun x -> x.AddSingleton<ISimpleValidator<FloatValidatorOptions>, FloatValidator>()
+        |> fun x -> x.AddSingleton<ISimpleValidator<StringValidatorOptions>, StringValidator>()
         |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

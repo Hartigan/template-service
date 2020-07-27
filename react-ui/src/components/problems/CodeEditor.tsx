@@ -1,5 +1,5 @@
 import { makeStyles, FormControl, MenuItem, InputLabel, Select } from "@material-ui/core";
-import { Code, CodeLanguage, ViewLanguage } from "../../models/Code";
+import { Code, ControllerLanguage, ViewLanguage, ValidatorLanguage } from "../../models/Code";
 import React from "react";
 import AceEditor from "react-ace";
 
@@ -9,6 +9,9 @@ import "ace-builds/src-noconflict/mode-tex";
 import "ace-builds/src-noconflict/mode-plain_text";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools"
+import FloatValidatorEditor from "./FloatValidatorEditor";
+import IntegerValidatorEditor from "./IntegerValidatorEditor";
+import StringValidatorEditor from "./StringValidatorEditor";
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -26,10 +29,13 @@ const useStyles = makeStyles(theme => ({
         width: "100%",
         marginTop: 10,
     },
+    simpleEditor: {
+        marginTop: "16px"
+    }
 }));
 
 export interface ICodeLanguage {
-    value: CodeLanguage | ViewLanguage;
+    value: ControllerLanguage | ViewLanguage | ValidatorLanguage;
     title: string;
 }
 
@@ -64,9 +70,10 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
         } as T);
     };
 
-    const languageToMode = (language: CodeLanguage | ViewLanguage) => {
+    const languageToMode = (language: ControllerLanguage | ViewLanguage | ValidatorLanguage) => {
         switch (language) {
-            case CodeLanguage.CSharp:
+            case ControllerLanguage.CSharp:
+            case ValidatorLanguage.CSharp:
                 return "csharp";
             case ViewLanguage.Markdown:
                 return "markdown";
@@ -78,6 +85,65 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
                 return undefined;
         }
     };
+
+    const getEditor = () => {
+        switch (props.value.language) {
+            case ControllerLanguage.CSharp:
+            case ValidatorLanguage.CSharp:
+            case ViewLanguage.Markdown:
+            case ViewLanguage.TeX:
+            case ViewLanguage.PlainText:
+                return (
+                    <AceEditor
+                        className={classes.codeEditor}
+                        style={{ width: "100%" }}
+                        mode={languageToMode(props.value.language)}
+                        theme="monokai"
+                        value={props.value.content}
+                        readOnly={props.disabled}
+                        minLines={5}
+                        fontSize={14}
+                        showPrintMargin={true}
+                        showGutter={true}
+                        highlightActiveLine={true}
+                        setOptions={{
+                            enableBasicAutocompletion: true,
+                            enableLiveAutocompletion: true,
+                            enableSnippets: false,
+                            showLineNumbers: true,
+                            tabSize: 4,
+                        }}
+                        onChange={(value) => updateContent(value)} />
+                );
+            case ValidatorLanguage.FloatValidator:
+                return (
+                    <FloatValidatorEditor
+                        className={classes.simpleEditor}
+                        value={props.value.content}
+                        onChange={updateContent}
+                        disabled={props.disabled}
+                        />
+                );
+            case ValidatorLanguage.IntegerValidator:
+                return (
+                    <IntegerValidatorEditor
+                        className={classes.simpleEditor}
+                        value={props.value.content}
+                        onChange={updateContent}
+                        disabled={props.disabled}
+                        />
+                );
+            case ValidatorLanguage.StringValidator:
+                return (
+                    <StringValidatorEditor
+                        className={classes.simpleEditor}
+                        value={props.value.content}
+                        onChange={updateContent}
+                        disabled={props.disabled}
+                        />
+                );
+        }
+    }
 
     return (
         <FormControl className={classes.formControl} disabled={props.disabled}>
@@ -94,26 +160,7 @@ export default function CodeEditor<T extends Code>(props: ICodeEditorProps<T>) {
                 onChange={(e) => updateLanguage(e.target.value as string)}>
                 {langItems}
             </Select>
-            <AceEditor
-                className={classes.codeEditor}
-                style={{ width: "100%" }}
-                mode={languageToMode(props.value.language)}
-                theme="monokai"
-                value={props.value.content}
-                readOnly={props.disabled}
-                minLines={5}
-                fontSize={14}
-                showPrintMargin={true}
-                showGutter={true}
-                highlightActiveLine={true}
-                setOptions={{
-                    enableBasicAutocompletion: true,
-                    enableLiveAutocompletion: true,
-                    enableSnippets: false,
-                    showLineNumbers: true,
-                    tabSize: 4,
-                }}
-                onChange={(value) => updateContent(value)} />
+            {getEditor()}
         </FormControl>
     );
 };
