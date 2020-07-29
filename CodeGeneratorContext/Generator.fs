@@ -22,5 +22,8 @@ type Generator(seed: int32) =
     member this.GetInt(minInclusive: int32, maxExclusive: int32) =
         random.Next(minInclusive, maxExclusive)
 
+    member this.Сhoose<'T>([<ParamArray>] obj: 'T[]) =
+        obj.[random.Next(obj.Length)]
+
 type Answer(ans: string) =
     member val Value = ans with get
