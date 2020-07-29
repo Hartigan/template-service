@@ -12,14 +12,16 @@ type Processor(generator: CSharpGenerator,
                logger: ILogger<Processor>
                ) =
 
+    let pluralizer = Pluralizer()
+
     member private this.CreateGeneratorBuilder(code: string) =
-        let func = Func<ICacheEntry, Task<(Generator -> Result<ControllerResult, Exception>)>>(fun entry ->
+        let func = Func<ICacheEntry, Task<(Generator * Pluralizer -> Result<ControllerResult, Exception>)>>(fun entry ->
                     async {
                         match! generator.CreateGeneratorDelegate(code) with
                         | Ok(dataGenerator) -> return dataGenerator
                         | Error(ex) -> 
                             logger.LogError(ex, "Cannot compile problem controller")
-                            return raise<(Generator -> Result<ControllerResult, Exception>)>(ex)
+                            return raise<(Generator * Pluralizer -> Result<ControllerResult, Exception>)>(ex)
                     }
                     |> Async.StartAsTask
             )
@@ -47,11 +49,11 @@ type Processor(generator: CSharpGenerator,
     member this.Generate(req: GenerateProblemDataRequest) =
         async {
             let generatorId = this.CreateGeneratorId(req.ProblemId)
-            let! (dataGenerator: Generator -> Result<ControllerResult, Exception>) = cache.GetOrCreateAsync(generatorId, this.CreateGeneratorBuilder(req.Code))
+            let! (dataGenerator: Generator * Pluralizer -> Result<ControllerResult, Exception>) = cache.GetOrCreateAsync(generatorId, this.CreateGeneratorBuilder(req.Code))
             cache.Set(generatorId, dataGenerator)
             let g = Generator(req.Seed)
 
-            match dataGenerator(g) with
+            match dataGenerator(g, pluralizer) with
             | Ok(result) ->
                 return Ok({
                     Answer = result.Answer

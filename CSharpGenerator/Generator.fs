@@ -12,7 +12,7 @@ type CSharpGenerator() =
     let location = typeof<Generator>.Assembly.Location
     let metadata = MetadataReference.CreateFromFile(location)
     let templateController = 
-        "System.Func<CodeGeneratorContext.Generator, CodeGeneratorContext.ControllerResult> fn = (CodeGeneratorContext.Generator generator) =>\n" +
+        "System.Func<CodeGeneratorContext.Generator, CodeGeneratorContext.Pluralizer, CodeGeneratorContext.ControllerResult> fn = (CodeGeneratorContext.Generator generator, CodeGeneratorContext.Pluralizer pluralizer) =>\n" +
         "{{\n" +
         "    CodeGeneratorContext.ControllerResult result = new CodeGeneratorContext.ControllerResult();\n" + 
         "{0}\n" +
@@ -33,10 +33,10 @@ type CSharpGenerator() =
             try
                 let program = String.Format(templateController, code)
                 let! (state : ScriptState<obj>) = CSharpScript.RunAsync(program, ScriptOptions.Default.WithReferences(metadata))
-                let fn = (state.GetVariable("fn").Value :?> Func<Generator, ControllerResult>)
-                return Ok(fun (generator: Generator) ->
+                let fn = (state.GetVariable("fn").Value :?> Func<Generator, Pluralizer, ControllerResult>)
+                return Ok(fun (generator: Generator, pluralizer: Pluralizer) ->
                     try
-                        Ok(fn.Invoke(generator))
+                        Ok(fn.Invoke(generator, pluralizer))
                     with ex -> Error(ex)
 
                 )

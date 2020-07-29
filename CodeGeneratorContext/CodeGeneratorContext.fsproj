@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Generator.fs" />
+    <Compile Include="Pluralizer.fs" />
   </ItemGroup>
 
 </Project>
