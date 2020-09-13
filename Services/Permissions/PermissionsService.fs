@@ -12,7 +12,6 @@ open FSharp.Control
 
 type PermissionsService(userService: IUserService,
                         groupService: IGroupService,
-                        userContext: IUserContext,
                         groupContext: IGroupContext,
                         permissionsContext: IPermissionsContext,
                         userGroupsContext: IContext<UserGroups>,
@@ -500,41 +499,32 @@ type PermissionsService(userService: IUserService,
         
         member this.Share(id: ProtectedId, userId: UserId) = 
             let accessFlags = AccessModel.CanRead.ToFlags()
-            userContext.Exists(User.CreateDocumentKey(userId))
-            |> Async.TryMapResult(fun exists ->
-                if exists then
-                    Ok()
-                else
-                    Result.Error(InvalidOperationException(sprintf "User with UserId %s not found" userId.Value) :> Exception)
-            )
-            |> Async.BindResult(fun _ ->
-                this.UpdatePermissions
-                    (id,
-                    fun perm ->
-                        let mmbr =
-                            perm.Members
-                            |> Seq.tryFind(fun m -> m.UserId = userId)
-                            |> fun opt ->
-                                match opt with
-                                | None ->
-                                    {
-                                        UserId = userId
-                                        Access = accessFlags
-                                    }
-                                | Some(m) ->
-                                    {
-                                        m with
-                                            Access = accessFlags ||| m.Access
-                                    }
-                        {
-                            perm with
-                                Members =
-                                    mmbr :: (perm.Members
-                                    |> Seq.filter(fun m -> m.UserId <> userId)
-                                    |> List.ofSeq)
-                        }
-                   )
-            )
+            this.UpdatePermissions
+                (id,
+                fun perm ->
+                    let mmbr =
+                        perm.Members
+                        |> Seq.tryFind(fun m -> m.UserId = userId)
+                        |> fun opt ->
+                            match opt with
+                            | None ->
+                                {
+                                    UserId = userId
+                                    Access = accessFlags
+                                }
+                            | Some(m) ->
+                                {
+                                    m with
+                                        Access = accessFlags ||| m.Access
+                                }
+                    {
+                        perm with
+                            Members =
+                                mmbr :: (perm.Members
+                                |> Seq.filter(fun m -> m.UserId <> userId)
+                                |> List.ofSeq)
+                    }
+               )
             |> Async.BindResult(fun _ ->
                 let adder = this.AddIfNotExistsProtectedId(id)
                 userItemsContext.Update(UserItems.CreateDocumentKey(userId),

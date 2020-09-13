@@ -8,12 +8,6 @@
     <ProjectReference Include="../Contexts/Contexts.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Authentication/Utils.fs" />
-    <Compile Include="Authentication/UserIdentity.fs" />
-    <Compile Include="Authentication/RoleIdentity.fs" />
-    <Compile Include="Authentication/Converters.fs" />
-    <Compile Include="Authentication/UserStore.fs" />
-    <Compile Include="Authentication/RoleStore.fs" />
     <Compile Include="Permissions/UserModel.fs" />
     <Compile Include="Permissions/AccessModel.fs" />
     <Compile Include="Permissions/MemberModel.fs" />

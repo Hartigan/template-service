@@ -12,20 +12,6 @@ services:
     networks:
       default:
         ipv4_address: 10.5.0.2
-  identity-server:
-    image: "auth-service:0.1-alpha"
-    container_name: "auth-service"
-    restart: always
-    build:
-      context: ./../..
-      dockerfile: ./docker/Release/IdentityServer.Dockerfile
-    ports:
-    - "80"
-    links:
-    - db:database
-    networks:
-      default:
-        ipv4_address: 10.5.0.3
   api:
     image: "template-service:0.1-alpha"
     container_name: "template-service"
@@ -37,7 +23,7 @@ services:
     - "80"
     links:
     - db:database
-    - identity-server:identity-server
+    - keycloak-server:auth-server
     - cs-generator:cs-generator
     networks:
       default:
@@ -81,7 +67,7 @@ services:
     ports:
     - "80:80"
     links:
-    - identity-server:auth-server
+    - keycloak-server:auth-server
     - api:api-server
     - ui:ui-server
     - grafana:grafana-server
@@ -120,7 +106,7 @@ services:
     container_name: telegraf
     restart: always
     links:
-    - identity-server:auth-server
+    - keycloak-server:auth-server
     - api:api-server
     - db:couchbase-server
     - master:master-server
@@ -139,6 +125,40 @@ services:
     networks:
       default:
         ipv4_address: 10.5.0.10
+  postgres-server:
+    image: "postgres"
+    container_name: "user-db"
+    restart: always
+    volumes:
+    - postgres-volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      default:
+        ipv4_address: 10.5.0.11
+  keycloak-server:
+    image: "quay.io/keycloak/keycloak:latest"
+    container_name: "auth-service"
+    restart: always
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+    command: -b 0.0.0.0 -Djboss.http.port=80 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/prod-realm.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
+    volumes:
+    - ./prod-realm.json:/tmp/prod-realm.json:ro
+    links:
+    - postgres-server:postgres
+    networks:
+      default:
+        ipv4_address: 10.5.0.12
 networks:
   default:
     driver: bridge
@@ -152,4 +172,6 @@ volumes:
   grafana-volume:
     external: true
   influxdb-volume:
+    external: true
+  postgres-volume:
     external: true

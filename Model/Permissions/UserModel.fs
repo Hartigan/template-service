@@ -42,10 +42,13 @@ type UserModel =
         Username: Username
     }
 
-    static member Create(user: User) : Result<UserModel, Exception> =
-        Ok({
-            UserModel.Id    = user.Id
-            FirstName       = FirstName(user.FirstName)
-            LastName        = LastName(user.LastName)
-            Username        = Username(user.Name)
-        })
+    static member Create(id: UserId,
+                         firstName: FirstName,
+                         lastName: LastName,
+                         username: Username) : UserModel =
+        {
+            UserModel.Id    = id
+            FirstName       = firstName
+            LastName        = lastName
+            Username        = username
+        }

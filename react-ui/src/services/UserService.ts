@@ -11,6 +11,10 @@ export class UserService {
         this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/user`);
     }
 
+    init() {
+        return this.http.get<void>(`init`);
+    }
+
     get(id: UserId) {
         return this.http.get<User>(`get?id=${id}`);
     }

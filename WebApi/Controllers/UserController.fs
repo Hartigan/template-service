@@ -27,6 +27,19 @@ type UserController(userService: IUserService,
     member private this.GetUserId() = UserId(this.User.FindFirst(ClaimTypes.NameIdentifier).Value)
 
     [<HttpGet>]
+    [<Route("init")>]
+    member this.Init() =
+        async {
+            let userId = this.GetUserId()
+            match! userService.Init(userId) with
+            | Error(ex) -> 
+                logger.LogError(ex, "Cannot get user")
+                return (BadRequestResult() :> IActionResult)
+            | Ok(model) -> return (JsonResult(model) :> IActionResult)
+        }
+        |> Async.StartAsTask
+
+    [<HttpGet>]
     [<Route("get")>]
     member this.Get([<FromQuery(Name = "id")>] id: string) =
         async {

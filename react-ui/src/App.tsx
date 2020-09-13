@@ -81,11 +81,14 @@ const App: React.FC = () => {
         }
 
         authService.getUser().then(user => {
+            if (user) {
+                userService.init();
+            }
             setState({
                 ...state,
                 isLoaded: true,
                 user: user
-            })
+            });
         });
     });
 

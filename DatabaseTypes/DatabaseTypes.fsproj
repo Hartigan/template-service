@@ -19,9 +19,7 @@
     <Compile Include="GeneratedProblem.fs" />
     <Compile Include="Folder.fs" />
     <Compile Include="Head.fs" />
-    <Compile Include="User.fs" />
     <Compile Include="UserGroup.fs" />
-    <Compile Include="UserRole.fs" />
     <Compile Include="GeneratedProblemSet.fs" />
     <Compile Include="Submission.fs" />
     <Compile Include="Report.fs" />

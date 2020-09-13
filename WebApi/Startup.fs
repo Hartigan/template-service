@@ -14,7 +14,6 @@ open Microsoft.Extensions.Hosting
 open Microsoft.AspNetCore.Identity
 open Microsoft.Extensions.Configuration
 open Microsoft.AspNetCore.Authentication
-open Models.Authentication
 open DatabaseTypes
 open Storage
 open Contexts
@@ -25,7 +24,6 @@ open Services.Permissions
 open Services.VersionControl
 open Services.Examination
 open Services.Problems
-open Services.Admin
 open System.Text.Json.Serialization
 open Prometheus
 
@@ -60,13 +58,12 @@ type Startup private () =
         services.Configure<CouchbaseConfig>(this.Configuration.GetSection("Couchbase"))
         |> fun x -> x.Configure<GeneratorsOptions>(this.Configuration.GetSection("Generators"))
         |> fun x -> x.Configure<ValidatorsOptions>(this.Configuration.GetSection("Validators"))
+        |> fun x -> x.Configure<KeycloakOptions>(this.Configuration.GetSection("Keycloak"))
         |> fun x -> x.AddHttpClient()
         |> fun x -> x.AddSingleton<CouchbaseCluster>()
         |> fun x -> x.AddSingleton<CouchbaseBuckets>()
         |> fun x -> x.AddSingleton<IContext<Folder>, FolderContext>()
         |> fun x -> x.AddSingleton<IHeadContext, HeadContext>()
-        |> fun x -> x.AddSingleton<IUserContext, UserContext>()
-        |> fun x -> x.AddSingleton<IUserRoleContext, UserRoleContext>()
         |> fun x -> x.AddSingleton<IReportContext, ReportContext>()
         |> fun x -> x.AddSingleton<IContext<Submission>, SubmissionContext>()
         |> fun x -> x.AddSingleton<IContext<Commit>, CommitContext>()
@@ -91,7 +88,6 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IGroupService, GroupService>()
         |> fun x -> x.AddSingleton<IReportSearch, ReportSearch>()
         |> fun x -> x.AddSingleton<IHeadSearch, HeadSearch>()
-        |> fun x -> x.AddSingleton<IAdminService, AdminService>()
         |> fun x -> x.AddCors(fun options -> 
                 options.AddPolicy("_allowAll", fun builder ->
                         builder.WithOrigins("*")

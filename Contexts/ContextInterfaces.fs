@@ -24,17 +24,6 @@ type IPermissionsContext =
     abstract member Update : IDocumentKey * (Permissions -> Permissions) -> Async<Result<unit, Exception>>
     abstract member Exists : IDocumentKey -> Async<Result<bool, Exception>>
 
-type IUserContext =
-    inherit IContext<User>
-    abstract member GetByName : string -> Async<Result<User, Exception>>
-    abstract member GetUsersInRole : string -> Async<Result<List<User>, Exception>>
-    abstract member Search : string option * offset:UInt32 * limit:UInt32 -> Async<Result<List<User>, Exception>>
-    abstract member GetAll : unit -> Async<Result<List<User>, Exception>>
-
-type IUserRoleContext =
-    inherit IContext<UserRole>
-    abstract member GetByName : string -> Async<Result<UserRole, Exception>>
-
 type IGroupContext =
     inherit IContext<UserGroup>
     abstract member Search : string option * offset:UInt32 * limit:UInt32 -> Async<Result<List<UserGroup>, Exception>>

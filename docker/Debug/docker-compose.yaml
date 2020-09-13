@@ -1,5 +1,33 @@
 version: '3'
 services:
+  postgres:
+    image: postgres
+    container_name: "user-db"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: "keycloak"
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+    command: -b 0.0.0.0 -Djboss.http.port=8080 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/dev-realm.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
+    volumes:
+    - ./dev-realm.json:/tmp/dev-realm.json:ro
+    ports:
+      - 80:8080
+    depends_on:
+      - postgres
   cs-generator:
     image: "cs-generator:latest"
     container_name: "cs-generator"
@@ -10,18 +38,6 @@ services:
     - ASPNETCORE_ENVIRONMENT=Development
     ports:
     - "8081:80"
-  identity-server:
-    image: "auth-service:latest"
-    container_name: "auth-service"
-    build:
-      context: ./../..
-      dockerfile: ./docker/Debug/IdentityServer.Dockerfile
-    environment:
-    - ASPNETCORE_ENVIRONMENT=Development
-    ports:
-    - "80:80"
-    links:
-    - db:database
   web:
     image: "template-service:latest"
     container_name: "template-service"
@@ -34,7 +50,7 @@ services:
     - "8080:80"
     links:
     - db:database
-    - identity-server:identity-server
+    - keycloak:keycloak
     - cs-generator:cs-generator
   db:
     image: "database-service:latest"
@@ -48,3 +64,4 @@ services:
     - "8091:8091"
 volumes:
   db-volume:
+  postgres_data:
