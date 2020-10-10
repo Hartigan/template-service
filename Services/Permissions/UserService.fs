@@ -14,6 +14,7 @@ open System.Net.Http.Headers
 open System.Text.Json.Serialization
 open System.Text.Json
 open Microsoft.Extensions.Options
+open Microsoft.Extensions.Logging
 
 type KeycloakUser() =
     [<JsonPropertyName("id")>]
@@ -34,7 +35,8 @@ type UserService(userGroupsContext: IContext<UserGroups>,
                  userItemsContext: IContext<UserItems>,
                  trashContext: IContext<Trash>,
                  keycloakOptions: IOptions<KeycloakOptions>,
-                 clientFactory: IHttpClientFactory) =
+                 clientFactory: IHttpClientFactory,
+                 logger: ILogger<UserService>) =
 
     let httpClient = clientFactory.CreateClient("UserService_")
 
@@ -80,6 +82,7 @@ type UserService(userGroupsContext: IContext<UserGroups>,
                 try
                     let! (response: HttpResponseMessage) = httpClient.SendAsync(request)
                     let! (body: string) = response.Content.ReadAsStringAsync()
+                    logger.LogWarning(body);
                     let users = JsonSerializer.Deserialize<System.Collections.Generic.List<KeycloakUser>>(body, jsonOptions)
                     return
                         users
