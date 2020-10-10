@@ -19,6 +19,8 @@ services:
     build:
       context: ./../..
       dockerfile: ./docker/Release/WebApi.Dockerfile
+    volumes:
+    - ./appsettings.json:/app/appsettings.json:ro
     ports:
     - "80"
     links:
