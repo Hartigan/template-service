@@ -15,7 +15,6 @@ import ReportsTab from './ReportsTab';
 import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
 import { AdminService } from '../../services/AdminService';
-import AdminTab from './AdminTab';
 import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
@@ -77,11 +76,6 @@ export default function NavigationTabs(props: INavigationTabsProps) {
                 <ListItemText>Permissions</ListItemText>
               </ListItem>
             : null}
-          {props.roles.includes("superadmin")
-            ? <ListItem button onClick={() => handleChange(5)}>
-                <ListItemText>Admin</ListItemText>
-              </ListItem>
-            : null}
         </List>
       </Drawer>
       <TabPanel value={value} index={0}>
@@ -122,11 +116,6 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           foldersService={props.foldersService}
           problemsService={props.problemsService}
           problemSetService={props.problemSetService}
-          />
-      </TabPanel>
-      <TabPanel value={value} index={5}>
-        <AdminTab
-          adminService={props.adminService}
           />
       </TabPanel>
     </div>
