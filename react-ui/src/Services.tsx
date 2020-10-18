@@ -1,0 +1,23 @@
+import { AdminService } from "./services/AdminService";
+import { AuthService } from "./services/AuthService";
+import { ExaminationService } from "./services/ExaminationService";
+import { FoldersService } from "./services/FoldersService";
+import { GroupService } from "./services/GroupService";
+import { HttpServiceFactory } from "./services/HttpServiceFactory";
+import { PermissionsService } from "./services/PermissionsService";
+import { ProblemSetService } from "./services/ProblemSetService";
+import { ProblemsService } from "./services/ProblemsService";
+import { UserService } from "./services/UserService";
+import { VersionService } from "./services/VersionService";
+
+export const authService = new AuthService();
+export const httpServiceFactory = new HttpServiceFactory(authService);
+export const versionService = new VersionService(httpServiceFactory);
+export const foldersService = new FoldersService(httpServiceFactory);
+export const problemsService = new ProblemsService(httpServiceFactory);
+export const problemSetService = new ProblemSetService(httpServiceFactory);
+export const permissionsService = new PermissionsService(httpServiceFactory);
+export const userService = new UserService(httpServiceFactory);
+export const examinationService = new ExaminationService(httpServiceFactory);
+export const groupService = new GroupService(httpServiceFactory);
+export const adminService = new AdminService(httpServiceFactory);

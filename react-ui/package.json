@@ -9,6 +9,7 @@
     "@material-ui/lab": "^4.0.0-alpha.37",
     "@material-ui/pickers": "^3.2.10",
     "@material/top-app-bar": "^5.1.0",
+    "@reduxjs/toolkit": "^1.4.0",
     "@testing-library/jest-dom": "^5.1.1",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^10.0.0",
@@ -25,8 +26,10 @@
     "react-ace": "^9.0.0",
     "react-dom": "^16.12.0",
     "react-markdown": "^4.3.1",
+    "react-redux": "^7.2.1",
     "react-scripts": "3.4.0",
     "react-tex": "^1.4.0",
+    "redux-devtools-extension": "^2.13.8",
     "toastr": "^2.1.4",
     "typescript": "~3.8.3"
   },

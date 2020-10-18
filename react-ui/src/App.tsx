@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
-import AuthContent from './components/auth/AuthContent'
 import './App.css';
 import { Toolbar, Typography, makeStyles, Grid, IconButton } from '@material-ui/core';
 import { AuthService } from './services/AuthService';
@@ -17,6 +16,7 @@ import { User } from 'oidc-client';
 import { GroupService } from './services/GroupService';
 import { AdminService } from './services/AdminService';
 import MenuIcon from '@material-ui/icons/Menu';
+import AuthContainer from './containers/auth/AuthContainer';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -147,7 +147,7 @@ const App: React.FC = () => {
                             <Typography variant="h6" noWrap={true} className={classes.title}>
                                 Quiz generator
                             </Typography>
-                            <AuthContent authService={authService} />
+                            <AuthContainer />
                         </Toolbar>
                     </AppBar>
                 </Grid>

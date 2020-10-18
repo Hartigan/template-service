@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { User } from 'oidc-client';
 import { Button, makeStyles, Toolbar, Menu, MenuItem } from '@material-ui/core';
-import { AuthService } from '../../services/AuthService';
+import { useDispatch } from 'react-redux'
+import { authService } from '../../Services';
+import { fetchUser } from '../../store/auth/AuthContentSlice';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -12,41 +13,24 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface IState {
-    user: User | null;
-    name: string | null | undefined;
     anchorElement: null | HTMLElement;
-    isLoaded: boolean;
 }
-
 export interface IAuthContentProps {
-    authService: AuthService;
+    name: string | null ;
+    loading: 'idle' | 'pending' | 'succeeded' | 'failed';
+    error: string | null
 }
 
 export default function AuthContent(props: IAuthContentProps) {
-
-    const authService = props.authService;
+    const dispatch = useDispatch();
 
     const [ state, setState ] = React.useState<IState>({
-        user: null,
-        name: null,
-        isLoaded: false,
         anchorElement: null
     });
-  
     React.useEffect(() => {
-        if (state.isLoaded) {
-            return;
+        if (props.loading === 'idle') {
+            dispatch(fetchUser());
         }
-        authService
-            .getUser()
-            .then(user => {
-                setState({
-                    ...state,
-                    user: user,
-                    name: user?.profile.name,
-                    isLoaded: true
-                });
-            });
     }); 
 
     const login = () => {
@@ -76,11 +60,11 @@ export default function AuthContent(props: IAuthContentProps) {
     return (
         <Toolbar className={classes.root}>
             <Button
-                hidden={state.user === null}
+                hidden={props.name === null}
                 className={classes.username}
                 onClick={openMenu}
                 color="inherit">
-                {state.name ?? ""}
+                {props.name ?? ""}
             </Button>
             <Menu
                 anchorEl={state.anchorElement}
@@ -91,7 +75,7 @@ export default function AuthContent(props: IAuthContentProps) {
                     Logout
                 </MenuItem>
             </Menu>
-            {state.user === null 
+            {props.name === null 
                 ? (
                     <Button onClick={login} color="inherit">
                         Login
