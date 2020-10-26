@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { makeStyles, Box } from '@material-ui/core';
 import { Head } from '../../models/Head';
-import { ExaminationService } from '../../services/ExaminationService';
 import ProblemSetPreviewView from './ProblemSetPreviewView';
-import { SubmissionId } from '../../models/Identificators';
+import { HeadId } from '../../models/Identificators';
+import { ProblemSetPreview } from '../../models/ProblemSetPreview';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,9 +16,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IProblemSetsListViewProps {
-    examinationService: ExaminationService;
-    onShowSubmission: (submissionId: SubmissionId) => void;
-    problemSets: Array<Head>;
+    onStartSubmission: (headId: HeadId) => void;
+    problemSets: Array<{ head: Head; preview: ProblemSetPreview; }>;
 }
 
 export default function ProblemSetsListView(props: IProblemSetsListViewProps) {
@@ -30,10 +29,10 @@ export default function ProblemSetsListView(props: IProblemSetsListViewProps) {
             {
                 props.problemSets.map(problemSet => (
                     <ProblemSetPreviewView
-                        key={"problem_set_" + problemSet.id}
-                        head={problemSet}
-                        examinationService={props.examinationService}
-                        onShowSubmission={props.onShowSubmission}
+                        key={"problem_set_" + problemSet.head.id}
+                        head={problemSet.head}
+                        preview={problemSet.preview}
+                        onStartSubmission={props.onStartSubmission}
                         />
                 ))
             }

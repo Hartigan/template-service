@@ -2,9 +2,9 @@ import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography, Li
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
 import { Submission } from "../../models/Submission";
-import { ExaminationService } from "../../services/ExaminationService";
 import SubmissionProblemView from "./SubmissionProblemView";
 import { GeneratedProblemId } from "../../models/Identificators";
+import { examinationService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -28,7 +28,6 @@ export interface ISubmissionDialogProps {
     open: boolean;
     onClose: () => void;
     submission: Submission;
-    examinationService: ExaminationService;
 }
 
 export default function SubmissionDialog(props: ISubmissionDialogProps) {
@@ -38,7 +37,7 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
     };
 
     const onAnswer = async (ans: string, generatedProblemId: GeneratedProblemId) => {
-        await props.examinationService.applyAnswer(
+        await examinationService.applyAnswer(
             props.submission.id,
             {
                 answer: ans,
@@ -49,7 +48,7 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
     };
 
     const onComplete = async () => {
-        await props.examinationService.complete(props.submission.id);
+        await examinationService.complete(props.submission.id);
         props.onClose();
     };
 

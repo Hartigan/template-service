@@ -9,13 +9,13 @@ import GroupsTab from './GroupsTab';
 import { PermissionsService } from '../../services/PermissionsService';
 import { UserService } from '../../services/UserService';
 import PermissionsTab from './PermissionsTab';
-import TrainTab from './TrainTab';
 import { ExaminationService } from '../../services/ExaminationService';
 import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
 import { AdminService } from '../../services/AdminService';
 import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
 import ReportsTabContainer from './reports/ReportsTabContainer';
+import TrainTabContainer from './train/TrainTabContainer';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -79,10 +79,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
         </List>
       </Drawer>
       <TabPanel value={value} index={0}>
-        <TrainTab
-          userService={props.userService}
-          examinationService={props.examinationService}
-          />
+        <TrainTabContainer />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <ReportsTabContainer />

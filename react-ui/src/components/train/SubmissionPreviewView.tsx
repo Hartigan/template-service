@@ -1,9 +1,9 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { ExaminationService } from "../../services/ExaminationService";
 import { SubmissionPreview } from "../../models/SubmissionPreview";
 import { SubmissionId } from "../../models/Identificators";
 import DateView from "../utils/DateView";
+import { examinationService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -22,7 +22,6 @@ interface IState {
 
 export interface ISubmissionPreviewViewProps {
     submissionId: SubmissionId;
-    examinationService: ExaminationService;
     onShowSubmission: (submissionId: SubmissionId) => void;
 }
 
@@ -35,7 +34,7 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
     useEffect(() => {
         let isCancelled = false;
         if (state.preview === null || state.preview.id !== props.submissionId) {
-            props.examinationService
+            examinationService
                 .getSubmissionPreview(props.submissionId)
                 .then(submission => {
                     if (isCancelled) {

@@ -1,8 +1,7 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
-import React, { useEffect } from "react";
-import { CommitId, SubmissionId } from "../../models/Identificators";
+import React from "react";
+import { HeadId } from "../../models/Identificators";
 import { ProblemSetPreview } from "../../models/ProblemSetPreview";
-import { ExaminationService } from "../../services/ExaminationService";
 import { Head } from "../../models/Head";
 import TagsView from "../utils/TagsView";
 
@@ -21,98 +20,56 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-interface IState {
-    preview: ProblemSetPreview | null;
-    commitId: CommitId | null;
-}
-
 export interface IProblemSetPreviewViewProps {
     head: Head;
-    examinationService: ExaminationService;
-    onShowSubmission: (submissionId: SubmissionId) => void;
+    preview: ProblemSetPreview;
+    onStartSubmission: (headId: HeadId) => void;
 }
 
 export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps) {
 
-    const [ state, setState ] = React.useState<IState>({
-        preview: null,
-        commitId: null
-    });
-
-    useEffect(() => {
-        let isCancelled = false;
-        if (state.commitId === null || state.commitId !== props.head.commit.id) {
-            const commitId = props.head.commit.id;
-            props.examinationService
-                .getProblemSetPreview(commitId)
-                .then(preview => {
-                    if (isCancelled) {
-                        return;
-                    }
-                    setState({
-                        ...state,
-                        preview: preview,
-                        commitId: commitId
-                    });
-                });
-        }
-
-        return () => {
-            isCancelled = true;
-        }
-    });
-
-    const onStart = async () => {
-        let submissionId = await props.examinationService.start(props.head.id);
-        props.onShowSubmission(submissionId.id);
-    };
-
     const classes = useStyles();
 
-    if (state.preview) {
-        return (
-            <Card className={classes.root}>
-                <CardContent>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Title
-                    </Typography>
-                    <Typography variant="h5" component="h2">
-                        {state.preview.title}
-                    </Typography>
-                    <div className={classes.tags}>
-                        <TagsView tags={props.head.tags} />
-                    </div>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Duration
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.duration / 60}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Problems count
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.problems_count}
-                    </Typography>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        Author
-                    </Typography>
-                    <Typography variant="body2" component="p">
-                        {state.preview.author.username}
-                    </Typography>
-                </CardContent>
-                <CardActions>
-                    <Button
-                        size="small"
-                        color="primary"
-                        onClick={onStart}
-                        >
-                        Start
-                    </Button>
-                </CardActions>
-            </Card>
-        );
-    }
-
-    return null;
+    return (
+        <Card className={classes.root}>
+            <CardContent>
+                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                    Title
+                </Typography>
+                <Typography variant="h5" component="h2">
+                    {props.preview.title}
+                </Typography>
+                <div className={classes.tags}>
+                    <TagsView tags={props.head.tags} />
+                </div>
+                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                    Duration
+                </Typography>
+                <Typography variant="body2" component="p">
+                    {props.preview.duration / 60}
+                </Typography>
+                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                    Problems count
+                </Typography>
+                <Typography variant="body2" component="p">
+                    {props.preview.problems_count}
+                </Typography>
+                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                    Author
+                </Typography>
+                <Typography variant="body2" component="p">
+                    {props.preview.author.username}
+                </Typography>
+            </CardContent>
+            <CardActions>
+                <Button
+                    size="small"
+                    color="primary"
+                    onClick={() => props.onStartSubmission(props.head.id)}
+                    >
+                    Start
+                </Button>
+            </CardActions>
+        </Card>
+    );
 };
