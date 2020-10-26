@@ -1,10 +1,14 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { authReducer, IAuthContentState } from './auth/AuthContentSlice';
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { authReducer, IAuthContentState } from '../components/auth/AuthContentSlice';
 
 export const store = configureStore({
     reducer: {
-        auth: authReducer
+        auth: authReducer,
     }
 });
 
-export const authSelector = (state) : IAuthContentState => state.auth;
+export interface IAppState {
+    auth: IAuthContentState;
+}
+
+export const authSelector = (state: IAppState) : IAuthContentState => state.auth;

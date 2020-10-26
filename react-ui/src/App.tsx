@@ -16,7 +16,7 @@ import { User } from 'oidc-client';
 import { GroupService } from './services/GroupService';
 import { AdminService } from './services/AdminService';
 import MenuIcon from '@material-ui/icons/Menu';
-import AuthContainer from './containers/auth/AuthContainer';
+import AuthContainer from './components/auth/AuthContainer';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,

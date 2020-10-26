@@ -1,9 +1,8 @@
 import { connect } from 'react-redux'
-import AuthContent, { IAuthContentProps } from '../../components/auth/AuthContent';
-import { IAuthContentState } from '../../store/auth/AuthContentSlice';
-import { authSelector } from '../../store/Store';
+import AuthContent, { IAuthContentProps } from './AuthContent';
+import { authSelector, IAppState } from '../../store/Store';
 
-const mapStateToProps = (state: IAuthContentState) : IAuthContentProps => {
+const mapStateToProps = (state: IAppState) : IAuthContentProps => {
     const localState = authSelector(state); 
     return {
         name: localState.name,
