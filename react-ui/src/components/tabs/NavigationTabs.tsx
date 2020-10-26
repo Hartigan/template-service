@@ -11,11 +11,11 @@ import { UserService } from '../../services/UserService';
 import PermissionsTab from './PermissionsTab';
 import TrainTab from './TrainTab';
 import { ExaminationService } from '../../services/ExaminationService';
-import ReportsTab from './ReportsTab';
 import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
 import { AdminService } from '../../services/AdminService';
 import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
+import ReportsTabContainer from './reports/ReportsTabContainer';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -85,10 +85,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
           />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ReportsTab
-          examinationService={props.examinationService}
-          userService={props.userService}
-          />
+        <ReportsTabContainer />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <EditorTab

@@ -332,7 +332,6 @@ export default function TrainTab(props: ITrainTabProps) {
                             </Typography>
                         </Toolbar>
                         <UserSearchView
-                            userService={props.userService}
                             onUserSelected={onAuthorSelected}
                             />
                         <TagsEditorView

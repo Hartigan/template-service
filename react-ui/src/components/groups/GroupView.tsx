@@ -119,7 +119,6 @@ export default function GroupView(props: IGroupViewProps) {
                         <Grid container className={classes.search}>
                             <Grid item className={classes.searchCell}>
                                 <UserSearchView
-                                    userService={props.userService}
                                     onUserSelected={setNewUserId}
                                     />
                             </Grid>

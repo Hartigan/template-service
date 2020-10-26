@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { makeStyles, Box } from '@material-ui/core';
-import { ExaminationService } from '../../services/ExaminationService';
 import { Report } from '../../models/Report';
 import ReportPreviewView from './ReportPreviewView';
-import { UserService } from '../../services/UserService';
+import { ReportId } from '../../models/Identificators';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,9 +15,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportsListViewProps {
-    examinationService: ExaminationService;
-    userService: UserService;
     reports: Array<Report>;
+    onOpenShare: (reportId: ReportId) => void;
+    onOpenReport: (report: Report) => void;
 };
 
 export default function ReportsListView(props: IReportsListViewProps) {
@@ -31,9 +30,9 @@ export default function ReportsListView(props: IReportsListViewProps) {
                 props.reports.map(report => (
                     <ReportPreviewView
                         key={"report_" + report.id}
-                        examinationService={props.examinationService}
-                        userService={props.userService}
                         preview={report}
+                        onOpenReport={props.onOpenReport}
+                        onOpenShare={props.onOpenShare}
                         />
                 ))
             }

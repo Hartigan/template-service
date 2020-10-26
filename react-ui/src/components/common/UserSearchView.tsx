@@ -4,8 +4,8 @@ import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { User } from "../../models/User";
-import { UserService } from "../../services/UserService";
 import { UserId } from "../../models/Identificators";
+import { userService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,7 +21,6 @@ interface IState {
 }
 
 export interface IUserSearchViewProps {
-    userService: UserService;
     onUserSelected: (userId: UserId | null) => void;
 }
 
@@ -39,7 +38,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         let active = true;
 
         if (state.users === null && state.open) {
-            props.userService
+            userService
                 .search(state.pattern, 0, 10)
                 .then(users => {
                     if (active) {

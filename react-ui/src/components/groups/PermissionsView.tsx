@@ -264,7 +264,6 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                         <Grid container className={classes.search}>
                             <Grid item className={classes.searchCell}>
                                 <UserSearchView
-                                    userService={props.userService}
                                     onUserSelected={setNewUserId}
                                     />
                             </Grid>

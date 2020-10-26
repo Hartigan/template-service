@@ -130,7 +130,6 @@ export default function ReportSearchView(props: IReportSearchViewProps) {
             <Container className={classes.search}>
                 <div className={classes.searchItem}>
                     <UserSearchView
-                        userService={props.userService}
                         onUserSelected={onUserSelected}
                         />
                 </div>

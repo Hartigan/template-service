@@ -154,7 +154,6 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
                 </div>
                 <div className={classes.searchItem}>
                     <UserSearchView
-                        userService={props.userService}
                         onUserSelected={onUserSelected}
                         />
                 </div>

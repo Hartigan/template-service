@@ -1,11 +1,8 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React from "react";
-import { ExaminationService } from "../../services/ExaminationService";
 import DateView from "../utils/DateView";
 import { Report } from "../../models/Report";
-import ReportDialog from "../common/ReportDialog";
-import { UserService } from "../../services/UserService";
-import ShareReportDialog from "./ShareReportDialog";
+import { ReportId } from "../../models/Identificators";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -18,23 +15,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-interface IState {
-    reportOpened: boolean;
-    shareOpened: boolean;
-}
-
 export interface IReportPreviewViewProps {
     preview: Report;
-    examinationService: ExaminationService;
-    userService: UserService;
+    onOpenShare: (reportId: ReportId) => void;
+    onOpenReport: (report: Report) => void;
 }
 
 export default function ReportPreviewView(props: IReportPreviewViewProps) {
-
-    const [ state, setState ] = React.useState<IState>({
-        reportOpened: false,
-        shareOpened: false
-    });
 
     const classes = useStyles();
 
@@ -72,29 +59,17 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
                 <Button
                     size="small"
                     color="primary"
-                    onClick={() => setState({ ...state, reportOpened: true })}
+                    onClick={() => props.onOpenReport(props.preview)}
                     >
                     View report
                 </Button>
                 <Button
                     size="small"
                     color="primary"
-                    onClick={() => setState({ ...state, shareOpened: true })}
+                    onClick={() => props.onOpenShare(props.preview.id)}
                     >
                     Share
                 </Button>
-                <ShareReportDialog
-                    open={state.shareOpened}
-                    reportId={props.preview.id}
-                    userService={props.userService}
-                    examinationService={props.examinationService}
-                    onClose={() => setState({ ...state, shareOpened: false })}
-                    />
-                <ReportDialog 
-                    open={state.reportOpened}
-                    report={props.preview}
-                    onClose={() => setState({ ...state, reportOpened: false })}
-                    />
             </CardActions>
         </Card>
     );
