@@ -1,7 +1,7 @@
 import { makeStyles, Grid } from "@material-ui/core";
 import React from "react";
 import { useDispatch } from 'react-redux';
-import FileTreeView from "../../files/FileTreeView";
+import FileTreeView from "../../files/FileTreeViewDeprecated";
 import FilePreview from "../../files/FilePreview";
 import { HeadLink } from "../../../models/Folder";
 import { selectHead } from "./EditorTabSlice";

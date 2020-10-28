@@ -7,7 +7,7 @@ import PermissionsView, { ProtectedItem } from "../groups/PermissionsView";
 import { VersionService } from "../../services/VersionService";
 import { GroupService } from "../../services/GroupService";
 import { ProblemsService } from "../../services/ProblemsService";
-import FileTreeView from "../files/FileTreeView";
+import FileTreeViewDeprecated from "../files/FileTreeViewDeprecated";
 import { ProblemSetService } from "../../services/ProblemSetService";
 import { HeadLink } from "../../models/Folder";
 import { ExaminationService } from "../../services/ExaminationService";
@@ -95,7 +95,7 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
     return (
         <Grid container className={classes.root}>
             <Grid item className={classes.tree}>
-                <FileTreeView
+                <FileTreeViewDeprecated
                     hideToolbar={true}
                     selected={state.head}
                     onSelect={changeCurrentHead}

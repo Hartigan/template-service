@@ -39,7 +39,7 @@ export interface IFileTreeViewProps {
     };
 }
 
-export default function FileTreeView(props: IFileTreeViewProps) {
+export default function FileTreeViewDeprecated(props: IFileTreeViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
         selectedTab: 0,
