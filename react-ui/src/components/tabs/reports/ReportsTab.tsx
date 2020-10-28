@@ -1,6 +1,6 @@
 import { makeStyles, Grid, Paper, Toolbar, Typography, Switch, Box, Container } from "@material-ui/core";
 import React from "react";
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { Report } from "../../../models/Report";
 import { ReportId, UserId } from "../../../models/Identificators";
 import UserSearchView from "../../common/UserSearchView";

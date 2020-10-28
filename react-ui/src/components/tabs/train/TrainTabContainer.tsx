@@ -1,4 +1,4 @@
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import { IAppState, trainTabSelector } from '../../../store/Store';
 import TrainTab, { ITrainTabProps } from './TrainTab';
 

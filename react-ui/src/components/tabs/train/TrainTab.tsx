@@ -12,7 +12,7 @@ import { SearchNavigationView } from "../../common/SearchNavigationView";
 import { SearchInterval } from "../../../models/SearchInterval";
 import SearchIntervalView from "../../common/SearchIntervalView";
 import UserSearchView from "../../common/UserSearchView";
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { closeSubmission, fetchProblemSets, fetchSubmissions, openSubmission, startSubmission, updateAdvanced, updateAuthor, updateIsPublic, updateLimit, updatePage, updatePattern, updateProblemsCount, updateProblemsDuration, updateTags } from "./TrainTabSlice";
 import { ProblemSetPreview } from "../../../models/ProblemSetPreview";
 

@@ -1,4 +1,4 @@
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import { IAppState, reportsTabSelector } from '../../../store/Store';
 import ReportsTab, { IReportsTabProps } from './ReportsTab';
 

@@ -1,4 +1,4 @@
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import AuthContent, { IAuthContentProps } from './AuthContent';
 import { authSelector, IAppState } from '../../store/Store';
 

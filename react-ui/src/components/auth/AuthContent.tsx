@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, makeStyles, Toolbar, Menu, MenuItem } from '@material-ui/core';
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { authService } from '../../Services';
 import { fetchUser } from './AuthContentSlice';
 
