@@ -1,15 +1,14 @@
 import * as React from 'react'
 import { makeStyles, Box, Container } from '@material-ui/core';
-import { VersionService } from '../../services/VersionService';
 import { UserId } from '../../models/Identificators';
 import TagsEditorView from '../utils/TagsEditorView';
 import { Head } from '../../models/Head';
 import UserSearchView from '../common/UserSearchView';
-import { UserService } from '../../services/UserService';
 import SearchField from '../common/SearchField';
 import HeadsListView from './HeadsListView';
 import { SearchNavigationView } from '../common/SearchNavigationView';
 import { HeadLink } from '../../models/Folder';
+import { versionService } from '../../Services';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -46,8 +45,6 @@ interface IState {
 }
 
 export interface IHeadSearchViewProps {
-    userService: UserService;
-    versionService: VersionService;
     selected: HeadLink | null;
     onSelect: (head: HeadLink) => void;
 }
@@ -67,7 +64,7 @@ export default function HeadSearchView(props: IHeadSearchViewProps) {
         let canUpdate = true;
 
         if (state.heads === null) {
-            props.versionService
+            versionService
                 .search(
                     state.ownerId,
                     state.tags,

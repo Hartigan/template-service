@@ -1,7 +1,5 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
-import { FoldersService } from "../../services/FoldersService";
-import { ProblemsService } from "../../services/ProblemsService";
 import CloseIcon from '@material-ui/icons/Close';
 import { Problem } from "../../models/Problem";
 import { Controller } from "../../models/Controller";
@@ -12,6 +10,7 @@ import ViewEditor from "./ViewEditor";
 import ValidatorEditor from "./ValidatorEditor";
 import { ControllerLanguage, ViewLanguage, ValidatorLanguage } from "../../models/Code";
 import { FolderLink } from "../../models/Folder";
+import { problemsService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -36,8 +35,6 @@ const useStyles = makeStyles(theme => ({
 export interface ICreateProblemDialogProps {
     open: boolean;
     onClose: () => void;
-    foldersService: FoldersService;
-    problemsService: ProblemsService;
     currentFolder: FolderLink;
 }
 
@@ -87,7 +84,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
             validator: validator
         };
 
-        await props.problemsService.create(props.currentFolder.id, title, problem);
+        await problemsService.create(props.currentFolder.id, title, problem);
         clean();
         props.onClose();
     };

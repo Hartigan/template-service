@@ -1,6 +1,5 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import EditorTab from './EditorTab';
 import { VersionService } from '../../services/VersionService';
 import { FoldersService } from '../../services/FoldersService';
 import { ProblemsService } from '../../services/ProblemsService';
@@ -16,6 +15,7 @@ import { AdminService } from '../../services/AdminService';
 import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
 import ReportsTabContainer from './reports/ReportsTabContainer';
 import TrainTabContainer from './train/TrainTabContainer';
+import EditorTabContainer from './editor/EditorTabContainer';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -85,14 +85,7 @@ export default function NavigationTabs(props: INavigationTabsProps) {
         <ReportsTabContainer />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <EditorTab
-            versionService={props.versionService}
-            permissionsService={props.permissionsService}
-            foldersService={props.foldersService}
-            problemsService={props.problemsService}
-            problemSetService={props.problemSetService}
-            userService={props.userService}
-            />
+        <EditorTabContainer />
       </TabPanel>
       <TabPanel value={value} index={3}>
         <GroupsTab

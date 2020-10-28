@@ -1,8 +1,7 @@
 import { makeStyles, Dialog, DialogTitle, TextField, Container, Button } from "@material-ui/core";
 import React from "react";
-import PropTypes from 'prop-types';
-import { FoldersService } from "../../services/FoldersService";
 import { FolderLink } from "../../models/Folder";
+import { foldersService } from "../../Services";
 
 const useStyles = makeStyles({
 });
@@ -16,7 +15,6 @@ interface IState {
 export interface ICreateFolderDialogProps {
     open: boolean;
     onClose: () => void;
-    foldersService: FoldersService;
     currentFolder: FolderLink;
 }
 
@@ -52,7 +50,7 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
             return;
         }
 
-        await props.foldersService.createFolder(state.name, props.currentFolder.id);
+        await foldersService.createFolder(state.name, props.currentFolder.id);
         clean();
         props.onClose();
     }
@@ -74,7 +72,3 @@ export default function CreateFolderDialog(props: ICreateFolderDialogProps) {
         </Dialog>
     );
 }
-
-CreateFolderDialog.propTypes = {
-    open: PropTypes.bool.isRequired
-};

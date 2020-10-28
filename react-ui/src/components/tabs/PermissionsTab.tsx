@@ -97,15 +97,9 @@ export default function PermissionsTab(props: IPermissionsTabProps) {
             <Grid item className={classes.tree}>
                 <FileTreeView
                     hideToolbar={true}
-                    versionService={props.versionService}
-                    foldersService={props.foldersService}
-                    problemsService={props.problemsService}
-                    problemSetService={props.problemSetService}
-                    userService={props.userService}
                     selected={state.head}
                     onSelect={changeCurrentHead}
                     enableReports={{
-                        examinationService: props.examinationService,
                         selected: state.report,
                         onSelect: changeCurrentReport
                     }}/>

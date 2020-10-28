@@ -1,13 +1,10 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
-import { FoldersService } from "../../services/FoldersService";
-import { ProblemsService } from "../../services/ProblemsService";
-import { ProblemSetService } from "../../services/ProblemSetService";
 import CloseIcon from '@material-ui/icons/Close';
-import { VersionService } from "../../services/VersionService";
 import { ProblemSet } from "../../models/ProblemSet";
 import { HeadId } from "../../models/Identificators";
 import ProblemSetEditor from "./ProblemSetEditorView";
+import { problemSetService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -36,10 +33,6 @@ export interface IEditProblemSetDialogProps {
     headId: HeadId;
     problemSet: ProblemSet;
     onClose: () => void;
-    versionService: VersionService;
-    foldersService: FoldersService;
-    problemsService: ProblemsService;
-    problemSetService: ProblemSetService;
 }
 
 export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) {
@@ -62,7 +55,7 @@ export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) 
     };
 
     const onSave = async () => {
-        await props.problemSetService.update(props.headId, state.commitDescription, state.problemSet);
+        await problemSetService.update(props.headId, state.commitDescription, state.problemSet);
 
         clean();
         props.onClose();
@@ -122,9 +115,6 @@ export default function EditProblemSetDialog(props: IEditProblemSetDialogProps) 
             <ProblemSetEditor
                 problemSet={state.problemSet}
                 onUpdate={onUpdate}
-                versionService={props.versionService}
-                foldersService={props.foldersService}
-                problemsService={props.problemsService}
                 />
         </Dialog>
     );

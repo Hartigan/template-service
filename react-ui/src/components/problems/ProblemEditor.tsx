@@ -1,6 +1,5 @@
 import { makeStyles, List, ListItem, FormControl, TextField, Container, IconButton, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { ProblemsService } from "../../services/ProblemsService";
 import { Commit } from "../../models/Commit";
 import ControllerEditor from "./ControllerEditor";
 import ViewEditor from "./ViewEditor";
@@ -15,8 +14,8 @@ import SaveIcon from '@material-ui/icons/Save';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import { GeneratedProblem } from "../../models/GeneratedProblem";
 import TestProblemDialog from "./TestProblemDialog";
-import { PermissionsService } from "../../services/PermissionsService";
 import { Access } from "../../models/Permissions";
+import { permissionsService, problemsService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -47,8 +46,6 @@ interface IProblemEditorState {
 
 export interface IProblemEditorProps {
     commit: Commit;
-    problemsService: ProblemsService;
-    permissionsService: PermissionsService;
     onSync: () => void;
 }
 
@@ -63,8 +60,8 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     });
 
     const fetchProblem = async (commit: Commit) => {
-        const problem = await props.problemsService.get(commit.id);
-        const access = await props.permissionsService.getAccess({ id: commit.head_id, type: "head" });
+        const problem = await problemsService.get(commit.id);
+        const access = await permissionsService.getAccess({ id: commit.head_id, type: "head" });
         return {
             value: problem,
             access: access
@@ -174,7 +171,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
             return;
         }
 
-        await props.problemsService.update(
+        await problemsService.update(
             props.commit.head_id,
             state.description,
             state.problem.value
@@ -189,7 +186,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     };
 
     const onTest = async () => {
-        let generatedProblem = await props.problemsService.test(props.commit.id, Math.floor(Math.random() * 1000000));
+        let generatedProblem = await problemsService.test(props.commit.id, Math.floor(Math.random() * 1000000));
         setState({
             ...state,
             generatedProblem: generatedProblem,
@@ -206,7 +203,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
     };
 
     const onRefreshTest = async (seed: number) => {
-        let generatedProblem = await props.problemsService.test(props.commit.id, seed);
+        let generatedProblem = await problemsService.test(props.commit.id, seed);
         setState({
             ...state,
             generatedProblem: generatedProblem,
@@ -222,7 +219,6 @@ export default function ProblemEditor(props: IProblemEditorProps) {
             onClose={onCloseTest}
             onUpdate={onRefreshTest}
             generatedProblem={state.generatedProblem}
-            problemsService={props.problemsService}
             />
     );
 

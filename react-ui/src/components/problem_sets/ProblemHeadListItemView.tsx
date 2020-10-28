@@ -2,8 +2,8 @@ import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton
 import React, { useEffect } from "react";
 import { HeadId } from "../../models/Identificators";
 import { Head } from "../../models/Head";
-import { VersionService } from "../../services/VersionService";
 import RemoveIcon from '@material-ui/icons/Remove';
+import { versionService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
 }));
@@ -16,7 +16,6 @@ export interface IProblemHeadListItemViewProps {
     headId: HeadId;
     index: number;
     selected: boolean;
-    versionService: VersionService;
     onClick(index: number): void;
     onRemove?(index: number): void;
 }
@@ -34,7 +33,7 @@ export default function ProblemHeadListItemView(props: IProblemHeadListItemViewP
             return;
         }
 
-        props.versionService
+        versionService
             .getHead(props.headId)
             .then(head => {
                 if (!canUpdate || props.headId !== head.id) {

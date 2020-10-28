@@ -1,12 +1,12 @@
 import { makeStyles, Dialog, TextField, AppBar, Toolbar, IconButton, Typography, List, ListItem } from "@material-ui/core";
 import React from "react";
-import { ProblemsService } from "../../services/ProblemsService";
 import CloseIcon from '@material-ui/icons/Close';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { GeneratedProblem } from "../../models/GeneratedProblem";
 import { CommitId } from "../../models/Identificators";
 import ProblemView from "../train/ProblemView";
+import { problemsService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -36,7 +36,6 @@ export interface ITestProblemDialogProps {
     onUpdate: (seed: number) => void;
     commitId: CommitId;
     generatedProblem: GeneratedProblem;
-    problemsService: ProblemsService;
 }
 
 export default function TestProblemDialog(props: ITestProblemDialogProps) {
@@ -56,7 +55,7 @@ export default function TestProblemDialog(props: ITestProblemDialogProps) {
     }
 
     const onValidate = async () => {
-        let result = await props.problemsService.validate(
+        let result = await problemsService.validate(
             props.commitId,
             props.generatedProblem.answer,
             state.answer

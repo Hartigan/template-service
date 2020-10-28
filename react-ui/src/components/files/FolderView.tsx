@@ -2,12 +2,11 @@ import * as React from 'react'
 import { makeStyles, Typography } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
 import { FolderLink, Folder, HeadLink } from '../../models/Folder';
-import { FoldersService } from '../../services/FoldersService';
 import HeadTreeItemView from './HeadTreeItemView';
 import { FolderId } from '../../models/Identificators';
 import { TargetType } from '../../models/Commit';
-import { VersionService } from '../../services/VersionService';
 import FolderIcon from '@material-ui/icons/Folder';
+import { foldersService } from '../../Services';
 
 const useStyles = makeStyles(theme => ({
     labelIcon: {
@@ -26,14 +25,12 @@ const useStyles = makeStyles(theme => ({
 
 export interface IFolderViewProperties {
     folder: FolderLink;
-    foldersService: FoldersService;
     selectedFolder: FolderLink | null;
     selectedHead: HeadLink | null;
     updatedFolder: FolderLink | null;
     onFolderUpdated: () => void;
     onSelectHead: (head: HeadLink) => void;
     onSelectFolder: (folder: FolderLink) => void;
-    versionService: VersionService;
     filter?: Array<TargetType>;
 }
 
@@ -53,7 +50,7 @@ export default function FolderView(props: IFolderViewProperties) {
     };
   
     const fetchData = async (folder: FolderId) => {
-        const f = await props.foldersService.getFolder(props.folder.id);
+        const f = await foldersService.getFolder(props.folder.id);
 
         if (props.filter) {
             const filter = new Set(props.filter);
@@ -90,9 +87,7 @@ export default function FolderView(props: IFolderViewProperties) {
                 <FolderView
                     key={link.id}
                     filter={props.filter}
-                    versionService={props.versionService}
                     folder={link}
-                    foldersService={props.foldersService}
                     selectedFolder={props.selectedFolder}
                     updatedFolder={props.updatedFolder}
                     selectedHead={props.selectedHead}

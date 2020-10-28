@@ -1,23 +1,12 @@
-import * as React from 'react'
-import { makeStyles, Container, IconButton, Toolbar, Tabs, Tab } from '@material-ui/core';
-import { FoldersService } from '../../services/FoldersService';
-import CreateFolderDialog from './CreateFolderDialog';
-import CreateProblemDialog from '../problems/CreateProblemDialog';
-import CreateProblemSetDialog from '../problem_sets/CreateProblemSetDialog';
-import { ProblemsService } from '../../services/ProblemsService';
+import * as React from 'react';
+import { makeStyles, Container, Toolbar, Tabs, Tab } from '@material-ui/core';
 import ExplorerView from './ExplorerView';
-import { VersionService } from '../../services/VersionService';
-import { ProblemSetService } from '../../services/ProblemSetService';
-import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
-import NoteIcon from '@material-ui/icons/Note';
-import ListAltIcon from '@material-ui/icons/ListAlt';
 import { TabPanel } from '../common/TabPanel';
 import HeadSearchView from './HeadSearchView';
-import { UserService } from '../../services/UserService';
 import { HeadLink, FolderLink } from '../../models/Folder';
 import { Report } from '../../models/Report';
-import { ExaminationService } from '../../services/ExaminationService';
 import ReportSearchView from './ReportSearchView';
+import FilesToolbarContainer from './toolbar/FilesToolbarContainer';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -35,9 +24,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface IState {
-    openCreateFolderDialog: boolean;
-    openCreateProblemDialog: boolean;
-    openCreateProblemSetDialog: boolean;
     selectedTab: number;
     selectedFolder: FolderLink | null;
     updatedFolder: FolderLink | null;
@@ -45,15 +31,9 @@ interface IState {
 
 export interface IFileTreeViewProps {
     hideToolbar?: boolean;
-    foldersService: FoldersService;
-    problemsService: ProblemsService;
-    problemSetService: ProblemSetService;
-    versionService: VersionService;
-    userService: UserService;
     selected: HeadLink | null;
     onSelect: (head: HeadLink) => void;
     enableReports?: {
-        examinationService: ExaminationService;
         selected: Report | null;
         onSelect: (report: Report) => void;
     };
@@ -62,9 +42,6 @@ export interface IFileTreeViewProps {
 export default function FileTreeView(props: IFileTreeViewProps) {
 
     const [ state, setState ] = React.useState<IState>({
-        openCreateFolderDialog: false,
-        openCreateProblemDialog: false,
-        openCreateProblemSetDialog: false,
         selectedTab: 0,
         selectedFolder: null,
         updatedFolder: null
@@ -86,30 +63,6 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                 });
                 resolve();
             });
-        });
-    };
-
-    const setOpenCreateFolderDialog = (value: boolean) => {
-        setState({
-            ...state,
-            openCreateFolderDialog: value,
-            updatedFolder: !value ? state.selectedFolder : null
-        });
-    };
-
-    const setOpenCreateProblemSetDialog = (value: boolean) => {
-        setState({
-            ...state,
-            openCreateProblemSetDialog: value,
-            updatedFolder: !value ? state.selectedFolder : null
-        });
-    };
-
-    const setOpenCreateProblemDialog = (value: boolean) => {
-        setState({
-            ...state,
-            openCreateProblemDialog: value,
-            updatedFolder: !value ? state.selectedFolder : null
         });
     };
 
@@ -141,54 +94,9 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                 value={state.selectedTab}
                 index={0}>
                 <Container hidden={props.hideToolbar}>
-                    <IconButton
-                        color="primary" aria-label="Create folder"
-                        disabled={state.selectedFolder === null}
-                        onClick={() => setOpenCreateFolderDialog(true)}>
-                        <CreateNewFolderIcon />
-                    </IconButton>
-                    <IconButton
-                        color="primary" aria-label="Create problem"
-                        disabled={state.selectedFolder === null}
-                        onClick={() => setOpenCreateProblemDialog(true)}>
-                        <NoteIcon />
-                    </IconButton>
-                    <IconButton
-                        color="primary" aria-label="Create problem set"
-                        disabled={state.selectedFolder === null}
-                        onClick={() => setOpenCreateProblemSetDialog(true)}>
-                        <ListAltIcon />
-                    </IconButton>
+                    <FilesToolbarContainer />
                 </Container>
-                {state.selectedFolder ?
-                    [
-                        (<CreateFolderDialog
-                            key="create_folder_dialog"
-                            currentFolder={state.selectedFolder}
-                            foldersService={props.foldersService}
-                            open={state.openCreateFolderDialog}
-                            onClose={() => setOpenCreateFolderDialog(false)} />),
-                        (<CreateProblemDialog
-                            key="create_problem_dialog"
-                            currentFolder={state.selectedFolder}
-                            foldersService={props.foldersService}
-                            problemsService={props.problemsService}
-                            open={state.openCreateProblemDialog}
-                            onClose={() => setOpenCreateProblemDialog(false)} />),
-                        (<CreateProblemSetDialog
-                            key="create_problem_set_dialog"
-                            currentFolder={state.selectedFolder}
-                            foldersService={props.foldersService}
-                            versionService={props.versionService}
-                            problemsService={props.problemsService}
-                            problemSetService={props.problemSetService}
-                            open={state.openCreateProblemSetDialog}
-                            onClose={() => setOpenCreateProblemSetDialog(false)} />)
-                    ] : []
-                }
                 <ExplorerView
-                    versionService={props.versionService}
-                    foldersService={props.foldersService}
                     selectedFolder={state.selectedFolder}
                     onSelectFolder={onSelectFolder}
                     selectedHead={props.selected}
@@ -201,8 +109,6 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                 value={state.selectedTab}
                 index={1}>
                 <HeadSearchView
-                    userService={props.userService}
-                    versionService={props.versionService}
                     selected={props.selected}
                     onSelect={props.onSelect}
                     />
@@ -213,8 +119,6 @@ export default function FileTreeView(props: IFileTreeViewProps) {
                         index={2}
                         >
                         <ReportSearchView
-                            userService={props.userService}
-                            examinationService={props.enableReports.examinationService}
                             selected={props.enableReports.selected}
                             onSelect={props.enableReports.onSelect}
                             />

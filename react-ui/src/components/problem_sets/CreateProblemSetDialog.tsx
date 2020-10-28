@@ -1,13 +1,10 @@
 import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { FoldersService } from "../../services/FoldersService";
-import { ProblemsService } from "../../services/ProblemsService";
-import { ProblemSetService } from "../../services/ProblemSetService";
 import CloseIcon from '@material-ui/icons/Close';
-import { VersionService } from "../../services/VersionService";
 import { ProblemSet } from "../../models/ProblemSet";
 import ProblemSetEditor from "./ProblemSetEditorView";
 import { FolderLink } from "../../models/Folder";
+import { problemSetService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -26,10 +23,6 @@ interface IState {
 export interface ICreateProblemSetDialogProps {
     open: boolean;
     onClose: () => void;
-    versionService: VersionService;
-    foldersService: FoldersService;
-    problemsService: ProblemsService;
-    problemSetService: ProblemSetService;
     currentFolder: FolderLink;
 }
 
@@ -74,7 +67,7 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
     };
 
     const onSave = async () => {
-        await props.problemSetService.create(props.currentFolder.id, state.problemSet.title, state.problemSet);
+        await problemSetService.create(props.currentFolder.id, state.problemSet.title, state.problemSet);
         clean();
         props.onClose();
     };
@@ -108,9 +101,6 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
             <ProblemSetEditor
                 problemSet={state.problemSet}
                 onUpdate={onUpdate}
-                versionService={props.versionService}
-                foldersService={props.foldersService}
-                problemsService={props.problemsService}
                 />
         </Dialog>
     );

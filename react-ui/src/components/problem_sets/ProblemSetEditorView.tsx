@@ -1,9 +1,6 @@
 import { makeStyles, TextField, Button, List, ListItem, FormControl, Grid, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { FoldersService } from "../../services/FoldersService";
-import { ProblemsService } from "../../services/ProblemsService";
 import ExplorerView from "../files/ExplorerView";
-import { VersionService } from "../../services/VersionService";
 import ProblemPreview from "./ProblemPreview";
 import SlotsListView from "./SlotsListView";
 import DurationInput from "./DurationInput";
@@ -12,6 +9,7 @@ import { Problem } from "../../models/Problem";
 import { Head } from "../../models/Head";
 import { HeadLink } from "../../models/Folder";
 import { HeadId } from "../../models/Identificators";
+import { problemsService, versionService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -65,9 +63,6 @@ interface IState {
 export interface IProblemSetEditorProps {
     problemSet: ProblemSet;
     onUpdate(problemSet: ProblemSet): void;
-    versionService: VersionService;
-    foldersService: FoldersService;
-    problemsService: ProblemsService;
 }
 
 export default function ProblemSetEditor(props: IProblemSetEditorProps) {
@@ -88,8 +83,8 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
     };
 
     const fetchProblemPreview = async (headId: HeadId) => {
-        const head = await props.versionService.getHead(headId);
-        const problem = await props.problemsService.get(head.commit.id);
+        const head = await versionService.getHead(headId);
+        const problem = await problemsService.get(head.commit.id);
         return {
             head: head,
             problem: problem
@@ -275,13 +270,11 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                     <Grid container className={classes.container}>
                         <Grid item className={classes.source}>
                             <ExplorerView
-                                foldersService={props.foldersService}
                                 selectedHead={state.selectedHead}
                                 onSelectHead={onSelectHead}
                                 selectedFolder={null}
                                 onSelectFolder={() => {}}
                                 filter={["problem"]}
-                                versionService={props.versionService}
                                 onFolderUpdated={() => {}}
                                 updatedFolder={null} />
                         </Grid>
@@ -302,7 +295,6 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                                 slots={props.problemSet.slots}
                                 selectedSlot={state.selectedSlot}
                                 selectedProblemInSlot={state.selectedProblemInSlot}
-                                versionService={props.versionService}
                                 onRemoveProblem={onRemove}
                                 onRemoveSlot={onRemoveSlot}
                                 onSelectSlot={onSelectSlot}

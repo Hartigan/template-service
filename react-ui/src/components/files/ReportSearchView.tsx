@@ -2,12 +2,11 @@ import * as React from 'react'
 import { makeStyles, Box, Container } from '@material-ui/core';
 import { UserId } from '../../models/Identificators';
 import UserSearchView from '../common/UserSearchView';
-import { UserService } from '../../services/UserService';
 import SearchField from '../common/SearchField';
 import { SearchNavigationView } from '../common/SearchNavigationView';
 import { Report } from '../../models/Report';
-import { ExaminationService } from '../../services/ExaminationService';
 import ReportsListView from './ReportsListView';
+import { examinationService } from '../../Services';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -43,8 +42,6 @@ interface IState {
 }
 
 export interface IReportSearchViewProps {
-    userService: UserService;
-    examinationService: ExaminationService;
     selected: Report | null;
     onSelect: (report: Report) => void;
 }
@@ -60,7 +57,7 @@ export default function ReportSearchView(props: IReportSearchViewProps) {
     });
 
     const fetchReports = async () => {
-        const reports = await props.examinationService
+        const reports = await examinationService
             .getReports(
                 state.pattern,
                 state.ownerId,

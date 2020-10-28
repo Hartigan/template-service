@@ -3,11 +3,10 @@ import { makeStyles, Box } from '@material-ui/core';
 import TreeView from '@material-ui/lab/TreeView';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { FoldersService } from '../../services/FoldersService';
 import FolderView from './FolderView';
 import { FolderLink, HeadLink } from '../../models/Folder';
 import { TargetType } from '../../models/Commit';
-import { VersionService } from '../../services/VersionService';
+import { foldersService } from '../../Services';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,8 +16,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IExplorerViewProps {
-    foldersService: FoldersService;
-    versionService: VersionService;
     selectedFolder: FolderLink | null;
     selectedHead: HeadLink | null;
     updatedFolder: FolderLink | null;
@@ -45,7 +42,7 @@ export default function ExplorerView(props: IExplorerViewProps) {
             return;
         }
 
-        props.foldersService
+        foldersService
             .getRoot()
             .then(root => {
                 setState({
@@ -67,9 +64,7 @@ export default function ExplorerView(props: IExplorerViewProps) {
 
     const rootFolder = state.root ? (
         <FolderView
-            versionService={props.versionService}
             folder={state.root}
-            foldersService={props.foldersService}
             filter={props.filter}
             selectedFolder={props.selectedFolder}
             selectedHead={props.selectedHead}

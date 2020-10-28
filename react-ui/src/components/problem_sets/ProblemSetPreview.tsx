@@ -1,19 +1,15 @@
 import { makeStyles, Box, List, ListItem, Container, IconButton, Typography, Grid } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { ProblemsService } from "../../services/ProblemsService";
 import { Commit } from "../../models/Commit";
 import EditIcon from '@material-ui/icons/Edit';
-import { ProblemSetService } from "../../services/ProblemSetService";
 import { ProblemSet } from "../../models/ProblemSet";
 import { ProblemSetId } from "../../models/Identificators";
 import { Problem } from "../../models/Problem";
-import { VersionService } from "../../services/VersionService";
 import SlotsListView from "./SlotsListView";
 import ProblemPreview from "./ProblemPreview";
 import EditProblemSetDialog from "./EditProblemSetDialog";
-import { FoldersService } from "../../services/FoldersService";
 import { Access } from "../../models/Permissions";
-import { PermissionsService } from "../../services/PermissionsService";
+import { permissionsService, problemSetService, problemsService, versionService } from "../../Services";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -51,11 +47,6 @@ interface IState {
 
 export interface IProblemSetPreviewProps {
     commit: Commit;
-    problemsService: ProblemsService;
-    problemSetService: ProblemSetService;
-    versionService: VersionService;
-    foldersService: FoldersService;
-    permissionsService: PermissionsService;
     onSync: () => void;
 }
 
@@ -70,8 +61,8 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
     });
 
     const fetchProblemSet = async (commit: Commit) => {
-        const problemSet = await props.problemSetService.get(props.commit.id);
-        const access = await props.permissionsService.getAccess({ id: props.commit.head_id, type: "head" });
+        const problemSet = await problemSetService.get(props.commit.id);
+        const access = await permissionsService.getAccess({ id: props.commit.head_id, type: "head" });
         return {
             value: problemSet,
             access: access
@@ -100,10 +91,10 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
             state.selectedProblemInSlot !== null &&
             state.preview === null) {
 
-            props.versionService
+            versionService
                 .getHead(state.problemSet.value.slots[state.selectedSlot].head_ids[state.selectedProblemInSlot])
                 .then(head => {
-                    props.problemsService
+                    problemsService
                         .get(head.commit.id)
                         .then(problem => {
                             if (canUpdate) {
@@ -192,10 +183,6 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                 headId={props.commit.head_id}
                 problemSet={state.problemSet.value}
                 onClose={onCloseEdit}
-                versionService={props.versionService}
-                foldersService={props.foldersService}
-                problemsService={props.problemsService}
-                problemSetService={props.problemSetService}
                 />
             <List
                 className={classes.list}>
@@ -235,7 +222,6 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             slots={state.problemSet.value.slots}
                             selectedSlot={state.selectedSlot}
                             selectedProblemInSlot={state.selectedProblemInSlot}
-                            versionService={props.versionService}
                             onSelectSlot={onSelectSlot}
                             onSelectProblemInSlot={onSelectInSlot}
                             />
