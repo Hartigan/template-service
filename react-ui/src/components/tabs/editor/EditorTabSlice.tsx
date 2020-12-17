@@ -1,24 +1,28 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { HeadLink } from '../../../models/Folder';
+
+export enum EditorTabTabs {
+    FileTree = 0,
+    HeadSearch = 1,
+};
 
 export interface IEditorTabState {
-    selectedHead: HeadLink | null;
+    selected: EditorTabTabs;
 };
 
 const slice = createSlice({
     name: 'editor-tab',
     initialState: {
-        selectedHead: null,
+        selected: EditorTabTabs.FileTree,
     } as IEditorTabState,
     reducers: {
-        selectHead: (state, action: PayloadAction<HeadLink | null>) => {
-            state.selectedHead = action.payload;
+        selectTab: (state, action: PayloadAction<EditorTabTabs>) => {
+            state.selected = action.payload;
         }
     },
 });
 
 export const {
-    selectHead,
+    selectTab,
 } = slice.actions;
 
 export const editorTabReducer = slice.reducer;

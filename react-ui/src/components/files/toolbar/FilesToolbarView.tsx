@@ -1,87 +1,52 @@
 import * as React from 'react'
-import { makeStyles, Container, IconButton } from '@material-ui/core';
+import { Container, IconButton } from '@material-ui/core';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import NoteIcon from '@material-ui/icons/Note';
 import ListAltIcon from '@material-ui/icons/ListAlt';
-import { useDispatch } from 'react-redux';
-import { closeCreateFolderDialog, closeCreateProblemDialog, closeCreateProblemSetDialog, openCreateFolderDialog, openCreateProblemDialog, openCreateProblemSetDialog } from './FilesToolbarSlice';
-import { FolderLink } from '../../../models/Folder';
-import CreateProblemDialog from '../../problems/CreateProblemDialog';
-import CreateProblemSetDialog from '../../problem_sets/CreateProblemSetDialog';
-import CreateFolderDialog from '../CreateFolderDialog';
+import CreateProblemSetDialogContainer from '../../problem_sets/dialogs/CreateProblemSetDialogContainer';
+import CreateProblemDialogContainer from '../../problems/dialog/CreateProblemDialogContainer';
+import CreateFolderDialogContainer from '../folders/CreateFolderDialogContainer';
 
-const useStyles = makeStyles(theme => ({
-}));
+export interface IFilesToolbarViewParameters {
+    createFolderDialogActive: boolean;
+    createProblemDialogActive: boolean;
+    createProblemSetDialogActive: boolean;
+}
 
-export interface IFilesToolbarViewProps {
-    createFolderDialog: {
-        open: false;
-    } | {
-        open: true;
-        targetFolder: FolderLink;
-    };
-    createProblemDialog: {
-        open: false;
-    } | {
-        open: true;
-        targetFolder: FolderLink;
-    };
-    createProblemSetDialog: {
-        open: false;
-    } | {
-        open: true;
-        targetFolder: FolderLink;
-    };
-    selectedFolder: FolderLink | null;
+export interface IFilesToolbarViewActions {
+    openCreateFolderDialog(): void;
+    openCreateProblemDialog(): void;
+    openCreateProblemSetDialog(): void;
+}
+
+export interface IFilesToolbarViewProps extends IFilesToolbarViewActions, IFilesToolbarViewParameters {
 }
 
 export default function FilesToolbarView(props: IFilesToolbarViewProps) {
-
-    const dispatch = useDispatch();
-
-    const classes = useStyles();
 
     return (
         <Container>
             <IconButton
                 color="primary" aria-label="Create folder"
-                disabled={props.selectedFolder === null}
-                onClick={() => { if (props.selectedFolder !== null) dispatch(openCreateFolderDialog(props.selectedFolder)); } }>
+                disabled={!props.createFolderDialogActive}
+                onClick={props.openCreateFolderDialog}>
                 <CreateNewFolderIcon />
             </IconButton>
             <IconButton
                 color="primary" aria-label="Create problem"
-                disabled={props.selectedFolder === null}
-                onClick={() => { if (props.selectedFolder !== null) dispatch(openCreateProblemDialog(props.selectedFolder)); } }>
+                disabled={!props.createProblemDialogActive}
+                onClick={props.openCreateProblemDialog}>
                 <NoteIcon />
             </IconButton>
             <IconButton
                 color="primary" aria-label="Create problem set"
-                disabled={props.selectedFolder === null}
-                onClick={() => { if (props.selectedFolder !== null) dispatch(openCreateProblemSetDialog(props.selectedFolder)); } }>
+                disabled={!props.createProblemSetDialogActive}
+                onClick={props.openCreateProblemSetDialog}>
                 <ListAltIcon />
             </IconButton>
-            {props.createFolderDialog.open
-                ? <CreateFolderDialog
-                    key="create_folder_dialog"
-                    currentFolder={props.createFolderDialog.targetFolder}
-                    open={props.createFolderDialog.open}
-                    onClose={() => dispatch(closeCreateFolderDialog())} />
-                : null}
-            {props.createProblemDialog.open
-                ? <CreateProblemDialog
-                    key="create_problem_dialog"
-                    currentFolder={props.createProblemDialog.targetFolder}
-                    open={props.createProblemDialog.open}
-                    onClose={() => dispatch(closeCreateProblemDialog())} />
-                : null}
-            {props.createProblemSetDialog.open
-                ? <CreateProblemSetDialog
-                    key="create_problem_set_dialog"
-                    currentFolder={props.createProblemSetDialog.targetFolder}
-                    open={props.createProblemSetDialog.open}
-                    onClose={() => dispatch(closeCreateProblemSetDialog())} />
-                : null}
+            <CreateFolderDialogContainer />
+            <CreateProblemDialogContainer />
+            <CreateProblemSetDialogContainer />
         </Container>
     );
 }

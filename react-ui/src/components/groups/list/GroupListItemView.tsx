@@ -1,9 +1,9 @@
 import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton, FormControlLabel, Checkbox, Toolbar } from "@material-ui/core";
 import React from "react";
-import { Member, Access } from "../../models/Permissions";
 import DeleteIcon from '@material-ui/icons/Delete';
-import { UserId } from "../../models/Identificators";
-import { PermissionCapability } from "./PermissionCapability";
+import { GroupId } from "../../../models/Identificators";
+import { Access, GroupAccess } from "../../../models/Permissions";
+import { PermissionCapability } from "../PermissionCapability";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -14,24 +14,24 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export interface IMemberListItemViewProps {
-    onRemove: (userId: UserId) => void;
-    onUpdateAccess: (userId: UserId, access: Access) => void;
-    member: Member;
+export interface IGroupListItemViewProps {
+    onRemove: (groupId: GroupId) => void;
+    onUpdateAccess: (GroupId: GroupId, access: Access) => void;
+    groupAccess: GroupAccess;
     capability: Array<PermissionCapability>;
 }
 
-export default function MemberListItemView(props: IMemberListItemViewProps) {
+export default function GroupListItemView(props: IGroupListItemViewProps) {
 
-    const access = props.member.access;
+    const access = props.groupAccess.access;
 
     const classes = useStyles();
 
     const setGenerate = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.groupAccess.group_id,
             {
-                ...props.member.access,
+                ...props.groupAccess.access,
                 generate: value
             }
         )
@@ -39,9 +39,9 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setRead = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.groupAccess.group_id,
             {
-                ...props.member.access,
+                ...props.groupAccess.access,
                 read: value
             }
         )
@@ -49,9 +49,9 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setWrite = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.groupAccess.group_id,
             {
-                ...props.member.access,
+                ...props.groupAccess.access,
                 write: value
             }
         )
@@ -59,17 +59,17 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setAdmin = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.groupAccess.group_id,
             {
-                ...props.member.access,
+                ...props.groupAccess.access,
                 admin: value
             }
         )
     };
 
     return (
-        <ListItem key={props.member.user_id} className={classes.root}>
-            <ListItemText primary={props.member.name}/>
+        <ListItem key={props.groupAccess.group_id} className={classes.root}>
+            <ListItemText primary={props.groupAccess.name}/>
             <ListItemSecondaryAction>
                 <Toolbar className={classes.toolbar}>
                     {
@@ -78,7 +78,6 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                                 case PermissionCapability.Generate:
                                     return (
                                         <FormControlLabel
-                                            key="generate_checkbox"
                                             control={<Checkbox color="primary" checked={access.generate} onChange={(event, value) => setGenerate(value)} />}
                                             label="Generate"
                                             labelPlacement="start"
@@ -87,7 +86,6 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                                 case PermissionCapability.Read:
                                     return (
                                         <FormControlLabel
-                                            key="read_checkbox"
                                             control={<Checkbox color="primary" checked={access.read} onChange={(event, value) => setRead(value)}/>}
                                             label="Read"
                                             labelPlacement="start"
@@ -96,7 +94,6 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                                 case PermissionCapability.Write:
                                     return (
                                         <FormControlLabel
-                                            key="write_checkbox"
                                             control={<Checkbox color="primary" checked={access.write} onChange={(event, value) => setWrite(value)}/>}
                                             label="Write"
                                             labelPlacement="start"
@@ -105,7 +102,6 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                                 case PermissionCapability.Admin:
                                     return (
                                         <FormControlLabel
-                                            key="admin_checkbox"
                                             control={<Checkbox color="primary" checked={access.admin} onChange={(event, value) => setAdmin(value)}/>}
                                             label="Admin"
                                             labelPlacement="start"
@@ -116,7 +112,7 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                             }
                         })
                     }
-                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.member.user_id)}>
+                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.groupAccess.group_id)}>
                         <DeleteIcon />
                     </IconButton>
                 </Toolbar>

@@ -4,10 +4,8 @@ import { VersionService } from '../../services/VersionService';
 import { FoldersService } from '../../services/FoldersService';
 import { ProblemsService } from '../../services/ProblemsService';
 import { ProblemSetService } from '../../services/ProblemSetService';
-import GroupsTab from './GroupsTab';
 import { PermissionsService } from '../../services/PermissionsService';
 import { UserService } from '../../services/UserService';
-import PermissionsTab from './PermissionsTab';
 import { ExaminationService } from '../../services/ExaminationService';
 import { GroupService } from '../../services/GroupService';
 import { TabPanel } from '../common/TabPanel';
@@ -16,6 +14,8 @@ import { Drawer, ListItemText, List, ListItem } from '@material-ui/core';
 import ReportsTabContainer from './reports/ReportsTabContainer';
 import TrainTabContainer from './train/TrainTabContainer';
 import EditorTabContainer from './editor/EditorTabContainer';
+import PermissionsTabContainer from './permissions/PermissionsTabContainer';
+import GroupsTabContainer from './groups/GroupsTabContainer';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -88,22 +88,10 @@ export default function NavigationTabs(props: INavigationTabsProps) {
         <EditorTabContainer />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <GroupsTab
-          groupService={props.groupService}
-          userService={props.userService}
-          />
+        <GroupsTabContainer />
       </TabPanel>
       <TabPanel value={value} index={4}>
-        <PermissionsTab
-          permissionsService={props.permissionsService}
-          examinationService={props.examinationService}
-          groupService={props.groupService}
-          userService={props.userService}
-          versionService={props.versionService}
-          foldersService={props.foldersService}
-          problemsService={props.problemsService}
-          problemSetService={props.problemSetService}
-          />
+        <PermissionsTabContainer />
       </TabPanel>
     </div>
   );

@@ -1,16 +1,16 @@
-import { makeStyles, Grid, Container, Tab, Tabs, Toolbar } from "@material-ui/core";
+import { makeStyles, Grid, Tab, Tabs, Toolbar } from "@material-ui/core";
 import React from "react";
 import { useDispatch } from 'react-redux';
-import EditorTabFilesTreeContainer from "../../files/tree/EditorTabFilesTreeContainer";
 import { TabPanel } from "../../common/TabPanel";
-import FilesToolbarContainer from "../../files/toolbar/FilesToolbarContainer";
-import { EditorTabTabs, selectTab } from "./EditorTabSlice";
-import EditorTabHeadSearchContainer from "../../files/heads/EditorTabHeadSearchContainer";
-import EditorFilePreviewContainer from "../../files/preview/EditorFilePreviewContainer";
+import PermissionsTabHeadSearchContainer from "../../files/heads/PermissionsTabHeadSearchContainer";
+import ReportSearchContainer from "../../files/reports/ReportSearchContainer";
+import PermissionsTabFilesTreeContainer from "../../files/tree/PermissionsTabFilesTreeContainer";
+import PermissionsViewContainer from "../../groups/view/PermissionsViewContainer";
+import { PermissionsTabTabs, selectTab } from "./PermissionsTabSlice";
 
-const treeWidth = 320;
+const treeWidth = 360;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: "100%",
@@ -37,15 +37,15 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export interface IEditorTabProps {
-    selected: EditorTabTabs;
-}
+export interface IPermissionsTabProps {
+    selected: PermissionsTabTabs;
+};
 
-export default function EditorTab(props: IEditorTabProps) {
-
-    const dispatch = useDispatch();
+export default function PermissionsTab(props: IPermissionsTabProps) {
 
     const classes = useStyles();
+
+    const dispatch = useDispatch();
 
     return (
         <Grid container className={classes.root}>
@@ -56,28 +56,30 @@ export default function EditorTab(props: IEditorTabProps) {
                             variant="fullWidth"
                             className={classes.tabs}
                             value={props.selected}
-                            onChange={(_, newValue) => dispatch(selectTab(newValue as EditorTabTabs))}>
+                            onChange={(_, newValue) => dispatch(selectTab(newValue as PermissionsTabTabs))}>
                             <Tab className={classes.tab} label="My" />
                             <Tab className={classes.tab} label="All" />
                         </Tabs>
                     </Toolbar>
                     <TabPanel
                         value={props.selected}
-                        index={EditorTabTabs.FileTree}>
-                        <Container>
-                            <FilesToolbarContainer />
-                        </Container>
-                        <EditorTabFilesTreeContainer />
+                        index={PermissionsTabTabs.FileTree}>
+                        <PermissionsTabFilesTreeContainer />
                     </TabPanel>
                     <TabPanel
                         value={props.selected}
-                        index={EditorTabTabs.HeadSearch}>
-                        <EditorTabHeadSearchContainer />
+                        index={PermissionsTabTabs.HeadSearch}>
+                        <PermissionsTabHeadSearchContainer />
+                    </TabPanel>
+                    <TabPanel
+                        value={props.selected}
+                        index={PermissionsTabTabs.ReportSearch}>
+                        <ReportSearchContainer />
                     </TabPanel>
                 </div>
             </Grid>
             <Grid item className={classes.content}>
-                <EditorFilePreviewContainer />
+                <PermissionsViewContainer />
             </Grid>
         </Grid>
     );

@@ -5,7 +5,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Group } from "../../models/Permissions";
 import { GroupId } from "../../models/Identificators";
-import { GroupService } from "../../services/GroupService";
+import { groupService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -21,7 +21,6 @@ interface IState {
 }
 
 export interface IGroupSearchViewProps {
-    groupService: GroupService;
     onGroupSelected: (groupId: GroupId | null) => void;
 }
 
@@ -39,7 +38,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
         let active = true;
 
         if (state.groups === null && state.open) {
-            props.groupService
+            groupService
                 .search(state.pattern, 0, 10)
                 .then(groups => {
                     if (active) {

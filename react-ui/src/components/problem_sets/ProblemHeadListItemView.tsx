@@ -1,12 +1,9 @@
-import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from "@material-ui/core";
+import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { HeadId } from "../../models/Identificators";
 import { Head } from "../../models/Head";
 import RemoveIcon from '@material-ui/icons/Remove';
 import { versionService } from "../../Services";
-
-const useStyles = makeStyles(theme => ({
-}));
 
 interface IState {
     head: Head | null;
@@ -73,8 +70,6 @@ export default function ProblemHeadListItemView(props: IProblemHeadListItemViewP
             return (<div/>);
         }
     };
-
-    const classes = useStyles();
 
     if (state.head) {
         return (
