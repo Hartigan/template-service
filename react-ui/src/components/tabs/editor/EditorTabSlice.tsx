@@ -15,6 +15,8 @@ const slice = createSlice({
         selected: EditorTabTabs.FileTree,
     } as IEditorTabState,
     reducers: {
+        openEditorTab: (state) => {
+        },
         selectTab: (state, action: PayloadAction<EditorTabTabs>) => {
             state.selected = action.payload;
         }
@@ -22,6 +24,7 @@ const slice = createSlice({
 });
 
 export const {
+    openEditorTab,
     selectTab,
 } = slice.actions;
 

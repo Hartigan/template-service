@@ -1,4 +1,3 @@
-import { AdminService } from "./services/AdminService";
 import { AuthService } from "./services/AuthService";
 import { ExaminationService } from "./services/ExaminationService";
 import { FoldersService } from "./services/FoldersService";
@@ -20,4 +19,3 @@ export const permissionsService = new PermissionsService(httpServiceFactory);
 export const userService = new UserService(httpServiceFactory);
 export const examinationService = new ExaminationService(httpServiceFactory);
 export const groupService = new GroupService(httpServiceFactory);
-export const adminService = new AdminService(httpServiceFactory);

@@ -117,6 +117,19 @@ const slice = createSlice({
         submission: { open: false },
     } as ITrainTabState,
     reducers: {
+        openTrainTab: (state) => {
+            state.submissions = {
+                data: [],
+                loading: 'idle',
+            };
+            state.problemSets = {
+                data: [],
+                loading: 'idle',
+            };
+            state.submission = {
+                open: false,
+            };
+        },
         updatePattern: (state, action: PayloadAction<string>) => {
             state.problemSets = {
                 loading: 'idle',
@@ -173,7 +186,7 @@ const slice = createSlice({
                 problemsCount: action.payload
             };
         },
-        updateProblemsDuration: (state, action: PayloadAction<SearchInterval<number> | null>) => {
+        updateDuration: (state, action: PayloadAction<SearchInterval<number> | null>) => {
             state.problemSets = {
                 loading: 'idle',
                 data: [],
@@ -251,13 +264,14 @@ const slice = createSlice({
 });
 
 export const {
+    openTrainTab,
     updatePattern,
     updateAuthor,
     updateIsPublic,
     updateTags,
     updateAdvanced,
     updateProblemsCount,
-    updateProblemsDuration,
+    updateDuration,
     updatePage,
     updateLimit,
     closeSubmission,

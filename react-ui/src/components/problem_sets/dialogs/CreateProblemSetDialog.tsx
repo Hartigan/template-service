@@ -26,6 +26,7 @@ export interface ICreateProblemSetDialogParameters {
 
 export interface ICreateProblemSetDialogActions {
     createProblemSet(folderId: FolderId, title: string, problemSet: ProblemSet): void;
+    updateFolder(folderId: FolderId): void;
     cancel(): void;
 }
 
@@ -43,6 +44,7 @@ export default function CreateProblemSetDialog(props: ICreateProblemSetDialogPro
     const onSave = () => {
         if (props.data !== null && props.folderId !== null) {
             props.createProblemSet(props.folderId, props.data.problemSet.title, props.data.problemSet);
+            props.updateFolder(props.folderId);
         }
     };
 

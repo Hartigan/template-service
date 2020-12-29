@@ -2,6 +2,7 @@ import { connect } from 'react-redux'
 import { FolderId } from '../../../models/Identificators';
 import { ProblemSet } from '../../../models/ProblemSet';
 import { editorTabFilesTreeSelector, IAppState, problemSetCreateDialogSelector } from '../../../store/Store';
+import { editorTabFetchRoot } from '../../files/tree/EditorTabFilesTreeSlice';
 import CreateProblemSetDialog, { ICreateProblemSetDialogActions, ICreateProblemSetDialogParameters } from './CreateProblemSetDialog';
 import { cancel, createProblemSet } from './CreateProblemSetDialogSlice';
 
@@ -22,6 +23,7 @@ const mapDispatchToProps = (dispatch) : ICreateProblemSetDialogActions => {
             title: title,
             problemSet: problemSet,
         })),
+        updateFolder: (folderId: FolderId) => dispatch(editorTabFetchRoot()),
         cancel: () => dispatch(cancel()),
     };
 };

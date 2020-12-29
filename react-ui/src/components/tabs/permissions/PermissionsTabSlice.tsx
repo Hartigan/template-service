@@ -16,6 +16,8 @@ const slice = createSlice({
         selected: PermissionsTabTabs.FileTree,
     } as IPermissionsTabState,
     reducers: {
+        openPermissionsTab: (state) => {
+        },
         selectTab: (state, action: PayloadAction<PermissionsTabTabs>) => {
             state.selected = action.payload;
         }
@@ -23,6 +25,7 @@ const slice = createSlice({
 });
 
 export const {
+    openPermissionsTab,
     selectTab,
 } = slice.actions;
 

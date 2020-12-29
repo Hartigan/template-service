@@ -2,21 +2,11 @@ import React, { useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import './App.css';
 import { Toolbar, Typography, makeStyles, Grid, IconButton } from '@material-ui/core';
-import { AuthService } from './services/AuthService';
-import { HttpServiceFactory } from './services/HttpServiceFactory';
-import { FoldersService } from './services/FoldersService';
-import { ProblemsService } from './services/ProblemsService';
-import { VersionService } from './services/VersionService';
-import { ProblemSetService } from './services/ProblemSetService';
 import NavigationTabs from './components/tabs/NavigationTabs';
-import { PermissionsService } from './services/PermissionsService';
-import { UserService } from './services/UserService';
-import { ExaminationService } from './services/ExaminationService';
 import { User } from 'oidc-client';
-import { GroupService } from './services/GroupService';
-import { AdminService } from './services/AdminService';
 import MenuIcon from '@material-ui/icons/Menu';
 import AuthContainer from './components/auth/AuthContainer';
+import { authService, userService } from './Services';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -40,18 +30,6 @@ const useStyles = makeStyles(theme => ({
         color: "white"
     }
 }));
-
-const authService = new AuthService();
-const httpServiceFactory = new HttpServiceFactory(authService);
-const versionService = new VersionService(httpServiceFactory);
-const foldersService = new FoldersService(httpServiceFactory);
-const problemsService = new ProblemsService(httpServiceFactory);
-const problemSetService = new ProblemSetService(httpServiceFactory);
-const permissionsService = new PermissionsService(httpServiceFactory);
-const userService = new UserService(httpServiceFactory);
-const examinationService = new ExaminationService(httpServiceFactory);
-const groupService = new GroupService(httpServiceFactory);
-const adminService = new AdminService(httpServiceFactory);
 
 interface IState {
     isLoaded: boolean;
@@ -115,15 +93,6 @@ const App: React.FC = () => {
                 <NavigationTabs
                     drawlerIsOpened={state.drawlerOpened}
                     closeDrawler={() => changeDrawlerState(false)}
-                    adminService={adminService}
-                    versionService={versionService}
-                    foldersService={foldersService}
-                    problemsService={problemsService}
-                    problemSetService={problemSetService}
-                    permissionsService={permissionsService}
-                    userService={userService}
-                    examinationService={examinationService}
-                    groupService={groupService}
                     roles={roles}
                     />
             );

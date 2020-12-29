@@ -48,14 +48,22 @@ const slice = createSlice({
         },
         share: {
             open: false,
-            reportId: null,
         },
         report: {
             open: false,
-            report: null,
         }
     } as IReportsTabState,
     reducers: {
+        openReportsTab: (state) => {
+            state.reports = [];
+            state.loading = 'idle';
+            state.share = {
+                open: false,
+            };
+            state.report = {
+                open: false,
+            }
+        },
         updatePattern: (state, action: PayloadAction<string>) => {
             state.loading = 'idle';
             state.search = {
@@ -133,6 +141,7 @@ const slice = createSlice({
 });
 
 export const {
+    openReportsTab,
     updatePattern,
     updateUser,
     updateDate,

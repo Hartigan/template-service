@@ -8,7 +8,13 @@ const slice = createSlice({
     initialState: {
     } as IGroupsTabState,
     reducers: {
+        openGroupsTab: (state) => {
+        }
     },
 });
+
+export const {
+    openGroupsTab
+} = slice.actions;
 
 export const groupsTabReducer = slice.reducer;
