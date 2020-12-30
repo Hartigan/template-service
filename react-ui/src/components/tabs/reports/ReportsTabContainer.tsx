@@ -5,7 +5,14 @@ import ReportsTab, { IReportsTabProps } from './ReportsTab';
 const mapStateToProps = (state: IAppState) : IReportsTabProps => {
     const localState = reportsTabSelector(state); 
     return {
-        ...localState
+        ...localState,
+        search: {
+            ...localState.search,
+            date: localState.search.date === null ? null : {
+                from: new Date(localState.search.date.from),
+                to: new Date(localState.search.date.to),
+            },
+        }
     };
 };
 

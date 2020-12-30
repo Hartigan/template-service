@@ -11,7 +11,7 @@ export interface IReportsTabState {
         userId: UserId | null;
         pattern: string;
         advanced: boolean;
-        date: SearchInterval<Date> | null;
+        date: SearchInterval<number> | null;
         page: number;
         limit: number;
     },
@@ -78,7 +78,7 @@ const slice = createSlice({
                 userId: action.payload
             };
         },
-        updateDate: (state, action: PayloadAction<SearchInterval<Date> | null>) => {
+        updateDate: (state, action: PayloadAction<SearchInterval<number> | null>) => {
             state.loading = 'idle';
             state.search = {
                 ...state.search,

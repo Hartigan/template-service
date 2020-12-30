@@ -127,7 +127,12 @@ export default function ReportsTab(props: IReportsTabProps) {
                                 label="Date"
                                 interval={props.search.date}
                                 defaultInterval={{from: new Date(), to: new Date() }}
-                                onChanged={(value) => dispatch(updateDate(value))}
+                                onChanged={(value) => dispatch(
+                                    updateDate(value === null ? null : {
+                                        from: value.from.getTime(),
+                                        to: value.to.getTime()
+                                    })
+                                )}
                                 />
                             <UserSearchView
                                 onUserSelected={(userId) => dispatch(updateUser(userId))}
