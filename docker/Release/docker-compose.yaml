@@ -153,7 +153,7 @@ services:
       DB_PASSWORD: password
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: Pa55w0rd
-    command: -b 0.0.0.0 -Djboss.http.port=80 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/prod-realm.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
+    command: -b 0.0.0.0 -Djboss.http.port=8080 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/prod-realm.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
     volumes:
     - ./prod-realm.json:/tmp/prod-realm.json:ro
     links:
