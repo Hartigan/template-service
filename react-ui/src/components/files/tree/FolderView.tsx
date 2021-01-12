@@ -55,6 +55,7 @@ export default function FolderView(props: IFolderViewProperties) {
         nodes.push((
             <FolderView
                 key={node.folder.id}
+                filter={props.filter}
                 node={node}
                 selectedFolder={props.selectedFolder}
                 selectedHead={props.selectedHead}
@@ -63,8 +64,10 @@ export default function FolderView(props: IFolderViewProperties) {
                 />
         ))
     });
+
     props.node.children.heads.filter(h => {
         if (props.filter) {
+            debugger;
             return props.filter.includes(h.type);
         } else {
             return true;

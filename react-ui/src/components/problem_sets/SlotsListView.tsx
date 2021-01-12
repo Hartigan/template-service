@@ -7,6 +7,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 const useStyles = makeStyles(theme => ({
     root: {
         minWidth: 200,
+        maxHeight: 600,
+        overflowX: "scroll"
     },
     slot: {
         width: "100%",

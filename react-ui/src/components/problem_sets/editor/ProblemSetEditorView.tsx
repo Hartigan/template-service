@@ -230,6 +230,8 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                         </Grid>
                         <Grid item className={classes.sourcePreview}>
                             <Button
+                                variant="outlined"
+                                color="primary"
                                 disabled={props.addPreview.loading !== 'succeeded' || props.selectedSlot === null}
                                 onClick={onAdd}>
                                 Add
@@ -253,10 +255,14 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                         </Grid>
                         <Grid item className={classes.listPreview}>
                             <Button
+                                variant="outlined"
+                                color="primary"
                                 onClick={() => onAddSlot(true)}>
                                 Add slot above
                             </Button>
                             <Button
+                                variant="outlined"
+                                color="primary"
                                 onClick={() => onAddSlot(false)}>
                                 Add slot below
                             </Button>
