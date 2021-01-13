@@ -1,23 +1,20 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
-import "ids.proto";
+import "google/protobuf/wrappers.proto";
 
 package domain;
 
 message SubmissionPreview {
-    ids.SubmissionId id = 1;
-    google.protobuf.Timestamp started_at = 2;
-    google.protobuf.Timestamp deadline = 3;
+    string id = 1;
+    uint64 started_at = 2;
+    uint64 deadline = 3;
     string title = 4;
     bool completed = 5;
-    ids.ReportId report_id = 6;
-    User author = 7;
+    User author = 6;
 }
 
 message ProblemSetPreview {
-    ids.ProblemSetId id = 1;
+    string id = 1;
     string title = 2;
     uint32 problems_count = 3;
     uint32 duration_s = 4;
@@ -25,9 +22,9 @@ message ProblemSetPreview {
 }
 
 message Head {
-    ids.HeadId id = 1;
+    string id = 1;
     string name = 2;
-    string tags = 3;
+    repeated string tags = 3;
     Commit commit = 4;
 }
 
@@ -42,13 +39,13 @@ message TargetModel {
 }
 
 message Commit {
-    ids.CommitId id = 1;
-    ids.UserId author_id = 2;
-    ids.HeadId head_id = 3;
-    google.protobuf.Timestamp timestamp = 4;
+    string id = 1;
+    string author_id = 2;
+    string head_id = 3;
+    uint64 timestamp = 4;
     TargetModel target = 5;
     string description = 6;
-    ids.CommitId parent_id = 7;
+    string parent_id = 7;
 }
 
 message UInt32Interval {
@@ -57,20 +54,20 @@ message UInt32Interval {
 }
 
 message DateInterval {
-    google.protobuf.Timestamp start = 1;
-    google.protobuf.Timestamp end = 2;
+    uint64 start = 1;
+    uint64 end = 2;
 }
 
 message Report {
-    ids.ReportId id = 1;
+    string id = 1;
     ProblemSetReport problem_set = 2;
-    google.protobuf.Timestamp started_at = 3;
-    google.protobuf.Timestamp finished_at = 4;
+    uint64 started_at = 3;
+    uint64 finished_at = 4;
     User author = 5;
 }
 
 message ProblemSetReport {
-    ids.GeneratedProblemSetId generated_problem_set_id = 1;
+    string generated_problem_set_id = 1;
     string title = 2;
     ProblemReport problems = 3;
 }
@@ -78,10 +75,10 @@ message ProblemSetReport {
 message ProblemReport {
     message Answer {
         string value = 1;
-        google.protobuf.Timestamp timestamp = 2;
+        uint64 timestamp = 2;
     }
 
-    ids.GeneratedProblemId generated_problem_id = 1;
+    string generated_problem_id = 1;
     string title = 2;
     GeneratedView view = 3;
     Answer user_answer = 4;
@@ -90,24 +87,24 @@ message ProblemReport {
 }
 
 message Submission {
-    ids.SubmissionId id = 1;
+    string id = 1;
     SubmissionProblemSet problem_set = 2;
-    google.protobuf.Timestamp started_at = 3;
-    google.protobuf.Timestamp deadline = 4;
+    uint64 started_at = 3;
+    uint64 deadline = 4;
     bool completed = 5;
-    ids.ReportId report_id = 6;
+    google.protobuf.StringValue report_id = 6;
     User author = 7;
     repeated ProblemAnswer answers = 8;
 }
 
 message SubmissionProblemSet {
-    ids.GeneratedProblemSetId id = 1;
+    string id = 1;
     string title = 2;
     SubmissionProblem problems = 3;
 }
 
 message SubmissionProblem {
-    ids.GeneratedProblemId id = 1;
+    string id = 1;
     string title = 2;
     GeneratedView view = 3;
 }
@@ -124,13 +121,13 @@ enum ViewLanguage {
 }
 
 message ProblemAnswer {
-    ids.GeneratedProblemId generated_problem_id = 1;
+    string id = 1;
     string answer = 2;
-    google.protobuf.Timestamp timestamp = 4;
+    uint64 timestamp = 3;
 }
 
 message User {
-    ids.UserId id = 1;
+    string id = 1;
     string first_name = 2;
     string last_name = 3;
     string username = 4;

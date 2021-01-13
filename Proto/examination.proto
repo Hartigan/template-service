@@ -1,8 +1,8 @@
 syntax = "proto3";
 
 import "domain.proto";
-import "ids.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "GrpcExamination";
 
@@ -25,7 +25,7 @@ service ExaminationService {
       returns (GetSubmissionPreviewReply);
 }
 
-message GetSubmissionPreviewRequest { ids.SubmissionId id = 1; }
+message GetSubmissionPreviewRequest { string submission_id = 1; }
 
 message GetSubmissionPreviewReply {
   message Error {
@@ -43,7 +43,7 @@ message GetSubmissionPreviewReply {
   }
 }
 
-message GetProblemSetPreviewRequest { ids.CommitId id = 1; }
+message GetProblemSetPreviewRequest { string commit_id = 1; }
 
 message GetProblemSetPreviewReply {
   message Error {
@@ -63,9 +63,9 @@ message GetProblemSetPreviewReply {
 
 message GetProblemSetsRequest {
   bool is_public = 1;
-  string pattern = 2;
+  google.protobuf.StringValue pattern = 2;
   repeated string tags = 3;
-  ids.UserId author_id = 4;
+  google.protobuf.StringValue author_id = 4;
   domain.UInt32Interval problems_count = 5;
   domain.UInt32Interval duration_s = 6;
   uint32 offset = 7;
@@ -90,9 +90,9 @@ message GetProblemSetsReply {
 }
 
 message ShareReportRequest {
-  ids.ReportId report_id = 1;
-  repeated ids.UserId user_ids = 2;
-  repeated ids.GroupId group_ids = 3;
+  string report_id = 1;
+  repeated string user_ids = 2;
+  repeated string group_ids = 3;
 }
 
 message ShareReportsReply {
@@ -112,7 +112,7 @@ message ShareReportsReply {
 
 message GetReportsRequest {
   string pattern = 1;
-  ids.UserId user_id = 2;
+  google.protobuf.StringValue user_id = 2;
   domain.DateInterval date_interval = 3;
   uint32 offset = 4;
   uint32 limit = 5;
@@ -154,7 +154,7 @@ message GetSubmissionsReply {
   }
 }
 
-message GetReportRequest { ids.ReportId report_id = 1; }
+message GetReportRequest { string report_id = 1; }
 
 message GetReportReply {
   message Error {
@@ -171,7 +171,7 @@ message GetReportReply {
   }
 }
 
-message StartSubmissionRequest { ids.HeadId problem_set_head_id = 1; }
+message StartSubmissionRequest { string problem_set_head_id = 1; }
 
 message StartSubmissionReply {
   message Error {
@@ -190,7 +190,7 @@ message StartSubmissionReply {
 }
 
 message CompleteSubmissionRequest {
-  ids.SubmissionId submission_id = 1;
+  string submission_id = 1;
 }
 
 message CompleteSubmissionReply {
@@ -208,7 +208,7 @@ message CompleteSubmissionReply {
   }
 }
 
-message GetSubmissionRequest { ids.SubmissionId submission_id = 1; }
+message GetSubmissionRequest { string submission_id = 1; }
 
 message GetSubmissionReply {
   message Error {
@@ -227,8 +227,8 @@ message GetSubmissionReply {
 }
 
 message ApplyAnswerRequest {
-  ids.SubmissionId submissionId = 1;
-  ids.GeneratedProblemId generatedProblemId = 2;
+  string submission_id = 1;
+  string generated_problem_id = 2;
   string answer = 3;
 }
 
