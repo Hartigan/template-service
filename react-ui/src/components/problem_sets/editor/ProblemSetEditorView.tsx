@@ -166,8 +166,10 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
         const headIds = [...slot.head_ids];
         headIds.splice(index, 1);
         const slots = [...props.problemSet.slots];
-        slots[slotIndex].head_ids = headIds;
-
+        slots[slotIndex] = {
+            ...props.problemSet.slots[slotIndex],
+            head_ids: headIds
+        };
         props.onUpdate({
             ...props.problemSet,
             slots: slots
