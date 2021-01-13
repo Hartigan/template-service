@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package ids;
+
+message ReportId { string value = 1; }
+
+message GeneratedProblemSetId { string value = 1; }
+
+message ProblemSetId { string value = 1; }
+
+message GeneratedProblemId { string value = 1; }
+
+message ProblemId { string value = 1; }
+
+message SubmissionId { string value = 1; }
+
+message UserId { string value = 1; }
+
+message GroupId { string value = 1; }
+
+message HeadId { string value = 1; }
+
+message CommitId { string value = 1; }

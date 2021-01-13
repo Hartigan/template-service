@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+import "ids.proto";
+
+package domain;
+
+message SubmissionPreview {
+    ids.SubmissionId id = 1;
+    google.protobuf.Timestamp started_at = 2;
+    google.protobuf.Timestamp deadline = 3;
+    string title = 4;
+    bool completed = 5;
+    ids.ReportId report_id = 6;
+    User author = 7;
+}
+
+message ProblemSetPreview {
+    ids.ProblemSetId id = 1;
+    string title = 2;
+    uint32 problems_count = 3;
+    uint32 duration_s = 4;
+    User author = 5;
+}
+
+message Head {
+    ids.HeadId id = 1;
+    string name = 2;
+    string tags = 3;
+    Commit commit = 4;
+}
+
+enum ModelType {
+    Problem = 0;
+    ProblemSet = 1;
+}
+
+message TargetModel {
+    string id = 1;
+    ModelType type = 2; 
+}
+
+message Commit {
+    ids.CommitId id = 1;
+    ids.UserId author_id = 2;
+    ids.HeadId head_id = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    TargetModel target = 5;
+    string description = 6;
+    ids.CommitId parent_id = 7;
+}
+
+message UInt32Interval {
+    uint32 start = 1;
+    uint32 end = 2;
+}
+
+message DateInterval {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+}
+
+message Report {
+    ids.ReportId id = 1;
+    ProblemSetReport problem_set = 2;
+    google.protobuf.Timestamp started_at = 3;
+    google.protobuf.Timestamp finished_at = 4;
+    User author = 5;
+}
+
+message ProblemSetReport {
+    ids.GeneratedProblemSetId generated_problem_set_id = 1;
+    string title = 2;
+    ProblemReport problems = 3;
+}
+
+message ProblemReport {
+    message Answer {
+        string value = 1;
+        google.protobuf.Timestamp timestamp = 2;
+    }
+
+    ids.GeneratedProblemId generated_problem_id = 1;
+    string title = 2;
+    GeneratedView view = 3;
+    Answer user_answer = 4;
+    string expected_answer = 5;
+    bool is_correct = 6;
+}
+
+message Submission {
+    ids.SubmissionId id = 1;
+    SubmissionProblemSet problem_set = 2;
+    google.protobuf.Timestamp started_at = 3;
+    google.protobuf.Timestamp deadline = 4;
+    bool completed = 5;
+    ids.ReportId report_id = 6;
+    User author = 7;
+    repeated ProblemAnswer answers = 8;
+}
+
+message SubmissionProblemSet {
+    ids.GeneratedProblemSetId id = 1;
+    string title = 2;
+    SubmissionProblem problems = 3;
+}
+
+message SubmissionProblem {
+    ids.GeneratedProblemId id = 1;
+    string title = 2;
+    GeneratedView view = 3;
+}
+
+message GeneratedView {
+    ViewLanguage language = 1;
+    string content = 2;
+}
+
+enum ViewLanguage {
+    MARKDOWN = 0;
+    PLAINTEXT = 1;
+    TEX = 2;
+}
+
+message ProblemAnswer {
+    ids.GeneratedProblemId generated_problem_id = 1;
+    string answer = 2;
+    google.protobuf.Timestamp timestamp = 4;
+}
+
+message User {
+    ids.UserId id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string username = 4;
+}

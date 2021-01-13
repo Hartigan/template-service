@@ -1,0 +1,248 @@
+syntax = "proto3";
+
+import "domain.proto";
+import "ids.proto";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "GrpcExamination";
+
+package examination;
+
+service ExaminationService {
+  rpc GetSubmission(GetSubmissionRequest) returns (GetSubmissionReply);
+  rpc ApplyAnswer(ApplyAnswerRequest) returns (ApplyAnswerReply);
+  rpc CompleteSubmission(CompleteSubmissionRequest)
+      returns (CompleteSubmissionReply);
+  rpc StartSubmission(StartSubmissionRequest) returns (StartSubmissionReply);
+  rpc GetReport(GetReportRequest) returns (GetReportReply);
+  rpc GetSubmissions(GetSubmissionsRequest) returns (GetSubmissionsReply);
+  rpc GetReports(GetReportsRequest) returns (GetReportsReply);
+  rpc ShareReport(ShareReportRequest) returns (ShareReportsReply);
+  rpc GetProblemSets(GetProblemSetsRequest) returns (GetProblemSetsReply);
+  rpc GetProblemSetPreview(GetProblemSetPreviewRequest)
+      returns (GetProblemSetPreviewReply);
+  rpc GetSubmissionPreview(GetSubmissionPreviewRequest)
+      returns (GetSubmissionPreviewReply);
+}
+
+message GetSubmissionPreviewRequest { ids.SubmissionId id = 1; }
+
+message GetSubmissionPreviewReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.SubmissionPreview preview = 1;
+    Error error = 2;
+  }
+}
+
+message GetProblemSetPreviewRequest { ids.CommitId id = 1; }
+
+message GetProblemSetPreviewReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.ProblemSetPreview preview = 1;
+    Error error = 2;
+  }
+}
+
+message GetProblemSetsRequest {
+  bool is_public = 1;
+  string pattern = 2;
+  repeated string tags = 3;
+  ids.UserId author_id = 4;
+  domain.UInt32Interval problems_count = 5;
+  domain.UInt32Interval duration_s = 6;
+  uint32 offset = 7;
+  uint32 limit = 8;
+}
+
+message GetProblemSetsReply {
+  message Heads { repeated domain.Head heads = 1; }
+
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Heads heads = 1;
+    Error error = 2;
+  }
+}
+
+message ShareReportRequest {
+  ids.ReportId report_id = 1;
+  repeated ids.UserId user_ids = 2;
+  repeated ids.GroupId group_ids = 3;
+}
+
+message ShareReportsReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message GetReportsRequest {
+  string pattern = 1;
+  ids.UserId user_id = 2;
+  domain.DateInterval date_interval = 3;
+  uint32 offset = 4;
+  uint32 limit = 5;
+}
+
+message GetReportsReply {
+  message Reports { repeated domain.Report reports = 1; }
+
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Reports reports = 1;
+    Error error = 2;
+  }
+}
+
+message GetSubmissionsRequest {}
+
+message GetSubmissionsReply {
+  message Submissions { repeated domain.Submission submissions = 1; }
+
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Submissions submissions = 1;
+    Error error = 2;
+  }
+}
+
+message GetReportRequest { ids.ReportId report_id = 1; }
+
+message GetReportReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Report report = 1;
+    Error error = 2;
+  }
+}
+
+message StartSubmissionRequest { ids.HeadId problem_set_head_id = 1; }
+
+message StartSubmissionReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string submission_id = 1;
+    Error error = 2;
+  }
+}
+
+message CompleteSubmissionRequest {
+  ids.SubmissionId submission_id = 1;
+}
+
+message CompleteSubmissionReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message GetSubmissionRequest { ids.SubmissionId submission_id = 1; }
+
+message GetSubmissionReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Submission submission = 1;
+    Error error = 2;
+  }
+}
+
+message ApplyAnswerRequest {
+  ids.SubmissionId submissionId = 1;
+  ids.GeneratedProblemId generatedProblemId = 2;
+  string answer = 3;
+}
+
+message ApplyAnswerReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
