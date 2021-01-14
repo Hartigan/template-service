@@ -8,6 +8,7 @@
   <ItemGroup>
     <Protobuf Include="../Proto/domain.proto" GrpcServices="Server" />
     <Protobuf Include="../Proto/examination.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/folders.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,40 @@ import "google/protobuf/wrappers.proto";
 
 package domain;
 
+message Trash {
+    repeated TrashHeadEntry heads = 1;
+    repeated TrashFolderEntry folders = 2;
+}
+
+message TrashHeadEntry {
+    string head_id = 1;
+    string name = 2;
+    string ModelType = 3;
+}
+
+message TrashFolderEntry {
+    string folder_id = 1;
+    string name = 2;
+}
+
+message Folder {
+    string id = 1;
+    string name = 2;
+    repeated FolderLink folders = 3;
+    repeated HeadLink heads = 4;
+}
+
+message FolderLink {
+    string id = 1;
+    string name = 2;
+}
+
+message HeadLink {
+    string id = 1;
+    string name = 2;
+    ModelType type = 3;
+}
+
 message SubmissionPreview {
     string id = 1;
     uint64 started_at = 2;

@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+import "domain.proto";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "GrpcFolders";
+
+package folders;
+
+service FoldersService {
+  rpc GetFolder(GetFolderRequest) returns (GetFolderReply);
+  rpc CreateFolder(CreateFolderRequest) returns (CreateFolderReply);
+  rpc GetRoot(GetRootRequest) returns (GetRootReply);
+  rpc GetTrash(GetTrashRequest) returns (GetTrashReply);
+  rpc MoveToTrash(MoveToTrashRequest) returns (MoveToTrashReply);
+  rpc RestoreFromTrash(RestoreFromTrashRequest) returns (RestoreFromTrashReply);
+  rpc Move(MoveRequest) returns (MoveReply);
+  rpc Rename(RenameRequest) returns (RenameReply);
+}
+
+message RenameReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message RenameRequest {
+  string parent_id = 1;
+  string name = 2;
+  oneof target {
+    string head_id = 3;
+    string folder_id = 4;
+  }
+}
+
+message MoveReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message MoveRequest {
+  string source_id = 1;
+  string destination_id = 2;
+  oneof target {
+    string head_id = 3;
+    string folder_id = 4;
+  }
+}
+
+message RestoreFromTrashRequest {
+  repeated string head_ids = 1;
+  repeated string folder_ids = 2;
+}
+
+message RestoreFromTrashReply {
+  enum Reason {
+    UNKNOWN = 0;
+    NOT_FOUND = 1;
+    NO_ACCESS = 2;
+  }
+  message HeadEntry {
+    string head_id = 1;
+    Reason reason = 2;
+  }
+  message FolderEntry {
+    string folder_id = 1;
+    Reason reason = 2;
+  }
+
+  repeated string restored_head_ids = 1;
+  repeated HeadEntry not_restored_heads = 2;
+  repeated string restored_folder_ids = 3;
+  repeated FolderEntry not_restored_folders = 4;
+}
+
+message MoveToTrashReply {
+  enum Reason {
+    UNKNOWN = 0;
+    NOT_FOUND = 1;
+    NO_ACCESS = 2;
+  }
+  message HeadEntry {
+    string head_id = 1;
+    Reason reason = 2;
+  }
+  message FolderEntry {
+    string folder_id = 1;
+    Reason reason = 2;
+  }
+
+  repeated string removed_head_ids = 1;
+  repeated HeadEntry not_deleted_heads = 2;
+  repeated string removed_folder_ids = 3;
+  repeated FolderEntry not_deleted_folders = 4;
+}
+
+message MoveToTrashRequest {
+  message HeadEntry {
+    string parent_id = 1;
+    string head_id = 2;
+  }
+
+  message FolderEntry {
+    string parent_id = 1;
+    string folder_id = 2;
+  }
+
+  repeated HeadEntry heads = 1;
+  repeated FolderEntry folders = 2;
+}
+
+message GetTrashReply {
+  message Error {
+    string description = 1;
+    enum Status { UNKNOWN = 0; }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Trash trash = 1;
+    Error error = 2;
+  }
+}
+
+message GetTrashRequest {}
+
+message GetRootReply {
+  message Error {
+    string description = 1;
+    enum Status { UNKNOWN = 0; }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Folder folder = 1;
+    Error error = 2;
+  }
+}
+
+message GetRootRequest {}
+
+message CreateFolderReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string new_folder_id = 1;
+    Error error = 2;
+  }
+}
+
+message CreateFolderRequest {
+  string name = 1;
+  string destination_id = 2;
+}
+
+message GetFolderReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Folder folder = 1;
+    Error error = 2;
+  }
+}
+
+message GetFolderRequest { string folder_id = 1; }
