@@ -8,7 +8,7 @@ option csharp_namespace = "GrpcGroups";
 
 package groups;
 
-service GroupssService {
+service GroupsService {
   rpc CreateGroup(CreateGroupRequest) returns (CreateGroupReply);
   rpc GetGroup(GetGroupRequest) returns (GetGroupReply);
   rpc GetGroups(GetGroupsRequest) returns (GetGroupsReply);
