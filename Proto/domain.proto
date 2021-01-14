@@ -4,6 +4,27 @@ import "google/protobuf/wrappers.proto";
 
 package domain;
 
+message Group {
+    string id = 1;
+    string owner_id = 2;
+    string name = 3;
+    string description = 4;
+    repeated Member members = 5;
+}
+
+message Member {
+    string user_id = 1;
+    string name = 2;
+    Access access = 3;
+}
+
+message Access {
+    bool generate = 1;
+    bool read = 2;
+    bool write = 3;
+    bool admin = 4;
+}
+
 message Trash {
     repeated TrashHeadEntry heads = 1;
     repeated TrashFolderEntry folders = 2;

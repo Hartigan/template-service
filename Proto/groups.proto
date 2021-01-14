@@ -1,0 +1,194 @@
+syntax = "proto3";
+
+import "domain.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "GrpcGroups";
+
+package groups;
+
+service GroupssService {
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupReply);
+  rpc GetGroup(GetGroupRequest) returns (GetGroupReply);
+  rpc GetGroups(GetGroupsRequest) returns (GetGroupsReply);
+  rpc UpdateGroup(UpdateGroupRequest) returns (UpdateGroupReply);
+  rpc UpdateMember(UpdateMemberRequest) returns (UpdateMemberReply);
+  rpc RemoveMembers(RemoveMembersRequest) returns (RemoveMembersReply);
+  rpc AddMembers(AddMembersRequest) returns (AddMembersReply);
+  rpc Search(SearchRequest) returns (SearchReply);
+}
+
+message SearchReply {
+  message Groups {
+    repeated domain.Group groups = 1;
+  }
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Groups groups = 1;
+    Error error = 2;
+  }
+}
+
+message SearchRequest {
+  google.protobuf.StringValue pattern = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
+}
+
+message AddMembersReply {
+  enum Reason {
+    UNKNOWN = 0;
+    NOT_FOUND = 1;
+    NO_ACCESS = 2;
+  }
+  message UserEntry {
+    string user_id = 1;
+    Reason reason = 2;
+  }
+
+  repeated string added_users = 1;
+  repeated UserEntry not_added_users = 2;
+}
+
+message AddMembersRequest {
+  string group_id = 1;
+  repeated string user_ids = 2;
+}
+
+message RemoveMembersReply {
+  enum Reason {
+    UNKNOWN = 0;
+    NOT_FOUND = 1;
+    NO_ACCESS = 2;
+  }
+  message UserEntry {
+    string user_id = 1;
+    Reason reason = 2;
+  }
+
+  repeated string removed_users = 1;
+  repeated UserEntry not_removed_users = 2;
+}
+
+message RemoveMembersRequest {
+  string group_id = 1;
+  repeated string user_ids = 2;
+}
+
+message UpdateMemberReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message UpdateMemberRequest {
+  string group_id = 1;
+  string user_id = 2;
+  domain.Access access = 3;
+}
+
+message UpdateGroupReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message UpdateGroupRequest {
+  string group_id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue description = 3;
+}
+
+message GetGroupsReply {
+  message Groups {
+    repeated domain.Group groups = 1;
+  }
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Groups groups = 1;
+    Error error = 2;
+  }
+}
+
+message GetGroupsRequest {
+  bool generate = 1;
+  bool read = 2;
+  bool write = 3;
+  bool admin = 4;
+}
+
+message GetGroupReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Group group = 1;
+    Error error = 2;
+  }
+}
+
+message GetGroupRequest {
+  string group_id = 1;
+}
+
+message CreateGroupReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string group_id = 1;
+    Error error = 2;
+  }
+}
+
+message CreateGroupRequest {
+  string name = 1;
+  string description = 2;
+}
