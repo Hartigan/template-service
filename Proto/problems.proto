@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+import "domain.proto";
+
+option csharp_namespace = "GrpcProblems";
+
+package problems;
+
+service ProblemsService {
+  rpc GetProblem(GetProblemRequest) returns (GetProblemReply);
+  rpc TestProblem(TestProblemRequest) returns (TestProblemReply);
+  rpc Validate(ValidateRequest) returns (ValidateReply);
+  rpc CreateProblem(CreateProblemRequest) returns (CreateProblemReply);
+  rpc UpdateProblem(UpdateProblemRequest) returns (UpdateProblemReply);
+}
+
+message UpdateProblemReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string commit_id = 1;
+    Error error = 2;
+  }
+}
+
+message UpdateProblemRequest {
+  string head_id = 1;
+  string description = 2;
+  domain.Problem problem = 3;
+}
+
+message CreateProblemReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string head_id = 1;
+    Error error = 2;
+  }
+}
+
+message CreateProblemRequest {
+  string folder_id = 1;
+  string name = 2;
+  domain.Problem problem = 3;
+}
+
+message ValidateReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    bool is_correct = 1;
+    Error error = 2;
+  }
+}
+
+message ValidateRequest {
+  string commit_id = 1;
+  string actual_answer = 2;
+  string expected_answer = 3;
+}
+
+message TestProblemReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.GeneratedProblem problem = 1;
+    Error error = 2;
+  }
+}
+
+message TestProblemRequest {
+  string commit_id = 1;
+  int32 seed = 2;
+}
+
+message GetProblemReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Problem problem = 1;
+    Error error = 2;
+  }
+}
+
+message GetProblemRequest { string commit_id = 1; }

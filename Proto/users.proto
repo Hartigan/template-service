@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+import "domain.proto";
+
+option csharp_namespace = "GrpcUsers";
+
+package users;
+
+service UsersService {
+  rpc Init(InitRequest) returns (InitReply);
+  rpc GetUser(GetUserRequest) returns (GetUserReply);
+  rpc Search(SearchRequest) returns (SearchReply);
+}
+
+message SearchReply {
+  message Users {
+    repeated domain.User users = 1;
+  }
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    Users users = 1;
+    Error error = 2;
+  }
+}
+
+message SearchRequest {
+  google.protobuf.StringValue pattern = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
+}
+
+message InitReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message InitRequest { }
+
+message GetUserReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.User user = 1;
+    Error error = 2;
+  }
+}
+
+message GetUserRequest { string user_id = 1; }

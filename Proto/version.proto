@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+import "domain.proto";
+
+option csharp_namespace = "GrpcVersion";
+
+package version;
+
+service VersionService {
+  rpc GetHead(GetHeadRequest) returns (GetHeadReply);
+  rpc GetCommit(GetCommitRequest) returns (GetCommitReply);
+  rpc UpdateTags(UpdateTagsRequest) returns (UpdateTagsReply);
+  rpc Search(SearchRequest) returns (SearchReply);
+}
+
+message UpdateTagsReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NOT_FOUND = 1;
+      NO_ACCESS = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    google.protobuf.Empty ok = 1;
+    Error error = 2;
+  }
+}
+
+message UpdateTagsRequest {
+  string head_id = 1;
+  repeated string tags = 2;
+}
+
+message SearchReply {
+  message Heads { repeated domain.Head heads = 1; }
+  message Error {
+    string description = 1;
+    enum Status { UNKNOWN = 0; }
+    Status status = 2;
+  }
+  oneof result {
+    Heads heads = 1;
+    Error error = 2;
+  }
+}
+
+message SearchRequest {
+  google.protobuf.StringValue owner_id = 1;
+  google.protobuf.StringValue pattern = 2;
+  repeated string tags = 3;
+  uint32 offset = 4;
+  uint32 limit = 5;
+}
+
+message GetCommitReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Commit commit = 1;
+    Error error = 2;
+  }
+}
+
+message GetCommitRequest { string commit_id = 1; }
+
+message GetHeadReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.Head head = 1;
+    Error error = 2;
+  }
+}
+
+message GetHeadRequest { string head_id = 1; }

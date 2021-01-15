@@ -4,12 +4,90 @@ import "google/protobuf/wrappers.proto";
 
 package domain;
 
+message ProblemSet {
+    message Slot {
+        repeated string head_ids = 1;
+    }
+
+    string id = 1;
+    string title = 2;
+    uint32 duration_s = 3;
+    repeated Slot slots = 4;
+}
+
+message GeneratedProblem {
+    string id = 1;
+    string problem_id = 2;
+    int32 seed = 3;
+    string title = 4;
+    GeneratedView view = 5;
+    string answer = 6;
+}
+
+message Problem {
+    string id = 1;
+    string title = 2;
+    View view = 3;
+    Controller controller = 4;
+    Validator validator = 5;
+}
+
+message Validator {
+    enum Language {
+        CSHARP = 0;
+    }
+    Language language = 1;
+    string content = 2;
+}
+
+message Controller {
+    enum Language {
+        CSHARP = 0;
+    }
+    Language language = 1;
+    string content = 2;
+}
+
+message View {
+    enum Language {
+        MARKDOWN = 0;
+        PLAINTEXT = 1;
+        TEX = 2;
+    }
+    Language language = 1;
+    string content = 2;
+}
+
+message Permissions {
+    string owner_id = 1;
+    bool is_public = 2;
+    repeated GroupAccess groups = 3;
+    repeated Member members = 4;
+}
+
+message ProtectedItem {
+    enum ProtectedType {
+        Folder = 0;
+        Head = 1;
+        Submission = 2;
+        Report = 3;
+    }
+    string id = 1;
+    ProtectedType type = 2;
+}
+
 message Group {
     string id = 1;
     string owner_id = 2;
     string name = 3;
     string description = 4;
     repeated Member members = 5;
+}
+
+message GroupAccess {
+    string group_id = 1;
+    string name = 2;
+    Access access = 3;
 }
 
 message Member {
@@ -56,7 +134,7 @@ message FolderLink {
 message HeadLink {
     string id = 1;
     string name = 2;
-    ModelType type = 3;
+    TargetModel.ModelType type = 3;
 }
 
 message SubmissionPreview {
@@ -83,12 +161,11 @@ message Head {
     Commit commit = 4;
 }
 
-enum ModelType {
-    Problem = 0;
-    ProblemSet = 1;
-}
-
 message TargetModel {
+    enum ModelType {
+        Problem = 0;
+        ProblemSet = 1;
+    }
     string id = 1;
     ModelType type = 2; 
 }
@@ -165,15 +242,10 @@ message SubmissionProblem {
 }
 
 message GeneratedView {
-    ViewLanguage language = 1;
+    View.Language language = 1;
     string content = 2;
 }
 
-enum ViewLanguage {
-    MARKDOWN = 0;
-    PLAINTEXT = 1;
-    TEX = 2;
-}
 
 message ProblemAnswer {
     string id = 1;

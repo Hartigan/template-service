@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+import "domain.proto";
+
+option csharp_namespace = "GrpcProblemSets";
+
+package problem_sets;
+
+service ProblemSetsService {
+  rpc GetProblemSet(GetProblemSetRequest) returns (GetProblemSetReply);
+  rpc CreateProblemSet(CreateProblemSetRequest) returns (CreateProblemSetReply);
+  rpc UpdateProblemSet(UpdateProblemSetRequest) returns (UpdateProblemSetReply);
+}
+
+message UpdateProblemSetReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string commit_id = 1;
+    Error error = 2;
+  }
+}
+
+message UpdateProblemSetRequest {
+  string head_id = 1;
+  string description = 2;
+  domain.ProblemSet problem_set = 3;
+}
+
+message CreateProblemSetReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    string head_id = 1;
+    Error error = 2;
+  }
+}
+
+message CreateProblemSetRequest {
+  string folder_id = 1;
+  string name = 2;
+  domain.ProblemSet problem_set = 3;
+}
+
+message GetProblemSetReply {
+  message Error {
+    string description = 1;
+    enum Status {
+      UNKNOWN = 0;
+      NO_ACCESS = 1;
+      NOT_FOUND = 2;
+    }
+    Status status = 2;
+  }
+  oneof result {
+    domain.ProblemSet problem = 1;
+    Error error = 2;
+  }
+}
+
+message GetProblemSetRequest { string commit_id = 1; }

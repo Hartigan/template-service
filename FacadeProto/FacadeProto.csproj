@@ -10,6 +10,11 @@
     <Protobuf Include="../Proto/examination.proto" GrpcServices="Server" />
     <Protobuf Include="../Proto/folders.proto" GrpcServices="Server" />
     <Protobuf Include="../Proto/groups.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/permissions.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/problems.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/problem_sets.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/users.proto" GrpcServices="Server" />
+    <Protobuf Include="../Proto/version.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>
