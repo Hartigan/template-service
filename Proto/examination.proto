@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "domain.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 option csharp_namespace = "GrpcExamination";
@@ -17,7 +16,7 @@ service ExaminationService {
   rpc GetReport(GetReportRequest) returns (GetReportReply);
   rpc GetSubmissions(GetSubmissionsRequest) returns (GetSubmissionsReply);
   rpc GetReports(GetReportsRequest) returns (GetReportsReply);
-  rpc ShareReport(ShareReportRequest) returns (ShareReportsReply);
+  rpc ShareReport(ShareReportRequest) returns (ShareReportReply);
   rpc GetProblemSets(GetProblemSetsRequest) returns (GetProblemSetsReply);
   rpc GetProblemSetPreview(GetProblemSetPreviewRequest)
       returns (GetProblemSetPreviewReply);
@@ -33,7 +32,6 @@ message GetSubmissionPreviewReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
@@ -67,13 +65,13 @@ message GetProblemSetsRequest {
   repeated string tags = 3;
   google.protobuf.StringValue author_id = 4;
   domain.UInt32Interval problems_count = 5;
-  domain.UInt32Interval duration_s = 6;
+  domain.Int32Interval duration_s = 6;
   uint32 offset = 7;
   uint32 limit = 8;
 }
 
 message GetProblemSetsReply {
-  message Heads { repeated domain.Head heads = 1; }
+  message HeadList { repeated domain.Head heads = 1; }
 
   message Error {
     string description = 1;
@@ -84,7 +82,7 @@ message GetProblemSetsReply {
     Status status = 2;
   }
   oneof result {
-    Heads heads = 1;
+    HeadList heads = 1;
     Error error = 2;
   }
 }
@@ -95,7 +93,7 @@ message ShareReportRequest {
   repeated string group_ids = 3;
 }
 
-message ShareReportsReply {
+message ShareReportReply {
   message Error {
     string description = 1;
     enum Status {
@@ -105,8 +103,7 @@ message ShareReportsReply {
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }
 
@@ -119,7 +116,7 @@ message GetReportsRequest {
 }
 
 message GetReportsReply {
-  message Reports { repeated domain.Report reports = 1; }
+  message ReportsList { repeated domain.Report reports = 1; }
 
   message Error {
     string description = 1;
@@ -130,7 +127,7 @@ message GetReportsReply {
     Status status = 2;
   }
   oneof result {
-    Reports reports = 1;
+    ReportsList reports = 1;
     Error error = 2;
   }
 }
@@ -138,13 +135,12 @@ message GetReportsReply {
 message GetSubmissionsRequest {}
 
 message GetSubmissionsReply {
-  message Submissions { repeated domain.Submission submissions = 1; }
+  message Submissions { repeated string submission_ids = 1; }
 
   message Error {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
-      NO_ACCESS = 1;
     }
     Status status = 2;
   }
@@ -179,7 +175,9 @@ message StartSubmissionReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      HEAD_NOT_FOUND = 2;
+      WRONG_HEAD_TYPE = 3;
+      CANNOT_START_SUBMISSION = 4;
     }
     Status status = 2;
   }
@@ -203,8 +201,7 @@ message CompleteSubmissionReply {
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }
 
@@ -216,7 +213,6 @@ message GetSubmissionReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
@@ -242,7 +238,6 @@ message ApplyAnswerReply {
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }

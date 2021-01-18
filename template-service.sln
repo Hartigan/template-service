@@ -21,6 +21,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CodeGeneratorContext", "Cod
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CSharpGenerator", "CSharpGenerator\CSharpGenerator.fsproj", "{9CE138B0-B07B-4ECB-A44F-F894896D6650}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacadeProto", "FacadeProto\FacadeProto.csproj", "{4A39D9A3-1521-4E87-88D3-845600BF1581}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,5 +156,17 @@ Global
 		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x64.Build.0 = Release|Any CPU
 		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x86.ActiveCfg = Release|Any CPU
 		{9CE138B0-B07B-4ECB-A44F-F894896D6650}.Release|x86.Build.0 = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|x64.Build.0 = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Debug|x86.Build.0 = Debug|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|x64.ActiveCfg = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|x64.Build.0 = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|x86.ActiveCfg = Release|Any CPU
+		{4A39D9A3-1521-4E87-88D3-845600BF1581}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

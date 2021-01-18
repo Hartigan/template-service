@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FacadeProto/FacadeProto.csproj" />
+    <ProjectReference Include="../Services/Services.fsproj" />
+    <Compile Include="Converters.fs" />
+    <Compile Include="ExaminationApi.fs" />
+  </ItemGroup>
+
+</Project>
