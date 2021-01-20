@@ -26,6 +26,7 @@ interface IState {
 }
 
 export interface ISubmissionProblemViewProps {
+    index: number;
     problem: SubmissionProblem;
     answer: string | undefined;
     onAnswer: (answer: string, generatedProblemId: GeneratedProblemId) => Promise<boolean>;
@@ -58,7 +59,7 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
         <Card className={classes.root} variant="outlined">
             <CardContent>
                 <Typography className={classes.title} variant="h6">
-                    {props.problem.title}
+                    Problem #{props.index + 1}
                 </Typography>
                 <ProblemView view={props.problem.view} />
                 <TextField

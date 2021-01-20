@@ -75,7 +75,7 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
             <List
                 className={classes.list}>
                 {
-                    props.submission.problem_set.problems.map(problem =>
+                    props.submission.problem_set.problems.map((problem, index) =>
                         {
                             const answer = props.submission.answers.find(ans => ans.generated_problem_id === problem.id);
 
@@ -84,6 +84,7 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
                                     key={"problem_" + problem.id}
                                     >
                                     <SubmissionProblemView
+                                        index={index}
                                         problem={problem}
                                         answer={answer?.answer}
                                         onAnswer={onAnswer}
