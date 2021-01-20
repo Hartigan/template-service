@@ -12,8 +12,26 @@ export class AuthService {
             post_logout_redirect_uri: `${AuthSettings.ClientRoot}signout-callback.html`,
             response_type: 'id_token token',
             scope: AuthSettings.ClientScope,
-            stateStore: new WebStorageStateStore({})
+            stateStore: new WebStorageStateStore({}),
         });
+
+        this.userManager.events.addUserLoaded(() => {
+            console.log("user loaded");
+        })
+
+        this.userManager.events.addUserUnloaded(() => {
+            console.log("user unloaded");
+        })
+
+        this.userManager.events.addAccessTokenExpiring(async () => {
+            console.log("user AccessTokenExpiring");
+            await this.userManager.revokeAccessToken();
+        })
+
+        this.userManager.events.addAccessTokenExpired(async () => {
+            console.log("user addAccessTokenExpired");
+            await this.login();
+        })
 
         Log.logger = console;
         Log.level = Log.INFO;

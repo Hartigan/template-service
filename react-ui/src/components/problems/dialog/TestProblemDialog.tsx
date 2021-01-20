@@ -96,7 +96,10 @@ export default function TestProblemDialog(props: ITestProblemDialogProps) {
                         className={classes.inputLabel}
                         label="Seed"
                         value={props.seed}
-                        onChange={(e) => props.updateSeed(parseInt(e.target.value))} />
+                        onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            props.updateSeed(Number.isNaN(value) ? 0 : value);
+                        }} />
                         <IconButton 
                             edge="end"
                             color="inherit"
