@@ -3,7 +3,7 @@ import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
 import { Submission } from "../../models/Submission";
 import SubmissionProblemView from "./SubmissionProblemView";
-import { GeneratedProblemId } from "../../models/Identificators";
+import { GeneratedProblemId, ReportId } from "../../models/Identificators";
 import { examinationService } from "../../Services";
 
 const useStyles = makeStyles(theme => ({
@@ -27,6 +27,7 @@ const useStyles = makeStyles(theme => ({
 export interface ISubmissionDialogProps {
     open: boolean;
     onClose: () => void;
+    onComplete: (id: ReportId) => void;
     submission: Submission;
 }
 
@@ -48,8 +49,8 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
     };
 
     const onComplete = async () => {
-        await examinationService.complete(props.submission.id);
-        props.onClose();
+        const reply = await examinationService.complete(props.submission.id);
+        props.onComplete(reply.id);
     };
 
     const classes = useStyles();

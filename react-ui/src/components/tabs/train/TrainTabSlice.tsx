@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Head } from '../../../models/Head';
-import { HeadId, SubmissionId, UserId } from '../../../models/Identificators';
+import { HeadId, ReportId, SubmissionId, UserId } from '../../../models/Identificators';
 import { ProblemSetPreview } from '../../../models/ProblemSetPreview';
+import { Report } from '../../../models/Report';
 import { SearchInterval } from '../../../models/SearchInterval';
 import { Submission } from '../../../models/Submission';
 import { examinationService } from '../../../Services';
@@ -27,6 +28,7 @@ export interface ITrainTabState {
         limit: number;
     },
     submission: { open: false; } | { open: true; data: Submission; };
+    report: { open: false; } | { open: true; data: Report; }
 };
 
 export const fetchSubmissions = createAsyncThunk(
@@ -51,6 +53,14 @@ export const startSubmission = createAsyncThunk(
         const result = await examinationService.start(headId);
         const submission = await examinationService.getSubmission(result.id);
         return submission;
+    }
+);
+
+export const openReport = createAsyncThunk(
+    'tabs/train/openReport',
+    async (id: ReportId) => {
+        const report = await examinationService.getReport(id);
+        return report;
     }
 );
 
@@ -115,6 +125,7 @@ const slice = createSlice({
             limit: 10,
         },
         submission: { open: false },
+        report: { open: false },
     } as ITrainTabState,
     reducers: {
         openTrainTab: (state) => {
@@ -220,6 +231,11 @@ const slice = createSlice({
             state.submission = {
                 open: false,
             };
+        },
+        closeReport: (state) => {
+            state.report = {
+                open: false,
+            };
         }
     },
     extraReducers: builder => {
@@ -248,6 +264,12 @@ const slice = createSlice({
                     data: [],
                 };
             })
+            .addCase(openReport.fulfilled, (state, action: PayloadAction<Report>) => {
+                state.report = {
+                    open: true,
+                    data: action.payload,
+                }
+            })
             .addCase(openSubmission.fulfilled, (state, action: PayloadAction<Submission>) => {
                 state.submission = {
                     open: true,
@@ -275,6 +297,7 @@ export const {
     updatePage,
     updateLimit,
     closeSubmission,
+    closeReport
 } = slice.actions;
 
 export const trainTabReducer = slice.reducer;

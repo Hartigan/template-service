@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
-import { HeadId, SubmissionId, UserId } from '../../../models/Identificators';
+import { HeadId, ReportId, SubmissionId, UserId } from '../../../models/Identificators';
 import { SearchInterval } from '../../../models/SearchInterval';
 import { IAppState, trainTabSelector } from '../../../store/Store';
 import TrainTab, { ITrainTabActions, ITrainTabParameters } from './TrainTab';
-import { closeSubmission, fetchProblemSets, fetchSubmissions, openSubmission, startSubmission, updateAdvanced, updateAuthor, updateIsPublic, updateLimit, updatePage, updatePattern, updateProblemsCount, updateDuration, updateTags } from "./TrainTabSlice";
+import { closeSubmission, fetchProblemSets, fetchSubmissions, openSubmission, startSubmission, updateAdvanced, updateAuthor, updateIsPublic, updateLimit, updatePage, updatePattern, updateProblemsCount, updateDuration, updateTags, openReport, closeReport } from "./TrainTabSlice";
 
 const mapStateToProps = (state: IAppState) : ITrainTabParameters => {
     const localState = trainTabSelector(state); 
@@ -37,6 +37,8 @@ const mapDispatchToProps = (dispatch): ITrainTabActions => {
         updatePage: (index: number) => dispatch(updatePage(index)),
         updateLimit: (limit: number) => dispatch(updateLimit(limit)),
         closeSubmission: () => dispatch(closeSubmission()),
+        openReport: (id: ReportId) => dispatch(openReport(id)),
+        closeReport: () => dispatch(closeReport()),
     };
 };
 

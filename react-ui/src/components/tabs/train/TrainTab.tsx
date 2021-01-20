@@ -2,7 +2,7 @@ import { makeStyles, Grid, Box, Paper, Switch, Typography, Toolbar } from "@mate
 import React from "react";
 import ProblemSetsListView from "../../train/ProblemSetsListView";
 import SubmissionsListView from "../../train/SubmissionsListView";
-import { HeadId, SubmissionId, UserId } from "../../../models/Identificators";
+import { HeadId, ReportId, SubmissionId, UserId } from "../../../models/Identificators";
 import { Submission } from "../../../models/Submission";
 import SubmissionDialog from "../../train/SubmissionDialog";
 import { Head } from "../../../models/Head";
@@ -13,6 +13,8 @@ import { SearchInterval } from "../../../models/SearchInterval";
 import SearchIntervalView from "../../common/SearchIntervalView";
 import UserSearchView from "../../common/UserSearchView";
 import { ProblemSetPreview } from "../../../models/ProblemSetPreview";
+import ReportDialog from "../../common/ReportDialog";
+import { Report } from "../../../models/Report";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -79,6 +81,7 @@ export interface ITrainTabParameters {
         limit: number;
     },
     submission: { open: false; } | { open: true; data: Submission; };
+    report: { open: false; } | { open: true; data: Report; };
 }
 
 export interface ITrainTabActions {
@@ -105,6 +108,8 @@ export interface ITrainTabActions {
     updatePage(index: number): void;
     updateLimit(limit: number): void;
     closeSubmission(): void;
+    openReport(id: ReportId): void;
+    closeReport(): void; 
 };
 
 export interface ITrainTabProps extends ITrainTabParameters, ITrainTabActions {
@@ -151,6 +156,11 @@ export default function TrainTab(props: ITrainTabProps) {
                             props.closeSubmission();
                             props.fetchSubmissions();
                         }}
+                        onComplete={(id) => {
+                            props.closeSubmission();
+                            props.fetchSubmissions();
+                            props.openReport(id);
+                        }}
                         submission={props.submission.data}
                         />;
         }
@@ -162,6 +172,13 @@ export default function TrainTab(props: ITrainTabProps) {
     return (
         <Grid container className={classes.root}>
             {getSubmissionDialog()}
+            {props.report.open
+                    ? <ReportDialog
+                        open={props.report.open}
+                        report={props.report.data}
+                        onClose={() => props.closeReport()}
+                        />
+                    : null}
             <Grid item className={classes.submissions}>
                 <Box className={classes.list}>
                     <SubmissionsListView
