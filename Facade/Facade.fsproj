@@ -9,6 +9,7 @@
     <ProjectReference Include="../Services/Services.fsproj" />
     <Compile Include="Converters.fs" />
     <Compile Include="ExaminationApi.fs" />
+    <Compile Include="FoldersApi.fs" />
   </ItemGroup>
 
 </Project>

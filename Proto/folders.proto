@@ -24,7 +24,6 @@ message RenameReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
@@ -49,13 +48,11 @@ message MoveReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }
 
@@ -69,50 +66,46 @@ message MoveRequest {
 }
 
 message RestoreFromTrashRequest {
-  repeated string head_ids = 1;
-  repeated string folder_ids = 2;
+  repeated string heads = 1;
+  repeated string folders = 2;
 }
 
 message RestoreFromTrashReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
     NO_ACCESS = 2;
   }
   message HeadEntry {
     string head_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
   message FolderEntry {
     string folder_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string restored_head_ids = 1;
-  repeated HeadEntry not_restored_heads = 2;
-  repeated string restored_folder_ids = 3;
-  repeated FolderEntry not_restored_folders = 4;
+  repeated HeadEntry heads = 1;
+  repeated FolderEntry folders = 2;
 }
 
 message MoveToTrashReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
     NO_ACCESS = 2;
   }
   message HeadEntry {
     string head_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
   message FolderEntry {
     string folder_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string removed_head_ids = 1;
-  repeated HeadEntry not_deleted_heads = 2;
-  repeated string removed_folder_ids = 3;
-  repeated FolderEntry not_deleted_folders = 4;
+  repeated HeadEntry heads = 1;
+  repeated FolderEntry folders = 2;
 }
 
 message MoveToTrashRequest {
@@ -164,7 +157,6 @@ message CreateFolderReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
@@ -185,7 +177,6 @@ message GetFolderReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }

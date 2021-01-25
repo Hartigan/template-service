@@ -111,7 +111,7 @@ message Trash {
 message TrashHeadEntry {
     string head_id = 1;
     string name = 2;
-    string ModelType = 3;
+    TargetModel.ModelType type = 3;
 }
 
 message TrashFolderEntry {
