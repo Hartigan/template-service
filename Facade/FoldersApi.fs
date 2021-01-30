@@ -16,7 +16,7 @@ open Models.Heads
 open Utils.ResultHelper
 open FSharp.Control
 
-[<Authorize>]
+[<Authorize(Roles="admin")>]
 type FoldersApi(foldersService: IFoldersService,
                 permissionsService: IPermissionsService,
                 logger: ILogger<FoldersApi>) =

@@ -11,6 +11,7 @@
     <Compile Include="ExaminationApi.fs" />
     <Compile Include="FoldersApi.fs" />
     <Compile Include="GroupsApi.fs" />
+    <Compile Include="PermissionsApi.fs" />
   </ItemGroup>
 
 </Project>

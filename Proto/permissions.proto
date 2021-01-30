@@ -17,81 +17,81 @@ service PermissionsService {
 }
 
 message RemoveMembersReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+    ITEM_NOT_FOUND = 3;
   }
 
   message GroupEntry {
     string group_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
   message UserEntry {
     string user_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string removed_users = 1;
-  repeated UserEntry not_removed_users = 2;
-  repeated string removed_groups = 3;
-  repeated GroupEntry not_removed_groups = 4;
+  repeated UserEntry users = 1;
+  repeated GroupEntry groups = 2;
 }
 
 message RemoveMembersRequest {
-  domain.ProtectedItem item = 1;
-  repeated string group_ids = 2;
-  repeated string user_ids = 3;
+  domain.ProtectedItem protectedItem = 1;
+  repeated string users = 2;
+  repeated string groups = 3;
 }
 
 message AddMembersReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+    ITEM_NOT_FOUND = 3;
   }
 
   message GroupEntry {
     string group_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
   message UserEntry {
     string user_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string added_users = 1;
-  repeated UserEntry not_added_users = 2;
-  repeated string added_groups = 3;
-  repeated GroupEntry not_added_groups = 4;
+  repeated UserEntry users = 1;
+  repeated GroupEntry groups = 2;
 }
 
 message AddMembersRequest {
-  domain.ProtectedItem item = 1;
-  repeated string group_ids = 2;
-  repeated string user_ids = 3;
+  domain.ProtectedItem protectedItem = 1;
+  repeated string users = 2;
+  repeated string groups = 3;
 }
 
 message UpdatePermissionsReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+    ITEM_NOT_FOUND = 3;
   }
 
   message GroupEntry {
     string group_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
   message UserEntry {
     string user_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string updated_users = 1;
-  repeated UserEntry not_updated_users = 2;
-  repeated string updated_groups = 3;
-  repeated GroupEntry not_updated_groups = 4;
+  repeated UserEntry users = 1;
+  repeated GroupEntry groups = 2;
 }
 
 message UpdatePermissionsRequest {
@@ -105,48 +105,35 @@ message UpdatePermissionsRequest {
     domain.Access access = 2;
   }
 
-  domain.ProtectedItem item = 1;
+  domain.ProtectedItem protectedItem = 1;
   repeated UserEntry users = 2;
   repeated GroupEntry groups = 3;
 }
 
 message GetAccessReply {
-  message AccessBatch { map<string, domain.Access> access = 1; }
+  map<string, domain.Access> access = 1;
+}
+
+message GetAccessRequest { repeated domain.ProtectedItem protectedItems = 1; }
+
+message SetIsPublicReply {
   message Error {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      WRONG_REQUEST = 2;
     }
     Status status = 2;
   }
   oneof result {
-    AccessBatch access = 1;
-    Error error = 2;
+    Error error = 1;
   }
-}
-
-message GetAccessRequest { repeated domain.ProtectedItem items = 1; }
-
-message SetIsPublicReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
-    NO_ACCESS = 2;
-  }
-  message ProtectedEntry {
-    string id = 1;
-    Reason reason = 2;
-  }
-
-  repeated string updated_items = 1;
-  repeated ProtectedEntry not_updated_items = 2;
 }
 
 message SetIsPublicRequest {
   bool is_public = 1;
-  repeated domain.ProtectedItem items = 2;
+  domain.ProtectedItem protectedItem = 2;
 }
 
 message GetPermissionsReply {
@@ -155,12 +142,12 @@ message GetPermissionsReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      WRONG_REQUEST = 2;
     }
     Status status = 2;
   }
   oneof result {
-    domain.Permissions preview = 1;
+    domain.Permissions permissions = 1;
     Error error = 2;
   }
 }

@@ -2,6 +2,7 @@ namespace Facade
 
 open Domain
 open System
+open DatabaseTypes.Identificators
 
 type BackConverter private () =
     static member Convert(o: DateInterval) : Contexts.SearchInterval<DateTimeOffset> =
@@ -30,6 +31,17 @@ type BackConverter private () =
             Admin = o.Admin
         }
 
+    static member Convert(o: ProtectedItem) : option<Models.Permissions.ProtectedId> =
+        match o with
+        | null -> None
+        | item ->
+            match o.Type with
+            | ProtectedItem.Types.ProtectedType.Folder -> Some(Models.Permissions.ProtectedId.Folder(FolderId(item.Id)))
+            | ProtectedItem.Types.ProtectedType.Head -> Some(Models.Permissions.ProtectedId.Head(HeadId(item.Id)))
+            | ProtectedItem.Types.ProtectedType.Submission -> Some(Models.Permissions.ProtectedId.Submission(SubmissionId(item.Id)))
+            | ProtectedItem.Types.ProtectedType.Report -> Some(Models.Permissions.ProtectedId.Report(ReportId(item.Id)))
+            | _ -> None
+
 type Converter private () =
 
     static member Convert(o: DateTimeOffset) =
@@ -37,6 +49,21 @@ type Converter private () =
 
     static member Convert<'IN, 'OUT>(input: List<'IN>, output: Google.Protobuf.Collections.RepeatedField<'OUT>, converter: 'IN -> 'OUT) =
         input |> List.iter(fun item -> output.Add(converter(item)))
+
+    static member Convert(o: Models.Permissions.PermissionsModel) =
+        let result = Permissions()
+        result.OwnerId <- o.OwnerId.Value
+        result.IsPublic <- o.IsPublic
+        Converter.Convert(o.Groups, result.Groups, Converter.Convert)
+        Converter.Convert(o.Members, result.Members, Converter.Convert)
+        result
+
+    static member Convert(o: Models.Permissions.GroupAccessModel) =
+        let result = GroupAccess()
+        result.GroupId <- o.GroupId.Value
+        result.Name <- o.Name.Value
+        result.Access <- Converter.Convert(o.Access)
+        result
 
     static member Convert(o: Models.Permissions.GroupModel) =
         let result = Group()
