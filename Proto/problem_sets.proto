@@ -18,7 +18,7 @@ message UpdateProblemSetReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      INVALID_INPUT = 2;
     }
     Status status = 2;
   }
@@ -40,7 +40,7 @@ message CreateProblemSetReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      INVALID_INPUT = 2;
     }
     Status status = 2;
   }
@@ -62,12 +62,13 @@ message GetProblemSetReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      NO_COMMIT = 2;
+      INVALID_TYPE = 3;
     }
     Status status = 2;
   }
   oneof result {
-    domain.ProblemSet problem = 1;
+    domain.ProblemSet problem_set = 1;
     Error error = 2;
   }
 }

@@ -42,6 +42,25 @@ type BackConverter private () =
             | ProtectedItem.Types.ProtectedType.Report -> Some(Models.Permissions.ProtectedId.Report(ReportId(item.Id)))
             | _ -> None
 
+    static member Convert(o: ProblemSet) : option<Models.Problems.ProblemSetModel> =
+        match o with
+        | null -> None
+        | problemSet ->
+            Some({
+                Models.Problems.ProblemSetModel.Id = ProblemSetId(problemSet.Id)
+                Title = Models.Problems.ProblemSetTitle(problemSet.Title)
+                Duration = Models.Problems.DurationModel(TimeSpan.FromSeconds(float problemSet.DurationS))
+                Slots =
+                    problemSet.Slots
+                    |> Seq.map(fun slot -> {
+                        Models.Problems.ProblemSlotModel.Heads =
+                            slot.HeadIds
+                            |> Seq.map(fun headId -> HeadId(headId))
+                            |> List.ofSeq
+                    })
+                    |> List.ofSeq
+            })
+
 type Converter private () =
 
     static member Convert(o: DateTimeOffset) =
@@ -49,6 +68,19 @@ type Converter private () =
 
     static member Convert<'IN, 'OUT>(input: List<'IN>, output: Google.Protobuf.Collections.RepeatedField<'OUT>, converter: 'IN -> 'OUT) =
         input |> List.iter(fun item -> output.Add(converter(item)))
+
+    static member Convert(o: Models.Problems.ProblemSetModel) =
+        let result = ProblemSet()
+        result.Id <- o.Id.Value
+        result.Title <- o.Title.Value
+        result.DurationS <- uint32 o.Duration.Value.TotalSeconds
+        Converter.Convert(o.Slots, result.Slots, Converter.Convert)
+        result
+
+    static member Convert(o: Models.Problems.ProblemSlotModel) =
+        let result = ProblemSet.Types.Slot()
+        Converter.Convert(o.Heads, result.HeadIds, fun x -> x.Value)
+        result
 
     static member Convert(o: Models.Permissions.PermissionsModel) =
         let result = Permissions()
