@@ -10,6 +10,7 @@
     <Compile Include="Converters.fs" />
     <Compile Include="ExaminationApi.fs" />
     <Compile Include="FoldersApi.fs" />
+    <Compile Include="GroupsApi.fs" />
   </ItemGroup>
 
 </Project>

@@ -20,7 +20,7 @@ service GroupsService {
 }
 
 message SearchReply {
-  message Groups {
+  message GroupList {
     repeated domain.Group groups = 1;
   }
   message Error {
@@ -28,12 +28,11 @@ message SearchReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
   oneof result {
-    Groups groups = 1;
+    GroupList groups = 1;
     Error error = 2;
   }
 }
@@ -45,43 +44,41 @@ message SearchRequest {
 }
 
 message AddMembersReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
     NO_ACCESS = 2;
   }
   message UserEntry {
     string user_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string added_users = 1;
-  repeated UserEntry not_added_users = 2;
+  repeated UserEntry users = 1;
 }
 
 message AddMembersRequest {
   string group_id = 1;
-  repeated string user_ids = 2;
+  repeated string users = 2;
 }
 
 message RemoveMembersReply {
-  enum Reason {
-    UNKNOWN = 0;
-    NOT_FOUND = 1;
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
     NO_ACCESS = 2;
   }
   message UserEntry {
     string user_id = 1;
-    Reason reason = 2;
+    Status status = 2;
   }
 
-  repeated string removed_users = 1;
-  repeated UserEntry not_removed_users = 2;
+  repeated UserEntry users = 1;
 }
 
 message RemoveMembersRequest {
   string group_id = 1;
-  repeated string user_ids = 2;
+  repeated string users = 2;
 }
 
 message UpdateMemberReply {
@@ -95,8 +92,7 @@ message UpdateMemberReply {
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }
 
@@ -112,7 +108,6 @@ message UpdateGroupReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
@@ -129,7 +124,7 @@ message UpdateGroupRequest {
 }
 
 message GetGroupsReply {
-  message Groups {
+  message GroupList {
     repeated domain.Group groups = 1;
   }
   message Error {
@@ -137,12 +132,11 @@ message GetGroupsReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
   oneof result {
-    Groups groups = 1;
+    GroupList groups = 1;
     Error error = 2;
   }
 }
@@ -160,7 +154,6 @@ message GetGroupReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }

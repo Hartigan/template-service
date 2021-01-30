@@ -22,6 +22,14 @@ type BackConverter private () =
             To = o.End
         }
 
+    static member Convert(o: Access) : Models.Permissions.AccessModel =
+        {
+            Generate = o.Generate
+            Read = o.Read
+            Write = o.Write
+            Admin = o.Admin
+        }
+
 type Converter private () =
 
     static member Convert(o: DateTimeOffset) =
@@ -29,6 +37,30 @@ type Converter private () =
 
     static member Convert<'IN, 'OUT>(input: List<'IN>, output: Google.Protobuf.Collections.RepeatedField<'OUT>, converter: 'IN -> 'OUT) =
         input |> List.iter(fun item -> output.Add(converter(item)))
+
+    static member Convert(o: Models.Permissions.GroupModel) =
+        let result = Group()
+        result.Id <- o.Id.Value
+        result.OwnerId <- o.OwnerId.Value
+        result.Name <- o.Name.Value
+        result.Description <- o.Description.Value
+        Converter.Convert(o.Members, result.Members, Converter.Convert)
+        result
+
+    static member Convert(o: Models.Permissions.MemberModel) =
+        let result = Member()
+        result.UserId <- o.UserId.Value
+        result.Name <- o.Name.Value
+        result.Access <- Converter.Convert(o.Access)
+        result
+
+    static member Convert(o: Models.Permissions.AccessModel) =
+        let result = Access()
+        result.Generate <- o.Generate
+        result.Read <- o.Read
+        result.Write <- o.Write
+        result.Admin <- o.Admin
+        result
 
     static member Convert(o: Models.Trash.TrashModel) =
         let result = Trash()
