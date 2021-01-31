@@ -26,6 +26,7 @@ open Services.Examination
 open Services.Problems
 open System.Text.Json.Serialization
 open Prometheus
+open Facade
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -45,6 +46,9 @@ type Startup private () =
         |> ignore
 
         let authConfig = this.Configuration.GetSection("Authentication").Get<AuthenticationSettings>()
+
+        services.AddGrpc()
+        |> ignore
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         |> fun x -> x.AddJwtBearer(fun options ->
@@ -88,6 +92,15 @@ type Startup private () =
         |> fun x -> x.AddSingleton<IGroupService, GroupService>()
         |> fun x -> x.AddSingleton<IReportSearch, ReportSearch>()
         |> fun x -> x.AddSingleton<IHeadSearch, HeadSearch>()
+        |> fun x -> x.AddSingleton<FoldersApi>()
+        |> fun x -> x.AddSingleton<GroupsApi>()
+        |> fun x -> x.AddSingleton<PermissionsApi>()
+        |> fun x -> x.AddSingleton<ExaminationApi>()
+        |> fun x -> x.AddSingleton<PermissionsApi>()
+        |> fun x -> x.AddSingleton<ProblemsApi>()
+        |> fun x -> x.AddSingleton<ProblemSetsApi>()
+        |> fun x -> x.AddSingleton<UsersApi>()
+        |> fun x -> x.AddSingleton<VersionControlApi>()
         |> fun x -> x.AddCors(fun options -> 
                 options.AddPolicy("_allowAll", fun builder ->
                         builder.WithOrigins("*")
@@ -114,6 +127,16 @@ type Startup private () =
             |> ignore
             endpoints.MapMetrics() |> ignore
             endpoints.MapHealthChecks("/health") |> ignore
+
+            endpoints.MapGrpcService<FoldersApi>() |> ignore
+            endpoints.MapGrpcService<GroupsApi>() |> ignore
+            endpoints.MapGrpcService<PermissionsApi>() |> ignore
+            endpoints.MapGrpcService<ExaminationApi>() |> ignore
+            endpoints.MapGrpcService<PermissionsApi>() |> ignore
+            endpoints.MapGrpcService<ProblemsApi>() |> ignore
+            endpoints.MapGrpcService<ProblemSetsApi>() |> ignore
+            endpoints.MapGrpcService<UsersApi>() |> ignore
+            endpoints.MapGrpcService<VersionControlApi>() |> ignore
             )
         |> ignore
 

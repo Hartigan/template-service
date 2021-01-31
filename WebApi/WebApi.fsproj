@@ -9,6 +9,7 @@
     <ProjectReference Include="../Model/Model.fsproj" />
     <ProjectReference Include="../Utils/Utils.fsproj" />
     <ProjectReference Include="../Services/Services.fsproj" />
+    <ProjectReference Include="../Facade/Facade.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthenticationSettings.fs" />
