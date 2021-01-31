@@ -23,6 +23,12 @@ type ViewLanguageModel private (viewLanguage: ViewLanguage, model: LanguageModel
         | Language.Tex -> Ok(ViewLanguageModel(ViewLanguage.Tex, model))
         | _ -> Error(InvalidOperationException(sprintf "cannot create ViewLanguageModel") :> Exception)
 
+    static member Create(language: ViewLanguage) : ViewLanguageModel =
+        match language with
+        | Markdown -> ViewLanguageModel(Markdown, LanguageModel.Create(Language.Markdown))
+        | PlainText -> ViewLanguageModel(PlainText, LanguageModel.Create(Language.PlainText))
+        | Tex -> ViewLanguageModel(Tex, LanguageModel.Create(Language.Tex))
+
 and ViewLanguageModelConverter() =
     inherit StringConverter<ViewLanguageModel>((fun m -> m.Name),
                                                (fun s ->

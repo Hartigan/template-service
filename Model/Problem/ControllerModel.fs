@@ -19,6 +19,10 @@ type ControllerLanguageModel private (controllerLanguage: ControllerLanguage, mo
         | Language.CSharp -> Ok(ControllerLanguageModel(ControllerLanguage.CSharp, model))
         | _ -> Error(InvalidOperationException(sprintf "cannot create ControllerLanguageModel") :> Exception)
 
+    static member Create(language: ControllerLanguage) : ControllerLanguageModel =
+        match language with
+        | CSharp -> ControllerLanguageModel(CSharp, LanguageModel.Create(Language.CSharp))
+
 and ControllerLanguageModelConverter() =
     inherit StringConverter<ControllerLanguageModel>((fun m -> m.Name),
                                                      (fun s ->

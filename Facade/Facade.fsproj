@@ -13,6 +13,7 @@
     <Compile Include="GroupsApi.fs" />
     <Compile Include="PermissionsApi.fs" />
     <Compile Include="ProblemSetsApi.fs" />
+    <Compile Include="ProblemsApi.fs" />
   </ItemGroup>
 
 </Project>

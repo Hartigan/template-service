@@ -20,7 +20,7 @@ message UpdateProblemReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      INVALID_INPUT = 2;
     }
     Status status = 2;
   }
@@ -42,7 +42,7 @@ message CreateProblemReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      INVALID_INPUT = 2;
     }
     Status status = 2;
   }
@@ -64,7 +64,8 @@ message ValidateReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      NO_COMMIT = 2;
+      INVALID_TYPE = 3;
     }
     Status status = 2;
   }
@@ -86,7 +87,8 @@ message TestProblemReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      NO_COMMIT = 2;
+      INVALID_TYPE = 3;
     }
     Status status = 2;
   }
@@ -107,7 +109,8 @@ message GetProblemReply {
     enum Status {
       UNKNOWN = 0;
       NO_ACCESS = 1;
-      NOT_FOUND = 2;
+      NO_COMMIT = 2;
+      INVALID_TYPE = 3;
     }
     Status status = 2;
   }

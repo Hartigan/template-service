@@ -34,7 +34,10 @@ message Problem {
 
 message Validator {
     enum Language {
-        CSHARP = 0;
+        C_SHARP = 0;
+        INTEGER_VALIDATOR = 1;
+        FLOAT_VALIDATOR = 2;
+        STRING_VALIDATOR = 3;
     }
     Language language = 1;
     string content = 2;
@@ -42,7 +45,7 @@ message Validator {
 
 message Controller {
     enum Language {
-        CSHARP = 0;
+        C_SHARP = 0;
     }
     Language language = 1;
     string content = 2;
@@ -51,7 +54,7 @@ message Controller {
 message View {
     enum Language {
         MARKDOWN = 0;
-        PLAINTEXT = 1;
+        PLAIN_TEXT = 1;
         TEX = 2;
     }
     Language language = 1;

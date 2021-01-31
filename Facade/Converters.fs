@@ -61,6 +61,85 @@ type BackConverter private () =
                     |> List.ofSeq
             })
 
+    static member Convert(o: Problem) : option<Models.Problems.ProblemModel> =
+        match o with
+        | null -> None
+        | p ->
+            match (BackConverter.Convert(p.View), BackConverter.Convert(p.Controller), BackConverter.Convert(p.Validator)) with
+            | (Some(view), Some(controller), Some(validator)) ->
+                Some({
+                    Models.Problems.ProblemModel.Id = ProblemId(p.Id)
+                    Title = Models.Problems.ProblemTitle(p.Title)
+                    View = view
+                    Controller = controller
+                    Validator = validator
+                })
+            | _ -> None
+
+    static member Convert(o: View) : option<Models.Problems.ViewModel> =
+        match o with
+        | null -> None
+        | p ->
+            let content = Models.Code.ContentModel(o.Content)
+            match o.Language with
+            | View.Types.Language.Markdown ->
+                Some({
+                    Language = Models.Problems.ViewLanguageModel.Create(Models.Problems.ViewLanguage.Markdown)
+                    Content = content
+                })
+            | View.Types.Language.PlainText ->
+                Some({
+                    Language = Models.Problems.ViewLanguageModel.Create(Models.Problems.ViewLanguage.PlainText)
+                    Content = content
+                })
+            | View.Types.Language.Tex ->
+                Some({
+                    Language = Models.Problems.ViewLanguageModel.Create(Models.Problems.ViewLanguage.Tex)
+                    Content = content
+                })
+            | _ -> None
+
+    static member Convert(o: Controller) : option<Models.Problems.ControllerModel> =
+        match o with
+        | null -> None
+        | p ->
+            let content = Models.Code.ContentModel(o.Content)
+            match o.Language with
+            | Controller.Types.Language.CSharp ->
+                Some({
+                    Language = Models.Problems.ControllerLanguageModel.Create(Models.Problems.ControllerLanguage.CSharp)
+                    Content = content
+                })
+            | _ -> None
+
+    static member Convert(o: Validator) : option<Models.Problems.ValidatorModel> =
+        match o with
+        | null -> None
+        | p ->
+            let content = Models.Code.ContentModel(o.Content)
+            match o.Language with
+            | Validator.Types.Language.CSharp ->
+                Some({
+                    Language = Models.Problems.ValidatorLanguageModel.Create(Models.Problems.ValidatorLanguage.CSharp)
+                    Content = content
+                })
+            | Validator.Types.Language.IntegerValidator ->
+                Some({
+                    Language = Models.Problems.ValidatorLanguageModel.Create(Models.Problems.ValidatorLanguage.IntegerValidator)
+                    Content = content
+                })
+            | Validator.Types.Language.FloatValidator ->
+                Some({
+                    Language = Models.Problems.ValidatorLanguageModel.Create(Models.Problems.ValidatorLanguage.FloatValidator)
+                    Content = content
+                })
+            | Validator.Types.Language.StringValidator ->
+                Some({
+                    Language = Models.Problems.ValidatorLanguageModel.Create(Models.Problems.ValidatorLanguage.StringValidator)
+                    Content = content
+                })
+            | _ -> None
+
 type Converter private () =
 
     static member Convert(o: DateTimeOffset) =
@@ -68,6 +147,43 @@ type Converter private () =
 
     static member Convert<'IN, 'OUT>(input: List<'IN>, output: Google.Protobuf.Collections.RepeatedField<'OUT>, converter: 'IN -> 'OUT) =
         input |> List.iter(fun item -> output.Add(converter(item)))
+
+    static member Convert(o: Models.Problems.GeneratedProblemModel) =
+        let result = GeneratedProblem()
+        result.Id <- o.Id.Value
+        result.ProblemId <- o.ProblemId.Value
+        result.Seed <- o.Seed.Value
+        result.Title <- o.Title.Value
+        result.View <- Converter.Convert(o.View)
+        result.Answer <- o.Answer.Value
+        result
+
+    static member Convert(o: Models.Problems.ProblemModel) =
+        let result = Problem()
+        result.Id <- o.Id.Value
+        result.Title <- o.Title.Value
+        result.View <- Converter.Convert(o.View)
+        result.Controller <- Converter.Convert(o.Controller)
+        result.Validator <- Converter.Convert(o.Validator)
+        result
+
+    static member Convert(o: Models.Problems.ViewModel) =
+        let result = View()
+        result.Language <- Converter.Convert(o.Language.Language)
+        result.Content <- o.Content.Value
+        result
+
+    static member Convert(o: Models.Problems.ControllerModel) =
+        let result = Controller()
+        result.Language <- Converter.Convert(o.Language.Language)
+        result.Content <- o.Content.Value
+        result
+        
+    static member Convert(o: Models.Problems.ValidatorModel) =
+        let result = Validator()
+        result.Language <- Converter.Convert(o.Language.Language)
+        result.Content <- o.Content.Value
+        result
 
     static member Convert(o: Models.Problems.ProblemSetModel) =
         let result = ProblemSet()
@@ -290,8 +406,19 @@ type Converter private () =
     static member Convert(o: Models.Problems.ViewLanguage) =
         match o with
         | Models.Problems.ViewLanguage.Markdown -> View.Types.Language.Markdown
-        | Models.Problems.ViewLanguage.PlainText -> View.Types.Language.Plaintext
+        | Models.Problems.ViewLanguage.PlainText -> View.Types.Language.PlainText
         | Models.Problems.ViewLanguage.Tex -> View.Types.Language.Tex
+
+    static member Convert(o: Models.Problems.ControllerLanguage) =
+        match o with
+        | Models.Problems.ControllerLanguage.CSharp -> Controller.Types.Language.CSharp
+
+    static member Convert(o: Models.Problems.ValidatorLanguage) =
+        match o with
+        | Models.Problems.ValidatorLanguage.CSharp -> Validator.Types.Language.CSharp
+        | Models.Problems.ValidatorLanguage.IntegerValidator -> Validator.Types.Language.IntegerValidator
+        | Models.Problems.ValidatorLanguage.FloatValidator -> Validator.Types.Language.FloatValidator
+        | Models.Problems.ValidatorLanguage.StringValidator -> Validator.Types.Language.StringValidator
 
     static member Convert(o: Models.Permissions.UserModel) =
         let result = User()

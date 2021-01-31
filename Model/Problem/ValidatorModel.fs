@@ -25,6 +25,12 @@ type ValidatorLanguageModel private (validatorLanguage: ValidatorLanguage, model
         | Language.StringValidator -> Ok(ValidatorLanguageModel(ValidatorLanguage.StringValidator, model))
         | _ -> Error(InvalidOperationException(sprintf "cannot create ValidatorLanguageModel") :> Exception)
 
+    static member Create(language: ValidatorLanguage) : ValidatorLanguageModel =
+        match language with
+        | CSharp -> ValidatorLanguageModel(CSharp, LanguageModel.Create(Language.CSharp))
+        | IntegerValidator -> ValidatorLanguageModel(IntegerValidator, LanguageModel.Create(Language.IntegerValidator))
+        | FloatValidator -> ValidatorLanguageModel(FloatValidator, LanguageModel.Create(Language.FloatValidator))
+        | StringValidator -> ValidatorLanguageModel(StringValidator, LanguageModel.Create(Language.StringValidator))
 and ValidatorLanguageModelConverter() =
     inherit StringConverter<ValidatorLanguageModel>((fun m -> m.Name),
                                                (fun s ->

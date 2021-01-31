@@ -33,6 +33,16 @@ type LanguageModel private (name: string,  language: Language) =
         | "string_validator" -> Ok(LanguageModel(language, Language.StringValidator))
         | _ -> Error(InvalidOperationException(sprintf "Cannot create LanguageModel" ) :> Exception)
 
+    static member Create(language: Language) : LanguageModel =
+        match language with
+        | CSharp -> LanguageModel("csharp", CSharp)
+        | Markdown -> LanguageModel("markdown", Markdown)
+        | PlainText -> LanguageModel("plain_text", PlainText)
+        | Tex -> LanguageModel("tex", Tex)
+        | IntegerValidator -> LanguageModel("integer_validator", IntegerValidator)
+        | FloatValidator -> LanguageModel("float_validator", FloatValidator)
+        | StringValidator -> LanguageModel("string_validator", StringValidator)
+
 and LanguageModelConverter() =
     inherit StringConverter<LanguageModel>((fun m -> m.Name),
                                            (fun s ->
