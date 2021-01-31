@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 import "domain.proto";
@@ -16,7 +15,7 @@ service UsersService {
 }
 
 message SearchReply {
-  message Users {
+  message UserList {
     repeated domain.User users = 1;
   }
   message Error {
@@ -27,7 +26,7 @@ message SearchReply {
     Status status = 2;
   }
   oneof result {
-    Users users = 1;
+    UserList users = 1;
     Error error = 2;
   }
 }
@@ -47,8 +46,7 @@ message InitReply {
     Status status = 2;
   }
   oneof result {
-    google.protobuf.Empty ok = 1;
-    Error error = 2;
+    Error error = 1;
   }
 }
 
@@ -59,7 +57,6 @@ message GetUserReply {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
-      NOT_FOUND = 2;
     }
     Status status = 2;
   }
