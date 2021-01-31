@@ -21,8 +21,7 @@ message UpdateTagsReply {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
-      NOT_FOUND = 1;
-      NO_ACCESS = 2;
+      NO_ACCESS = 1;
     }
     Status status = 2;
   }
@@ -38,14 +37,14 @@ message UpdateTagsRequest {
 }
 
 message SearchReply {
-  message Heads { repeated domain.Head heads = 1; }
+  message HeadList { repeated domain.Head heads = 1; }
   message Error {
     string description = 1;
     enum Status { UNKNOWN = 0; }
     Status status = 2;
   }
   oneof result {
-    Heads heads = 1;
+    HeadList heads = 1;
     Error error = 2;
   }
 }
@@ -63,7 +62,7 @@ message GetCommitReply {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
-      NOT_FOUND = 2;
+      NO_ACCESS = 1;
     }
     Status status = 2;
   }
@@ -80,7 +79,7 @@ message GetHeadReply {
     string description = 1;
     enum Status {
       UNKNOWN = 0;
-      NOT_FOUND = 2;
+      NO_ACCESS = 1;
     }
     Status status = 2;
   }

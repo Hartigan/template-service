@@ -15,6 +15,7 @@
     <Compile Include="ProblemSetsApi.fs" />
     <Compile Include="ProblemsApi.fs" />
     <Compile Include="UsersApi.fs" />
+    <Compile Include="VersionControlApi.fs" />
   </ItemGroup>
 
 </Project>
