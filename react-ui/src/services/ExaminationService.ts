@@ -1,7 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { ExaminationServiceClient } from '../protobuf/ExaminationServiceClientPb';
 import { AuthService } from './AuthService';
-import { ApplyAnswerReply, ApplyAnswerRequest, CompleteSubmissionReply, CompleteSubmissionRequest, GetProblemSetPreviewReply, GetProblemSetPreviewRequest, GetProblemSetsReply, GetProblemSetsRequest, GetReportReply, GetReportRequest, GetReportsReply, GetReportsRequest, GetSubmissionPreviewReply, GetSubmissionReply, GetSubmissionRequest, GetSubmissionsReply, GetSubmissionsRequest, ShareReportReply, ShareReportRequest, StartSubmissionReply, StartSubmissionRequest } from '../protobuf/examination_pb';
+import { ApplyAnswerReply, ApplyAnswerRequest, CompleteSubmissionReply, CompleteSubmissionRequest, GetProblemSetsPreviewsReply, GetProblemSetsPreviewsRequest, GetProblemSetsReply, GetProblemSetsRequest, GetReportReply, GetReportRequest, GetReportsReply, GetReportsRequest, GetSubmissionReply, GetSubmissionRequest, GetSubmissionsPreviewsReply, GetSubmissionsPreviewsRequest, GetSubmissionsReply, GetSubmissionsRequest, ShareReportReply, ShareReportRequest, StartSubmissionReply, StartSubmissionRequest } from '../protobuf/examination_pb';
 import { BaseService } from './BaseService';
 
 export class ExaminationService extends BaseService<ExaminationServiceClient> {
@@ -46,11 +46,11 @@ export class ExaminationService extends BaseService<ExaminationServiceClient> {
         return this.doCall<GetProblemSetsRequest, GetProblemSetsReply>(this.client.getProblemSets)(request);
     }
 
-    getProblemSetPreview(request: GetProblemSetPreviewRequest) {
-        return this.doCall<GetProblemSetPreviewRequest, GetProblemSetPreviewReply>(this.client.getProblemSetPreview)(request);
+    getProblemSetsPreviews(request: GetProblemSetsPreviewsRequest) {
+        return this.doCall<GetProblemSetsPreviewsRequest, GetProblemSetsPreviewsReply>(this.client.getProblemSetsPreviews)(request);
     }
 
-    getSubmissionPreview(request: GetSubmissionRequest) {
-        return this.doCall<GetSubmissionRequest, GetSubmissionPreviewReply>(this.client.getSubmissionPreview)(request);
+    getSubmissionsPreviews(request: GetSubmissionsPreviewsRequest) {
+        return this.doCall<GetSubmissionsPreviewsRequest, GetSubmissionsPreviewsReply>(this.client.getSubmissionsPreviews)(request);
     }
 }

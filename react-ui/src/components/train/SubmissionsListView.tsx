@@ -2,6 +2,7 @@ import * as React from 'react'
 import { makeStyles, Box } from '@material-ui/core';
 import { SubmissionId } from '../../models/Identificators';
 import SubmissionPreviewView from './SubmissionPreviewView';
+import { SubmissionPreviewModel } from '../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -12,7 +13,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface ISubmissionsListViewProps {
     onShowSubmission: (submissionId: SubmissionId) => void;
-    submissionsIds: Array<SubmissionId>;
+    submissions: Array<SubmissionPreviewModel>;
 }
 
 export default function SubmissionsListView(props: ISubmissionsListViewProps) {
@@ -22,10 +23,10 @@ export default function SubmissionsListView(props: ISubmissionsListViewProps) {
     return (
         <Box className={classes.root} flexWrap="wrap">
             {
-                props.submissionsIds.map(submissionId => (
+                props.submissions.map(submission => (
                     <SubmissionPreviewView
-                        key={"submission_" + submissionId}
-                        submissionId={submissionId}
+                        key={"submission_" + submission.id}
+                        submission={submission}
                         onShowSubmission={props.onShowSubmission}
                         />
                 ))

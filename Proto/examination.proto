@@ -18,45 +18,49 @@ service ExaminationService {
   rpc GetReports(GetReportsRequest) returns (GetReportsReply);
   rpc ShareReport(ShareReportRequest) returns (ShareReportReply);
   rpc GetProblemSets(GetProblemSetsRequest) returns (GetProblemSetsReply);
-  rpc GetProblemSetPreview(GetProblemSetPreviewRequest)
-      returns (GetProblemSetPreviewReply);
-  rpc GetSubmissionPreview(GetSubmissionPreviewRequest)
-      returns (GetSubmissionPreviewReply);
+  rpc GetProblemSetsPreviews(GetProblemSetsPreviewsRequest)
+      returns (GetProblemSetsPreviewsReply);
+  rpc GetSubmissionsPreviews(GetSubmissionsPreviewsRequest)
+      returns (GetSubmissionsPreviewsReply);
 }
 
-message GetSubmissionPreviewRequest { string submission_id = 1; }
-
-message GetSubmissionPreviewReply {
-  message Error {
-    string description = 1;
-    enum Status {
-      UNKNOWN = 0;
-      NO_ACCESS = 1;
-    }
-    Status status = 2;
-  }
-  oneof result {
-    domain.SubmissionPreview preview = 1;
-    Error error = 2;
-  }
+message GetSubmissionsPreviewsRequest {
+  repeated string submission_ids = 1;
 }
 
-message GetProblemSetPreviewRequest { string commit_id = 1; }
+message GetSubmissionsPreviewsReply {
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+  }
 
-message GetProblemSetPreviewReply {
-  message Error {
-    string description = 1;
-    enum Status {
-      UNKNOWN = 0;
-      NO_ACCESS = 1;
-      NOT_FOUND = 2;
-    }
-    Status status = 2;
+  message Entry {
+    Status status = 1;
+    domain.SubmissionPreview preview = 2;
+    
   }
-  oneof result {
-    domain.ProblemSetPreview preview = 1;
-    Error error = 2;
+  
+  repeated Entry previews = 1;
+}
+
+message GetProblemSetsPreviewsRequest {
+  repeated string commit_ids = 1;
+}
+
+message GetProblemSetsPreviewsReply {
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+    NOT_FOUND = 3;
   }
+  message Entry {
+    Status status = 1;
+    string commit_id = 2;
+    domain.ProblemSetPreview preview = 3;
+  }
+  repeated Entry previews = 1;
 }
 
 message GetProblemSetsRequest {

@@ -11,7 +11,7 @@ import { SearchInterval } from "../../../models/SearchInterval";
 import SearchIntervalView from "../../common/SearchIntervalView";
 import UserSearchView from "../../common/UserSearchView";
 import ReportDialog from "../../common/ReportDialog";
-import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel } from "../../../models/domain";
+import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel, SubmissionPreviewModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface ITrainTabParameters {
     submissions: {
-        data: Array<SubmissionId>;
+        data: Array<SubmissionPreviewModel>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     };
     problemSets: {
@@ -179,7 +179,7 @@ export default function TrainTab(props: ITrainTabProps) {
             <Grid item className={classes.submissions}>
                 <Box className={classes.list}>
                     <SubmissionsListView
-                        submissionsIds={props.submissions.data}
+                        submissions={props.submissions.data}
                         onShowSubmission={(submissionId) => props.openSubmission(submissionId)}
                         />
                 </Box>

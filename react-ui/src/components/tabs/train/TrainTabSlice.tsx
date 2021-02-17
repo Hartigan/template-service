@@ -1,15 +1,15 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import Services from '../../../Services';
-import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel } from '../../../models/domain';
+import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel, SubmissionPreviewModel } from '../../../models/domain';
 import { HeadId, ReportId, SubmissionId, UserId } from '../../../models/Identificators';
 import { SearchInterval } from '../../../models/SearchInterval';
 import { Int32Interval, UInt32Interval } from '../../../protobuf/domain_pb';
-import { GetProblemSetPreviewRequest, GetProblemSetsRequest, GetReportRequest, GetSubmissionRequest, GetSubmissionsRequest, StartSubmissionRequest } from '../../../protobuf/examination_pb';
+import { GetProblemSetsPreviewsReply, GetProblemSetsPreviewsRequest, GetProblemSetsRequest, GetReportRequest, GetSubmissionRequest, GetSubmissionsPreviewsReply, GetSubmissionsPreviewsRequest, GetSubmissionsRequest, StartSubmissionRequest } from '../../../protobuf/examination_pb';
 import { toStringValue, tryMap } from '../../utils/Utils';
 
 export interface ITrainTabState {
     submissions: {
-        data: Array<SubmissionId>;
+        data: Array<SubmissionPreviewModel>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     };
     problemSets: {
@@ -40,7 +40,25 @@ export const fetchSubmissions = createAsyncThunk(
         if (error) {
             Services.logger.error(error.getDescription());
         }
-        return reply.getSubmissions()?.getSubmissionIdsList() ?? [];
+        const submissionIds = reply.getSubmissions()?.getSubmissionIdsList() ?? [];
+        const previewsRequest = new GetSubmissionsPreviewsRequest();
+        previewsRequest.setSubmissionIdsList(submissionIds);
+        const previewReply = await Services.examinationService.getSubmissionsPreviews(previewsRequest);
+
+        const result : Array<SubmissionPreviewModel> = [];
+
+        previewReply.getPreviewsList().forEach(entry => {
+            if (entry.getStatus() !== GetSubmissionsPreviewsReply.Status.OK) {
+                Services.logger.error(`Submission entry returned with status = ${entry.getStatus()}`);
+            }
+
+            const preview = entry.getPreview()?.toObject();
+            if (preview) {
+                result.push(preview);
+            }
+        });
+
+        return result;
     }
 );
 
@@ -141,36 +159,38 @@ export const fetchProblemSets = createAsyncThunk(
             Services.logger.error(error.getDescription());
         }
 
-        const problemSets = reply.getHeads()?.getHeadsList()?.map(x => x.toObject()) ?? [];
-        const result = await Promise.all(
-            problemSets.map(
-                head => {
-                    const fakePreview : ProblemSetPreviewModel = {
-                        id: "fake",
-                        title: "",
-                        problemsCount: 0,
-                        durationS: 0,
-                        author: undefined,
-                    };
-                    if (head.commit) {
-                        const problemSetPreviewRequest = new GetProblemSetPreviewRequest();
-                        problemSetPreviewRequest.setCommitId(head.commit.id);
-                        return Services.examinationService
-                            .getProblemSetPreview(problemSetPreviewRequest)
-                            .then(reply => {
-                                const error = reply.getError();
-                                if (error) {
-                                    Services.logger.error(error.getDescription());
-                                }
-                                return { head: head, preview: reply.getPreview()?.toObject() ?? fakePreview };
-                            })
-                    }
-                    else {
-                        return Promise.resolve({ head: head, preview: fakePreview });
-                    }
-                }
-            )
-        );
+        const heads = reply.getHeads()?.getHeadsList()?.map(x => x.toObject()) ?? [];
+        const commitIds = heads.map(x => x.commit?.id ?? "");
+        const previewsRequest = new GetProblemSetsPreviewsRequest();
+        previewsRequest.setCommitIdsList(commitIds);
+        const fakePreview : ProblemSetPreviewModel = {
+            id: "fake",
+            title: "",
+            problemsCount: 0,
+            durationS: 0,
+            author: undefined,
+        };
+        const previewsReply = await Services.examinationService.getProblemSetsPreviews(previewsRequest);
+        const entries = previewsReply.getPreviewsList()?.map(x => x.toObject()) ?? [];
+
+        const result = heads.map(head => {
+            const entry = entries.find(x => x.commitId === head.commit?.id);
+
+            if (!entry) {
+                Services.logger.error(`Entry with commitId = ${head.commit?.id} not found`);
+            }
+
+            if (entry?.status !== GetProblemSetsPreviewsReply.Status.OK) {
+                Services.logger.error(`Entry with commitId = ${head.commit?.id} returned with status = ${entry?.status}`);
+            }
+
+            const preview = entry?.preview;
+
+            return {
+                head: head,
+                preview: preview ?? fakePreview
+            };
+        });
 
         return result;
     }

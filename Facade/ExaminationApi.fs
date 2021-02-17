@@ -15,6 +15,7 @@ open Models.Problems
 open Models.Permissions
 open Models.Heads
 open Utils.ResultHelper
+open FSharp.Control
 
 [<Authorize>]
 type ExaminationApi(permissionsService: IPermissionsService,
@@ -334,74 +335,82 @@ type ExaminationApi(permissionsService: IPermissionsService,
         }
         |> Async.StartAsTask
 
-    override this.GetProblemSetPreview(request, context) =
+    override this.GetProblemSetsPreviews(request, context) =
         async {
             let userId = this.GetUserId(context)
-            let commitId = CommitId(request.CommitId)
+            let reply = GetProblemSetsPreviewsReply()
 
-            match! versionControlService.Get(commitId) with
-            | Error(ex) ->
-                logger.LogError(ex, "Cannot get commit for problem set preview")
-                let error = GetProblemSetPreviewReply.Types.Error()
-                error.Description <- ex.Message
-                error.Status <- GetProblemSetPreviewReply.Types.Error.Types.Status.NotFound
-                let reply = GetProblemSetPreviewReply()
-                reply.Error <- error
-                return reply
-            | Ok(commit) ->
-                match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanGenerate) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Access denied")
-                    let error = GetProblemSetPreviewReply.Types.Error()
-                    error.Description <- ex.Message
-                    error.Status <- GetProblemSetPreviewReply.Types.Error.Types.Status.NoAccess
-                    let reply = GetProblemSetPreviewReply()
-                    reply.Error <- error
-                    return reply
-                | Ok(_) ->
-                    match! examinationService.GetProblemSetPreview(commitId) with
-                    | Error(ex) ->
-                        logger.LogError(ex, "Cannot get problem set preview")
-                        let error = GetProblemSetPreviewReply.Types.Error()
-                        error.Description <- ex.Message
-                        error.Status <- GetProblemSetPreviewReply.Types.Error.Types.Status.Unknown
-                        let reply = GetProblemSetPreviewReply()
-                        reply.Error <- error
-                        return reply
-                    | Ok(model) ->
-                        let reply = GetProblemSetPreviewReply()
-                        reply.Preview <- Converter.Convert(model)
-                        return reply
+            let! previews =
+                request.CommitIds
+                |> AsyncSeq.ofSeq
+                |> AsyncSeq.mapAsyncParallel(fun id ->
+                    async {
+                        let commitId = CommitId(id)
+                        let entry = GetProblemSetsPreviewsReply.Types.Entry()
+                        entry.CommitId <- id
+                        match! versionControlService.Get(commitId) with
+                        | Error(ex) ->
+                            logger.LogError(ex, "Cannot get commit for problem set preview")
+                            entry.Status <- GetProblemSetsPreviewsReply.Types.Status.NotFound
+                            return entry
+                        | Ok(commit) ->
+                            match! permissionsService.CheckPermissions(ProtectedId.Head(commit.HeadId), userId, AccessModel.CanGenerate) with
+                            | Error(ex) ->
+                                logger.LogError(ex, "Access denied")
+                                entry.Status <- GetProblemSetsPreviewsReply.Types.Status.NoAccess
+                                return entry
+                            | Ok(_) ->
+                                match! examinationService.GetProblemSetPreview(commitId) with
+                                | Error(ex) ->
+                                    logger.LogError(ex, "Cannot get problem set preview")
+                                    entry.Status <- GetProblemSetsPreviewsReply.Types.Status.Unknown
+                                    return entry
+                                | Ok(model) ->
+                                    entry.Preview <- Converter.Convert(model)
+                                    entry.Status <- GetProblemSetsPreviewsReply.Types.Status.Ok
+                                    return entry
+                    }
+                )
+                |> AsyncSeq.toArrayAsync
+            
+            reply.Previews.AddRange(previews)
+            return reply
         }
         |> Async.StartAsTask
 
-    override this.GetSubmissionPreview(request, context) =
+    override this.GetSubmissionsPreviews(request, context) =
         async {
             let userId = this.GetUserId(context)
-            let submissionId = SubmissionId(request.SubmissionId)
 
-            match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanRead) with
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                let error = GetSubmissionPreviewReply.Types.Error()
-                error.Description <- ex.Message
-                error.Status <- GetSubmissionPreviewReply.Types.Error.Types.Status.NoAccess
-                let reply = GetSubmissionPreviewReply()
-                reply.Error <- error
-                return reply
-            | Ok(_) ->
-                match! examinationService.GetPreview(submissionId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get submission preview")
-                    let error = GetSubmissionPreviewReply.Types.Error()
-                    error.Description <- ex.Message
-                    error.Status <- GetSubmissionPreviewReply.Types.Error.Types.Status.Unknown
-                    let reply = GetSubmissionPreviewReply()
-                    reply.Error <- error
-                    return reply
-                | Ok(model) ->
-                    let reply = GetSubmissionPreviewReply()
-                    reply.Preview <- Converter.Convert(model)
-                    return reply
+            let reply = GetSubmissionsPreviewsReply()
+
+            let! previews =
+                request.SubmissionIds
+                |> AsyncSeq.ofSeq
+                |> AsyncSeq.mapAsyncParallel(fun id ->
+                    async {
+                        let submissionId = SubmissionId(id)
+                        let entry = GetSubmissionsPreviewsReply.Types.Entry()
+                        match! permissionsService.CheckPermissions(ProtectedId.Submission(submissionId), userId, AccessModel.CanRead) with
+                        | Error(ex) ->
+                            logger.LogError(ex, "Access denied")
+                            entry.Status <- GetSubmissionsPreviewsReply.Types.Status.NoAccess
+                            return entry
+                        | Ok(_) ->
+                            match! examinationService.GetPreview(submissionId) with
+                            | Error(ex) ->
+                                logger.LogError(ex, "Cannot get submission preview")
+                                entry.Status <- GetSubmissionsPreviewsReply.Types.Status.Unknown
+                                return entry
+                            | Ok(model) ->
+                                entry.Preview <- Converter.Convert(model)
+                                entry.Status <- GetSubmissionsPreviewsReply.Types.Status.Ok
+                                return entry
+                    }
+                )
+                |> AsyncSeq.toArrayAsync
+
+            reply.Previews.AddRange(previews)
+            return reply
         }
         |> Async.StartAsTask
