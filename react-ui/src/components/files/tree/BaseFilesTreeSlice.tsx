@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Folder, FolderLink, HeadLink } from '../../../models/Folder';
-import { foldersService } from '../../../Services';
+import { FolderLinkModel, FolderModel, HeadLinkModel } from '../../../models/domain';
+import { GetFolderRequest, GetRootRequest } from '../../../protobuf/folders_pb';
+import Services from '../../../Services';
 import { IFolderNode } from './FolderView';
 
 export interface IFilesTreeState {
@@ -11,16 +12,33 @@ export interface IFilesTreeState {
         root: IFolderNode;
     };
     expanded: Array<string>;
-    selectedHead: HeadLink | null;
-    selectedFolder: FolderLink | null;
+    selectedHead: HeadLinkModel | null;
+    selectedFolder: FolderLinkModel | null;
 };
 
 export function createFileTreeSlice(prefix: string) {
     const fetchRoot = createAsyncThunk(
             `files/tree/${prefix}-fetchRoot`,
             async () => {
-                async function getNode(folder: Folder) : Promise<IFolderNode> {
-                    const folders = await Promise.all(folder.folders.map(f => foldersService.getFolder(f.id)));
+                async function getNode(folder: FolderModel) : Promise<IFolderNode> {
+                    const foldersReply = await Promise.all(
+                        folder.foldersList.map(f => {
+                            const request = new GetFolderRequest();
+                            request.setFolderId(f.id)
+                            return Services.foldersService.getFolder(request);
+                        })
+                    );
+
+                    const folders = foldersReply.flatMap(reply => {
+                        const error = reply.getError();
+                        if (error) {
+                            Services.logger.error(error.getDescription());
+                        }
+
+                        const folder = reply.getFolder()?.toObject();
+                        return folder ? [ folder ] : [];
+                    });
+
                     const foldersNodes = await Promise.all(folders.map(f => getNode(f)));
                     return {
                         folder: {
@@ -29,14 +47,27 @@ export function createFileTreeSlice(prefix: string) {
                         },
                         children: {
                             folders: foldersNodes,
-                            heads: folder.heads,
+                            heads: folder.headsList,
                         },
                     };
                 };
 
-                const rootFolder = await foldersService.getRoot();
-                const result = await getNode(rootFolder);
-                return result;
+                const rootRequest = new GetRootRequest();
+                const rootReply = await Services.foldersService.getRoot(rootRequest);
+
+                const error = rootReply.getError();
+                if (error) {
+                    Services.logger.error(error.getDescription());
+                }
+
+                const root = rootReply.getFolder();
+
+                if (root) {
+                    return await getNode(root.toObject());
+                }
+                else {
+                    return null;
+                }
             }
     );
 
@@ -54,19 +85,26 @@ export function createFileTreeSlice(prefix: string) {
             setExpanded: (state, action: PayloadAction<Array<string>>) => {
                 state.expanded = action.payload;
             },
-            selectHead: (state, action: PayloadAction<HeadLink>) => {
+            selectHead: (state, action: PayloadAction<HeadLinkModel>) => {
                 state.selectedHead = action.payload;
             },
-            selectFolder: (state, action: PayloadAction<FolderLink>) => {
+            selectFolder: (state, action: PayloadAction<FolderLinkModel>) => {
                 state.selectedFolder = action.payload;
             }
         },
         extraReducers: builder => {
             builder
-                .addCase(fetchRoot.fulfilled, (state, action: PayloadAction<IFolderNode>) => {
-                    state.data = {
-                        loading: 'succeeded',
-                        root: action.payload,
+                .addCase(fetchRoot.fulfilled, (state, action) => {
+                    if (action.payload) {
+                        state.data = {
+                            loading: 'succeeded',
+                            root: action.payload,
+                        };
+                    }
+                    else {
+                        state.data = {
+                            loading: 'failed'
+                        };
                     }
                 })
                 .addCase(fetchRoot.pending, (state, action) => {

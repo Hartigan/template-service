@@ -1,46 +1,45 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { Group, Access } from '../models/Permissions';
-import { Id, GroupId, UserId } from '../models/Identificators';
+import { BaseService } from './BaseService';
+import { GroupsServiceClient } from '../protobuf/GroupsServiceClientPb';
+import { AuthService } from './AuthService';
+import { CreateGroupRequest, GetGroupRequest, GetGroupsRequest, UpdateGroupRequest, UpdateMemberRequest, RemoveMembersRequest, AddMembersRequest, SearchRequest, UpdateMemberReply, AddMembersReply, CreateGroupReply, GetGroupReply, GetGroupsReply, RemoveMembersReply, SearchReply, UpdateGroupReply } from '../protobuf/groups_pb';
 
 
-export class GroupService {
-    private http : HttpService;
+export class GroupService extends BaseService<GroupsServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/group`);
+    constructor(authService: AuthService) {
+        super(authService, new GroupsServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    create(name: string, description: string) {
-        return this.http.post<Id<GroupId>>(`create`, { name: name, description: description });
+    createGroup(request: CreateGroupRequest) {
+        return this.doCall<CreateGroupRequest, CreateGroupReply>(this.client.createGroup)(request);
     }
 
-    get(id: GroupId) {
-        return this.http.get<Group>(`get?id=${id}`);
+    getGroup(request: GetGroupRequest) {
+        return this.doCall<GetGroupRequest, GetGroupReply>(this.client.getGroup)(request);
     }
 
-    getGroups(access: Access) {
-        return this.http.get<Array<Group>>(`list?admin=${access.admin}&read=${access.read}&write=${access.write}&generate=${access.generate}`);
+    getGroups(request: GetGroupsRequest) {
+        return this.doCall<GetGroupsRequest, GetGroupsReply>(this.client.getGroups)(request);
     }
 
-    update(id: GroupId, userId: UserId, name?: string, description?: string) {
-        return this.http.post<void>(`update`, { id: id, user_id: userId, name: name, description: description });
+    updateGroup(request: UpdateGroupRequest) {
+        return this.doCall<UpdateGroupRequest, UpdateGroupReply>(this.client.updateGroup)(request);
     }
 
-    updateMember(id: GroupId, userId: UserId, access: Access) {
-        return this.http.post<void>(`update_member`, { id: id, user_id: userId, access: access });
+    updateMember(request: UpdateMemberRequest) {
+        return this.doCall<UpdateMemberRequest, UpdateMemberReply>(this.client.updateMember)(request);
     }
 
-    removeMember(id: GroupId, userId: UserId) {
-        return this.http.post<void>(`remove_member`, { id: id, user_id: userId });
+    removeMembers(request: RemoveMembersRequest) {
+        return this.doCall<RemoveMembersRequest, RemoveMembersReply>(this.client.removeMembers)(request);
     }
 
-    addMember(id: GroupId, userId: UserId) {
-        return this.http.post<void>(`add_member`, { id: id, user_id: userId });
+    addMembers(request: AddMembersRequest) {
+        return this.doCall<AddMembersRequest, AddMembersReply>(this.client.addMembers)(request);
     }
 
-    search(pattern: string | null, offset: number, limit: number) {
-        return this.http.post<Array<Group>>(`search`, { pattern: pattern ? pattern : null, offset: offset, limit: limit });
+    search(request: SearchRequest) {
+        return this.doCall<SearchRequest, SearchReply>(this.client.search)(request);
     }
 }

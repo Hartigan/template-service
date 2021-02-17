@@ -19,7 +19,8 @@ export default function StatusView(props: { isCorrect: boolean; }) {
         return (
             <Typography
                 className={classes.correctStatus}
-                variant="body2">
+                variant="body2"
+                component="span">
                 Correct
             </Typography>
         );
@@ -27,7 +28,8 @@ export default function StatusView(props: { isCorrect: boolean; }) {
         return (
             <Typography
                 className={classes.wrongStatus}
-                variant="body2">
+                variant="body2"
+                component="span">
                 Wrong
             </Typography>
         );

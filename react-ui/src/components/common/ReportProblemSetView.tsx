@@ -1,6 +1,6 @@
 import { makeStyles, Typography, Card, CardActionArea, CardContent } from "@material-ui/core";
 import React from "react";
-import { Report } from "../../models/Report";
+import { ReportModel } from "../../models/domain";
 import DateView from "../utils/DateView";
 
 const useStyles = makeStyles(theme => ({
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportProblemSetViewProps {
-    report: Report;
+    report: ReportModel;
 }
 
 export default function ReportProblemSetView(props: IReportProblemSetViewProps) {
@@ -32,25 +32,25 @@ export default function ReportProblemSetView(props: IReportProblemSetViewProps) 
             <CardActionArea>
                 <CardContent>
                     <Typography variant="h5">
-                        {props.report.problem_set.title}
+                        {props.report.problemSet?.title}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Author
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.report.author.username}
+                        {props.report.author?.username}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Started at
                     </Typography>
                     <Typography variant="body2" component="p">
-                        <DateView date={props.report.started_at} />
+                        <DateView date={new Date(props.report.startedAt)} />
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Finished at
                     </Typography>
                     <Typography variant="body2" component="p">
-                        <DateView date={props.report.finished_at} />
+                        <DateView date={new Date(props.report.finishedAt)} />
                     </Typography>
                 </CardContent>
             </CardActionArea>

@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Head } from '../../../models/Head';
+import Services from '../../../Services';
+import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel } from '../../../models/domain';
 import { HeadId, ReportId, SubmissionId, UserId } from '../../../models/Identificators';
-import { ProblemSetPreview } from '../../../models/ProblemSetPreview';
-import { Report } from '../../../models/Report';
 import { SearchInterval } from '../../../models/SearchInterval';
-import { Submission } from '../../../models/Submission';
-import { examinationService } from '../../../Services';
+import { Int32Interval, UInt32Interval } from '../../../protobuf/domain_pb';
+import { GetProblemSetPreviewRequest, GetProblemSetsRequest, GetReportRequest, GetSubmissionRequest, GetSubmissionsRequest, StartSubmissionRequest } from '../../../protobuf/examination_pb';
+import { toStringValue, tryMap } from '../../utils/Utils';
 
 export interface ITrainTabState {
     submissions: {
@@ -13,7 +13,7 @@ export interface ITrainTabState {
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     };
     problemSets: {
-        data: Array<{ head: Head; preview: ProblemSetPreview; }>;
+        data: Array<{ head: HeadModel; preview: ProblemSetPreviewModel; }>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     }    
     search: {
@@ -27,40 +27,75 @@ export interface ITrainTabState {
         page: number;
         limit: number;
     },
-    submission: { open: false; } | { open: true; data: Submission; };
-    report: { open: false; } | { open: true; data: Report; }
+    submission: { open: false; } | { open: true; data: SubmissionModel; };
+    report: { open: false; } | { open: true; data: ReportModel; }
 };
 
 export const fetchSubmissions = createAsyncThunk(
     'tabs/train/fetchSubmissions',
     async () => {
-        const submissions = await examinationService.getSubmissions();
-        return submissions;
+        const request = new GetSubmissionsRequest();
+        const reply = await Services.examinationService.getSubmissions(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getSubmissions()?.getSubmissionIdsList() ?? [];
     }
 );
 
 export const openSubmission = createAsyncThunk(
     'tabs/train/openSubmission',
     async (id: SubmissionId) => {
-        const submission = await examinationService.getSubmission(id);
-        return submission;
+        const request = new GetSubmissionRequest();
+        request.setSubmissionId(id);
+        const reply = await Services.examinationService.getSubmission(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getSubmission()?.toObject();
     }
 );
 
 export const startSubmission = createAsyncThunk(
     'tabs/train/startSubmission',
     async (headId: HeadId) => {
-        const result = await examinationService.start(headId);
-        const submission = await examinationService.getSubmission(result.id);
-        return submission;
+        const request = new StartSubmissionRequest();
+        request.setProblemSetHeadId(headId);
+        const reply = await Services.examinationService.startSubmission(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        const submissionId = reply.getSubmissionId();
+        if (!submissionId) {
+            return null;
+        }
+        const submissionRequest = new GetSubmissionRequest();
+        submissionRequest.setSubmissionId(submissionId);
+        const submissionReply = await Services.examinationService.getSubmission(submissionRequest);
+
+        const submissionError = reply.getError();
+        if (submissionError) {
+            Services.logger.error(submissionError.getDescription());
+        }
+        return submissionReply.getSubmission()?.toObject() ?? null;
     }
 );
 
 export const openReport = createAsyncThunk(
     'tabs/train/openReport',
     async (id: ReportId) => {
-        const report = await examinationService.getReport(id);
-        return report;
+        const request = new GetReportRequest();
+        request.setReportId(id);
+        const reply = await Services.examinationService.getReport(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getReport()?.toObject() ?? null;
     }
 );
 
@@ -76,30 +111,69 @@ export const fetchProblemSets = createAsyncThunk(
             offset: number,
             limit: number 
         }) => {
-    const problemSets = await examinationService.getProblemSets(
-            params.isPublic,
-            params.pattern,
-            params.tags,
-            params.authorId,
-            params.problemsCount,
-            params.duration,
-            params.offset,
-            params.limit 
+        const request = new GetProblemSetsRequest()
+        request.setIsPublic(params.isPublic);
+        request.setPattern(toStringValue(params.pattern));
+        request.setTagsList(params.tags ?? []);
+        request.setAuthorId(toStringValue(params.authorId));
+        request.setProblemsCount(
+            tryMap(params.problemsCount, x => {
+                const result = new UInt32Interval();
+                result.setStart(x.from);
+                result.setEnd(x.to);
+                return result;
+            })
+        );
+        request.setDurationS(
+            tryMap(params.duration, x => {
+                const result = new Int32Interval();
+                result.setStart(x.from);
+                result.setEnd(x.to);
+                return result;
+            })
+        );
+        request.setOffset(params.offset);
+        request.setLimit(params.limit);
+        const reply = await Services.examinationService.getProblemSets(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        const problemSets = reply.getHeads()?.getHeadsList()?.map(x => x.toObject()) ?? [];
+        const result = await Promise.all(
+            problemSets.map(
+                head => {
+                    const fakePreview : ProblemSetPreviewModel = {
+                        id: "fake",
+                        title: "",
+                        problemsCount: 0,
+                        durationS: 0,
+                        author: undefined,
+                    };
+                    if (head.commit) {
+                        const problemSetPreviewRequest = new GetProblemSetPreviewRequest();
+                        problemSetPreviewRequest.setCommitId(head.commit.id);
+                        return Services.examinationService
+                            .getProblemSetPreview(problemSetPreviewRequest)
+                            .then(reply => {
+                                const error = reply.getError();
+                                if (error) {
+                                    Services.logger.error(error.getDescription());
+                                }
+                                return { head: head, preview: reply.getPreview()?.toObject() ?? fakePreview };
+                            })
+                    }
+                    else {
+                        return Promise.resolve({ head: head, preview: fakePreview });
+                    }
+                }
+            )
         );
 
-    const result = await Promise.all(
-        problemSets.map(
-            head =>
-                examinationService
-                    .getProblemSetPreview(head.commit.id)
-                    .then(preview => {
-                        return { head: head, preview: preview }
-                    })
-        )
-    );
-
-    return result;
-}
+        return result;
+    }
 );
 
 const slice = createSlice({
@@ -240,7 +314,7 @@ const slice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(fetchSubmissions.fulfilled, (state, action: PayloadAction<Array<SubmissionId>>) => {
+            .addCase(fetchSubmissions.fulfilled, (state, action) => {
                 state.submissions = {
                     loading: 'succeeded',
                     data: action.payload,
@@ -252,7 +326,7 @@ const slice = createSlice({
                     data: [],
                 };
             })
-            .addCase(fetchProblemSets.fulfilled, (state, action: PayloadAction<Array<{ head: Head; preview: ProblemSetPreview; }>>) => {
+            .addCase(fetchProblemSets.fulfilled, (state, action) => {
                 state.problemSets = {
                     loading: 'succeeded',
                     data: action.payload,
@@ -264,22 +338,28 @@ const slice = createSlice({
                     data: [],
                 };
             })
-            .addCase(openReport.fulfilled, (state, action: PayloadAction<Report>) => {
-                state.report = {
-                    open: true,
-                    data: action.payload,
+            .addCase(openReport.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.report = {
+                        open: true,
+                        data: action.payload,
+                    }
                 }
             })
-            .addCase(openSubmission.fulfilled, (state, action: PayloadAction<Submission>) => {
-                state.submission = {
-                    open: true,
-                    data: action.payload,
+            .addCase(openSubmission.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.submission = {
+                        open: true,
+                        data: action.payload,
+                    }
                 }
             })
-            .addCase(startSubmission.fulfilled, (state, action: PayloadAction<Submission>) => {
-                state.submission = {
-                    open: true,
-                    data: action.payload,
+            .addCase(startSubmission.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.submission = {
+                        open: true,
+                        data: action.payload,
+                    }
                 }
             });
     }

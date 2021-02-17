@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { makeStyles, Typography } from '@material-ui/core';
 import TreeItem from '@material-ui/lab/TreeItem';
-import { FolderLink, HeadLink } from '../../../models/Folder';
 import HeadTreeItemView from './HeadTreeItemView';
-import { TargetType } from '../../../models/Commit';
 import FolderIcon from '@material-ui/icons/Folder';
+import { FolderLinkModel, HeadLinkModel } from '../../../models/domain';
+import { TargetModel } from '../../../protobuf/domain_pb';
 
 const useStyles = makeStyles(theme => ({
     labelIcon: {
@@ -23,21 +23,21 @@ const useStyles = makeStyles(theme => ({
 
 
 export interface IFolderNode {
-    folder: FolderLink;
+    folder: FolderLinkModel;
     children: {
         folders: Array<IFolderNode>;
-        heads: Array<HeadLink>;
+        heads: Array<HeadLinkModel>;
     };
-    filter?: Array<TargetType>;
+    filter?: Array<TargetModel.ModelType>;
 };
 
 export interface IFolderViewProperties {
     node: IFolderNode;
-    selectedFolder: FolderLink | null;
-    selectedHead: HeadLink | null;
-    onSelectHead: (head: HeadLink) => void;
-    onSelectFolder: (folder: FolderLink) => void;
-    filter?: Array<TargetType>;
+    selectedFolder: FolderLinkModel | null;
+    selectedHead: HeadLinkModel | null;
+    onSelectHead: (head: HeadLinkModel) => void;
+    onSelectFolder: (folder: FolderLinkModel) => void;
+    filter?: Array<TargetModel.ModelType>;
 }
 
 export default function FolderView(props: IFolderViewProperties) {

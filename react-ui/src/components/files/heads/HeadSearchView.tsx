@@ -1,13 +1,12 @@
 import * as React from 'react'
 import { makeStyles, Box, Container } from '@material-ui/core';
-import { HeadLink } from '../../../models/Folder';
-import { Head } from '../../../models/Head';
 import { UserId } from '../../../models/Identificators';
 import SearchField from '../../common/SearchField';
 import { SearchNavigationView } from '../../common/SearchNavigationView';
 import UserSearchView from '../../common/UserSearchView';
 import TagsEditorView from '../../utils/TagsEditorView';
 import HeadsListView from './HeadsListView';
+import { HeadLinkModel, HeadModel } from '../../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -35,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IHeadSearchViewActions {
-    selectHead: (head: HeadLink) => void;
+    selectHead: (head: HeadLinkModel) => void;
     setTags: (tags: Array<string>) => void;
     setPattern: (pattern: string) => void;
     setOwnerId: (ownerId: UserId | null) => void;
@@ -53,9 +52,9 @@ export interface IHeadSearchViewActions {
 export interface IHeadSearchViewParameters {
     data: {
         loading: 'idle' | 'pending' | 'failed' | 'succeeded';
-        heads: Array<Head>;
+        heads: Array<HeadModel>;
     };
-    selected: HeadLink | null;
+    selected: HeadLinkModel | null;
     search: {
         tags: Array<string>;
         pattern: string;

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { FolderLink, HeadLink } from '../../../models/Folder';
+import { FolderLinkModel, HeadLinkModel } from '../../../models/domain';
 import { editorTabFilesTreeSelector, IAppState } from '../../../store/Store';
 import { setExpanded, selectFolder, selectHead, editorTabFetchRoot } from './EditorTabFilesTreeSlice';
 import FileTreeView, { IFilesTreeActions, IFileTreeParameters } from './FilesTreeView';
@@ -15,8 +15,8 @@ const mapDispatchToProps = (dispatch) : IFilesTreeActions => {
     return {
         setExpanded: (expanded: Array<string>) => dispatch(setExpanded(expanded)),
         fetchRoot: () => dispatch(editorTabFetchRoot()),
-        selectFolder: (folder: FolderLink) => dispatch(selectFolder(folder)),
-        selectHead: (head: HeadLink) => dispatch(selectHead(head)),
+        selectFolder: (folder: FolderLinkModel) => dispatch(selectFolder(folder)),
+        selectHead: (head: HeadLinkModel) => dispatch(selectHead(head)),
     };
 };
 

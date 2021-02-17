@@ -1,9 +1,9 @@
 import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { ProblemSet } from "../../../models/ProblemSet";
 import { FolderId } from "../../../models/Identificators";
 import ProblemSetCreatorContainer from "../editor/ProblemSetCreatorContainer";
+import { ProblemSetModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -18,14 +18,14 @@ const useStyles = makeStyles(theme => ({
 export interface ICreateProblemSetDialogParameters {
     open: boolean;
     data: {
-        problemSet: ProblemSet
+        problemSet: ProblemSetModel
     } | null;
     creating: 'idle' | 'pending' | 'succeeded';
     folderId: FolderId | null;
 };
 
 export interface ICreateProblemSetDialogActions {
-    createProblemSet(folderId: FolderId, title: string, problemSet: ProblemSet): void;
+    createProblemSet(folderId: FolderId, title: string, problemSet: ProblemSetModel): void;
     updateFolder(folderId: FolderId): void;
     cancel(): void;
 }

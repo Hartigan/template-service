@@ -3,9 +3,11 @@ import React, { useEffect } from "react";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { Group } from "../../models/Permissions";
 import { GroupId } from "../../models/Identificators";
-import { groupService } from "../../Services";
+import Services from "../../Services";
+import { GroupModel } from "../../models/domain";
+import { SearchRequest } from "../../protobuf/groups_pb";
+import { toStringValue } from "../utils/Utils";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     open: boolean;
     pattern: string;
-    groups: Array<Group> | null;
+    groups: Array<GroupModel> | null;
 }
 
 export interface IGroupSearchViewProps {
@@ -38,13 +40,24 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
         let active = true;
 
         if (state.groups === null && state.open) {
-            groupService
-                .search(state.pattern, 0, 10)
-                .then(groups => {
+            const request = new SearchRequest();
+            request.setPattern(toStringValue(state.pattern));
+            request.setOffset(0);
+            request.setLimit(10);
+            Services.groupService
+                .search(request)
+                .then(reply => {
+                    const error = reply.getError();
+
+                    if (error) {
+                        Services.logger.error(error.getDescription());
+                    }
+
                     if (active) {
+                        const groups = reply.getGroups()?.getGroupsList() ?? [];
                         setState({
                             ...state,
-                            groups: groups,
+                            groups: groups.map(x => x.toObject()),
                         });
                     }
                 });
@@ -80,7 +93,7 @@ export default function GroupSearchView(props: IGroupSearchViewProps) {
             onClose={() => setOpen(false)}
             getOptionSelected={(option, value) => option.name === value.name}
             getOptionLabel={option => option.name}
-            onChange={(event: any, value: Group | null) => props.onGroupSelected(value ? value.id : null)}
+            onChange={(event: any, value: GroupModel | null) => props.onGroupSelected(value ? value.id : null)}
             options={state.groups ? state.groups : []}
             loading={loading}
             renderInput={params => (

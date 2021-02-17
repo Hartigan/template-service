@@ -1,36 +1,28 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { HeadId, CommitId, UserId } from '../models/Identificators';
-import { Head } from '../models/Head';
-import { Commit } from '../models/Commit';
-import { HttpServiceFactory } from './HttpServiceFactory';
+import { AuthService } from './AuthService';
+import { VersionServiceClient } from '../protobuf/VersionServiceClientPb';
+import { GetCommitReply, GetCommitRequest, GetHeadReply, GetHeadRequest, SearchReply, SearchRequest, UpdateTagsReply, UpdateTagsRequest } from '../protobuf/version_pb';
+import { BaseService } from './BaseService';
 
-export class VersionService {
-    private http : HttpService;
+export class VersionService extends BaseService<VersionServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/version`);
+    constructor(authService: AuthService) {
+        super(authService, new VersionServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getHead(id: HeadId) {
-        return this.http.get<Head>(`head?id=${id}`);
+    getHead(request: GetHeadRequest) {
+        return this.doCall<GetHeadRequest, GetHeadReply>(this.client.getHead)(request);
     }
 
-    getCommit(id: CommitId) {
-        return this.http.get<Commit>(`commit?id=${id}`);
+    getCommit(request: GetCommitRequest) {
+        return this.doCall<GetCommitRequest, GetCommitReply>(this.client.getCommit)(request)
     }
 
-    updateTags(head: HeadId, tags: Array<string>) {
-        return this.http.post<any>(`update_tags`, { head_id: head, tags: tags });
+    updateTags(request: UpdateTagsRequest) {
+        return this.doCall<UpdateTagsRequest, UpdateTagsReply>(this.client.updateTags)(request);
     }
 
-    search(ownerId: UserId | null, tags: Array<string>, pattern: string | null, offset: number, limit: number) {
-        return this.http.post<Array<Head>>(`search`, { 
-            owner_id: ownerId,
-            tags: tags,
-            pattern: pattern ? pattern : null,
-            offset: offset,
-            limit: limit
-        });
+    search(request: SearchRequest) {
+        return this.doCall<SearchRequest, SearchReply>(this.client.search)(request);
     }
 }

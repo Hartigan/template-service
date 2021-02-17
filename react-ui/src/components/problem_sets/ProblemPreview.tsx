@@ -1,6 +1,6 @@
 import { makeStyles, Card, CardContent, Typography } from "@material-ui/core";
 import React from "react";
-import { Problem } from "../../models/Problem";
+import { ProblemModel } from "../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IProblemPreviewProps {
-    problem: Problem;
+    problem: ProblemModel;
 }
 
 export default function ProblemPreview(props: IProblemPreviewProps) {
@@ -35,7 +35,7 @@ export default function ProblemPreview(props: IProblemPreviewProps) {
                     View
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.problem.view.content}
+                    {props.problem.view?.content}
                 </Typography>
             </CardContent>
         </Card>

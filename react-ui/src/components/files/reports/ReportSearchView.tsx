@@ -5,10 +5,10 @@ import { SearchInterval } from '../../../models/SearchInterval';
 import { useDispatch } from 'react-redux';
 import { fetchReports, selectReport, setLimit, setOwnerId, setPage, setPattern } from './ReportSearchSlice';
 import { UserId } from '../../../models/Identificators';
-import { Report } from '../../../models/Report';
 import SearchField from '../../common/SearchField';
 import { SearchNavigationView } from '../../common/SearchNavigationView';
 import UserSearchView from '../../common/UserSearchView';
+import { ReportModel } from '../../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -36,7 +36,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportSearchViewProps {
-    selected: Report | null;
+    selected: ReportModel | null;
     search: {
         pattern: string;
         ownerId: UserId | null;
@@ -45,7 +45,7 @@ export interface IReportSearchViewProps {
         limit: number;
     },
     data: {
-        reports: Array<Report>;
+        reports: Array<ReportModel>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     }
 }

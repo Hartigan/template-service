@@ -3,18 +3,15 @@ import React from "react";
 import ProblemSetsListView from "../../train/ProblemSetsListView";
 import SubmissionsListView from "../../train/SubmissionsListView";
 import { HeadId, ReportId, SubmissionId, UserId } from "../../../models/Identificators";
-import { Submission } from "../../../models/Submission";
 import SubmissionDialog from "../../train/SubmissionDialog";
-import { Head } from "../../../models/Head";
 import TagsEditorView from "../../utils/TagsEditorView";
 import SearchField from "../../common/SearchField";
 import { SearchNavigationView } from "../../common/SearchNavigationView";
 import { SearchInterval } from "../../../models/SearchInterval";
 import SearchIntervalView from "../../common/SearchIntervalView";
 import UserSearchView from "../../common/UserSearchView";
-import { ProblemSetPreview } from "../../../models/ProblemSetPreview";
 import ReportDialog from "../../common/ReportDialog";
-import { Report } from "../../../models/Report";
+import { HeadModel, ProblemSetPreviewModel, ReportModel, SubmissionModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -66,7 +63,7 @@ export interface ITrainTabParameters {
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     };
     problemSets: {
-        data: Array<{ head: Head; preview: ProblemSetPreview; }>;
+        data: Array<{ head: HeadModel; preview: ProblemSetPreviewModel; }>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     }    
     search: {
@@ -80,8 +77,8 @@ export interface ITrainTabParameters {
         page: number;
         limit: number;
     },
-    submission: { open: false; } | { open: true; data: Submission; };
-    report: { open: false; } | { open: true; data: Report; };
+    submission: { open: false; } | { open: true; data: SubmissionModel; };
+    report: { open: false; } | { open: true; data: ReportModel; };
 }
 
 export interface ITrainTabActions {

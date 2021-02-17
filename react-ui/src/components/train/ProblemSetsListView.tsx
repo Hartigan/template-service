@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { makeStyles, Box } from '@material-ui/core';
-import { Head } from '../../models/Head';
 import ProblemSetPreviewView from './ProblemSetPreviewView';
 import { HeadId } from '../../models/Identificators';
-import { ProblemSetPreview } from '../../models/ProblemSetPreview';
+import { HeadModel, ProblemSetPreviewModel } from '../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface IProblemSetsListViewProps {
     onStartSubmission: (headId: HeadId) => void;
-    problemSets: Array<{ head: Head; preview: ProblemSetPreview; }>;
+    problemSets: Array<{ head: HeadModel; preview: ProblemSetPreviewModel; }>;
 }
 
 export default function ProblemSetsListView(props: IProblemSetsListViewProps) {

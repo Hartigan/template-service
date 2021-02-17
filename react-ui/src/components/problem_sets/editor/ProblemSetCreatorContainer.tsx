@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import { ProblemSetModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { ProblemSet } from '../../../models/ProblemSet';
 import { IAppState, problemSetCreateDialogSelector, problemSetCreatorFilesTreeSelector, problemSetCreatorSelector } from '../../../store/Store';
 import ProblemSetCreatorFilesTreeContainer from '../../files/tree/ProblemSetCreatorFilesTreeContainer';
 import { updateProblemSet } from '../dialogs/CreateProblemSetDialogSlice';
@@ -16,8 +16,8 @@ const mapStateToProps = (state: IAppState) : IProblemSetEditorParameters => {
     const problemSet = dialog.data?.problemSet ?? {
         id: "",
         title: "",
-        slots: [],
-        duration: 0,
+        slotsList: [],
+        durationS: 0,
     };
 
     return {
@@ -31,7 +31,7 @@ const mapStateToProps = (state: IAppState) : IProblemSetEditorParameters => {
 
 const mapDispatchToProps = (dispatch) : IProblemSetEditorActions => {
     return {
-        onUpdate: (problemSet: ProblemSet) => dispatch(updateProblemSet(problemSet)),
+        onUpdate: (problemSet: ProblemSetModel) => dispatch(updateProblemSet(problemSet)),
         fetchAddPreview: (headId: HeadId) => dispatch(creatorFetchAddPreview({ headId: headId })),
         fetchRemovePreview: (headId: HeadId) => dispatch(creatorFetchRemovePreview({ headId: headId })),
         selectSlot: (pos: number) => dispatch(selectSlot(pos)),

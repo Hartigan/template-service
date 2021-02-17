@@ -9,7 +9,7 @@ package permissions;
 service PermissionsService {
   rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsReply);
   rpc SetIsPublic(SetIsPublicRequest) returns (SetIsPublicReply);
-  rpc GetAccess(GetAccessRequest) returns (GetAccessReply);
+  rpc GetAccessInfo(GetAccessInfoRequest) returns (GetAccessInfoReply);
   rpc UpdatePermissions(UpdatePermissionsRequest)
       returns (UpdatePermissionsReply);
   rpc AddMembers(AddMembersRequest) returns (AddMembersReply);
@@ -110,11 +110,11 @@ message UpdatePermissionsRequest {
   repeated GroupEntry groups = 3;
 }
 
-message GetAccessReply {
+message GetAccessInfoReply {
   map<string, domain.Access> access = 1;
 }
 
-message GetAccessRequest { repeated domain.ProtectedItem protectedItems = 1; }
+message GetAccessInfoRequest { repeated domain.ProtectedItem protectedItems = 1; }
 
 message SetIsPublicReply {
   message Error {

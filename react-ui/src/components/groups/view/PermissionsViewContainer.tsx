@@ -1,10 +1,10 @@
 import { connect } from 'react-redux'
+import { AccessModel, ProtectedItemModel } from '../../../models/domain';
 import { GroupId, UserId } from '../../../models/Identificators';
-import { Access } from '../../../models/Permissions';
-import { Protected } from '../../../services/PermissionsService';
+import { ProtectedItem } from '../../../protobuf/domain_pb';
 import { IAppState, permissionsReportsSelector, permissionsTabFilesTreeSelector, permissionsTabHeadSearchSelector, permissionsTabSelector, permissionsViewSelector } from '../../../store/Store';
 import { PermissionsTabTabs } from '../../tabs/permissions/PermissionsTabSlice';
-import PermissionsView, { IPermissionsViewActions, IPermissionsViewParameters, ProtectedItem } from './PermissionsView';
+import PermissionsView, { IPermissionsViewActions, IPermissionsViewParameters } from './PermissionsView';
 import { addGroup, addUser, fetchPersmissions, removeGroup, removeUser, setIsPublic, setNewGroup, setNewUser, updateGroupAccess, updateUserAccess } from './PermissionsViewSlice';
 
 const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
@@ -14,7 +14,7 @@ const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
     const headSearch = permissionsTabHeadSearchSelector(state);
     const reportSearch = permissionsReportsSelector(state);
 
-    let protectedItem : ProtectedItem | null = null;
+    let protectedItem : ProtectedItemModel | null = null;
     let title = "";
 
     switch(tabState.selected) {
@@ -22,7 +22,7 @@ const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
             if (tree.selectedHead) {
                 protectedItem = {
                     id: tree.selectedHead.id,
-                    type: tree.selectedHead.type,
+                    type: ProtectedItem.ProtectedType.HEAD,
                 };
                 title = tree.selectedHead.name;
             }
@@ -31,7 +31,7 @@ const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
             if (headSearch.selected) {
                 protectedItem = {
                     id: headSearch.selected.id,
-                    type: headSearch.selected.type,
+                    type: ProtectedItem.ProtectedType.HEAD,
                 };
                 title = headSearch.selected.name;
             }
@@ -40,9 +40,9 @@ const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
             if (reportSearch.selected) {
                 protectedItem = {
                     id: reportSearch.selected.id,
-                    type: "report",
+                    type: ProtectedItem.ProtectedType.REPORT,
                 };
-                title = reportSearch.selected.problem_set.title;
+                title = reportSearch.selected.problemSet?.title ?? "";
             }
             break;
     }
@@ -56,16 +56,16 @@ const mapStateToProps = (state: IAppState) : IPermissionsViewParameters => {
 
 const mapDispatchToProps = (dispatch) : IPermissionsViewActions => {
     return {
-        fetchPermissions: (item: Protected) => dispatch(fetchPersmissions({ item })),
+        fetchPermissions: (item: ProtectedItemModel) => dispatch(fetchPersmissions({ item })),
         setNewUser: (userId: UserId | null) => dispatch(setNewUser(userId)),
         setNewGroup: (groupId: GroupId | null) => dispatch(setNewGroup(groupId)),
-        addMember: (item: Protected, userId: UserId) => dispatch(addUser({ item, userId })),
-        removeMember: (item: Protected, userId: UserId) => dispatch(removeUser({ item, userId })),
-        updateMemberAccess: (item: Protected, userId: UserId, access: Access) => dispatch(updateUserAccess({ item, userId, access })),
-        addGroup: (item: Protected, groupId: GroupId) => dispatch(addGroup({ item, groupId })),
-        removeGroup: (item: Protected, groupId: GroupId) => dispatch(removeGroup({ item, groupId })),
-        updateGroupAccess: (item: Protected, groupId: GroupId, access: Access) => dispatch(updateGroupAccess({ item, groupId, access })),
-        setIsPublic: (item: Protected, isPublic: boolean) => dispatch(setIsPublic({ item, isPublic })),
+        addMember: (item: ProtectedItemModel, userId: UserId) => dispatch(addUser({ item, userId })),
+        removeMember: (item: ProtectedItemModel, userId: UserId) => dispatch(removeUser({ item, userId })),
+        updateMemberAccess: (item: ProtectedItemModel, userId: UserId, access: AccessModel) => dispatch(updateUserAccess({ item, userId, access })),
+        addGroup: (item: ProtectedItemModel, groupId: GroupId) => dispatch(addGroup({ item, groupId })),
+        removeGroup: (item: ProtectedItemModel, groupId: GroupId) => dispatch(removeGroup({ item, groupId })),
+        updateGroupAccess: (item: ProtectedItemModel, groupId: GroupId, access: AccessModel) => dispatch(updateGroupAccess({ item, groupId, access })),
+        setIsPublic: (item: ProtectedItemModel, isPublic: boolean) => dispatch(setIsPublic({ item, isPublic })),
     };
 };
 

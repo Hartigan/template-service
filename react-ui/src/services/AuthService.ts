@@ -1,5 +1,6 @@
 import { Log, User, UserManager, WebStorageStateStore } from 'oidc-client';
 import { AuthSettings } from '../settings/AuthSettings'
+import { Metadata } from 'grpc-web';
 
 export class AuthService {
     public userManager: UserManager;
@@ -39,6 +40,17 @@ export class AuthService {
 
     public getUser() : Promise<User | null> {
         return this.userManager.getUser();
+    }
+
+    public async getAuthMetadata() : Promise<Metadata> {
+        const user = await this.getUser();
+        if (user === null) {
+            return {};
+        }
+
+        return {
+            'Authorization': `${user.token_type} ${user.access_token}`
+        }
     }
 
     public login() : Promise<void> {

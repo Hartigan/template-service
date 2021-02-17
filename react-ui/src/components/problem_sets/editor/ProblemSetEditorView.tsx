@@ -3,9 +3,8 @@ import React, { useEffect } from "react";
 import ProblemPreview from "../ProblemPreview";
 import SlotsListView from "../SlotsListView";
 import DurationInput from "../DurationInput";
-import { ProblemSet } from "../../../models/ProblemSet";
-import { Problem } from "../../../models/Problem";
 import { HeadId } from "../../../models/Identificators";
+import { ProblemModel, ProblemSetModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -44,7 +43,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IProblemSetEditorActions {
-    onUpdate(problemSet: ProblemSet): void;
+    onUpdate(problemSet: ProblemSetModel): void;
     fetchAddPreview(headId: HeadId): void;
     fetchRemovePreview(headId: HeadId): void;
     selectSlot(pos: number): void;
@@ -52,7 +51,7 @@ export interface IProblemSetEditorActions {
 };
 
 export interface IProblemSetEditorParameters {
-    problemSet: ProblemSet;
+    problemSet: ProblemSetModel;
     selectedAddProblem: HeadId | null;
     problemsTree: JSX.Element;
     selectedSlot: number | null;
@@ -62,14 +61,14 @@ export interface IProblemSetEditorParameters {
     } | {
         loading: 'succeeded';
         headId: HeadId;
-        problem: Problem;
+        problem: ProblemModel;
     };
     removePreview: {
         loading: 'idle' | 'pending' | 'failed';
     } | {
         loading: 'succeeded';
         headId: HeadId;
-        problem: Problem;
+        problem: ProblemModel;
     };
 };
 
@@ -89,8 +88,8 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
             const headId = 
                 props
                     .problemSet
-                    .slots[props.selectedSlot]
-                    ?.head_ids[props.selectedProblemInSlot]
+                    .slotsList[props.selectedSlot]
+                    ?.headIdsList[props.selectedProblemInSlot]
                     ?? null;
             if (headId) {
                 if (props.removePreview.loading === 'idle' ||
@@ -111,16 +110,16 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
     const setDuration = (duration: number) => {
         props.onUpdate({
             ...props.problemSet,
-            duration: duration
+            durationS: duration
         });
     };
 
     const onAddSlot = (isAbove: boolean) => {
         const newSlot = { 
-            head_ids: []
+            headIdsList: []
         };
 
-        const slots = [...props.problemSet.slots];
+        const slots = [...props.problemSet.slotsList];
 
         const pos = isAbove
             ? (props.selectedSlot !== null ? props.selectedSlot : 0)
@@ -131,48 +130,48 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
 
         props.onUpdate({
             ...props.problemSet,
-            slots: slots
+            slotsList: slots
         });
     };
 
     const onRemoveSlot = (index: number) => {
-        const slots = [...props.problemSet.slots];
+        const slots = [...props.problemSet.slotsList];
         slots.splice(index, 1);
 
         props.onUpdate({
             ...props.problemSet,
-            slots: slots
+            slotsList: slots
         });
     };
 
     const onAdd = () => {
         if (props.selectedAddProblem && props.selectedSlot !== null) {
-            const slots = [...props.problemSet.slots];
+            const slots = [...props.problemSet.slotsList];
             const slot = slots[props.selectedSlot];
             slots[props.selectedSlot] = {
                 ...slot,
-                head_ids: slot.head_ids.concat([ props.selectedAddProblem ])
+                headIdsList: slot.headIdsList.concat([ props.selectedAddProblem ])
             };
 
             props.onUpdate({
                 ...props.problemSet,
-                slots: slots
+                slotsList: slots
             })
         }
     };
 
     const onRemove = (slotIndex: number, index: number) => {
-        const slot = props.problemSet.slots[slotIndex];
-        const headIds = [...slot.head_ids];
+        const slot = props.problemSet.slotsList[slotIndex];
+        const headIds = [...slot.headIdsList];
         headIds.splice(index, 1);
-        const slots = [...props.problemSet.slots];
+        const slots = [...props.problemSet.slotsList];
         slots[slotIndex] = {
-            ...props.problemSet.slots[slotIndex],
-            head_ids: headIds
+            ...props.problemSet.slotsList[slotIndex],
+            headIdsList: headIds
         };
         props.onUpdate({
             ...props.problemSet,
-            slots: slots
+            slotsList: slots
         });
     };
 
@@ -217,7 +216,7 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                 <ListItem>
                     <FormControl className={classes.form}>
                         <DurationInput
-                            value={props.problemSet.duration / 60}
+                            value={props.problemSet.durationS / 60}
                             onChange={(mins) => setDuration(mins * 60)}
                             step={1}
                             max={120} />
@@ -246,7 +245,7 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                     <Grid container className={classes.container}>
                         <Grid item className={classes.list}>
                             <SlotsListView
-                                slots={props.problemSet.slots}
+                                slots={props.problemSet.slotsList}
                                 selectedSlot={props.selectedSlot}
                                 selectedProblemInSlot={props.selectedProblemInSlot}
                                 onRemoveProblem={onRemove}

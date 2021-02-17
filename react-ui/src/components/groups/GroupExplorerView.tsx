@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { makeStyles, List, ListItemText, ListItem } from '@material-ui/core';
-import { Group } from '../../models/Permissions';
 import { GroupId } from '../../models/Identificators';
+import { GroupModel } from '../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 export interface IGroupExplorerViewProps {
     onCurrentGroupChange: (groupId: GroupId) => void;
     currentGroup: GroupId | null;
-    groups: Array<Group>;
+    groups: Array<GroupModel>;
 }
 
 export default function GroupExplorerView(props: IGroupExplorerViewProps) {

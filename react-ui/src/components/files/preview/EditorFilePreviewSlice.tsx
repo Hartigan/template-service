@@ -1,11 +1,12 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Head } from '../../../models/Head';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { HeadModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { versionService } from '../../../Services';
+import { GetHeadRequest, UpdateTagsRequest } from '../../../protobuf/version_pb';
+import Services from '../../../Services';
 
 export interface IEditorFilePreviewState {
     data: {
-        head: Head;
+        head: HeadModel;
         loading: 'succeeded';
     } | {
         loading: 'idle' | 'pending' | 'failed';
@@ -17,8 +18,14 @@ export const fetchHead = createAsyncThunk(
     async (params: {
         headId: HeadId;
     }) => {
-        const result = await versionService.getHead(params.headId);
-        return result;
+        const request = new GetHeadRequest();
+        request.setHeadId(params.headId);
+        const reply = await Services.versionService.getHead(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getHead()?.toObject();
     }
 );
 
@@ -28,9 +35,26 @@ export const updateTags = createAsyncThunk(
         headId: HeadId;
         tags: Array<string>;
     }) => {
-        await versionService.updateTags(params.headId, params.tags);
-        const result = await versionService.getHead(params.headId);
-        return result;
+        const request = new UpdateTagsRequest();
+        request.setHeadId(params.headId);
+        request.setTagsList(params.tags);
+        const updateReply = await Services.versionService.updateTags(request);
+
+        const updateError = updateReply.getError();
+        if (updateError) {
+            Services.logger.error(updateError.getDescription());
+        }
+
+        const headRequest = new GetHeadRequest();
+        headRequest.setHeadId(params.headId);
+        const reply = await Services.versionService.getHead(headRequest);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return reply.getHead()?.toObject();
     }
 );
 
@@ -45,10 +69,17 @@ const slice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(fetchHead.fulfilled, (state, action: PayloadAction<Head>) => {
-                state.data = {
-                    loading: 'succeeded',
-                    head: action.payload,
+            .addCase(fetchHead.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.data = {
+                        loading: 'succeeded',
+                        head: action.payload,
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: 'failed'
+                    };
                 }
             })
             .addCase(fetchHead.pending, (state, action) => {
@@ -56,10 +87,17 @@ const slice = createSlice({
                     loading: 'pending',
                 };
             })
-            .addCase(updateTags.fulfilled, (state, action: PayloadAction<Head>) => {
-                state.data = {
-                    loading: 'succeeded',
-                    head: action.payload,
+            .addCase(updateTags.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.data = {
+                        loading: 'succeeded',
+                        head: action.payload,
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: 'failed'
+                    };
                 }
             });
     }

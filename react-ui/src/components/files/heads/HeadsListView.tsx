@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { makeStyles, List, ListItem } from '@material-ui/core';
 import HeadLabelView from './HeadLabelView';
-import { HeadLink, fromHead } from '../../../models/Folder';
-import { Head } from '../../../models/Head';
+import { HeadLinkModel, HeadModel } from '../../../models/domain';
+import { TargetModel } from '../../../protobuf/domain_pb';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -11,9 +11,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IHeadsListViewProps {
-    heads: Array<Head>;
-    onSelect: (link: HeadLink) => void;
-    selected: HeadLink | null;
+    heads: Array<HeadModel>;
+    onSelect: (link: HeadLinkModel) => void;
+    selected: HeadLinkModel | null;
 };
 
 export default function HeadsListView(props: IHeadsListViewProps) {
@@ -23,18 +23,26 @@ export default function HeadsListView(props: IHeadsListViewProps) {
     return (
         <List className={classes.root}>
             {
-                props.heads.map(head => (
-                    <ListItem
-                        button
-                        key={"head_" + head.id}
-                        selected={props.selected?.id === head.id}
-                        onClick={() => props.onSelect(fromHead(head))}
-                        >
-                        <HeadLabelView
-                            head={fromHead(head)}
-                            />
-                    </ListItem>
-                ))
+                props.heads
+                    .map(head => {
+                        return {
+                            id: head.id,
+                            name: head.name,
+                            type: head.commit?.target?.type ?? TargetModel.ModelType.UNKNOWN
+                        };
+                    })
+                    .map(head => (
+                        <ListItem
+                            button
+                            key={"head_" + head.id}
+                            selected={props.selected?.id === head.id}
+                            onClick={() => props.onSelect(head)}
+                            >
+                            <HeadLabelView
+                                head={head}
+                                />
+                        </ListItem>
+                    ))
             }
         </List>
     );

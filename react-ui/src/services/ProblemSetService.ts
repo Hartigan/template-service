@@ -1,25 +1,24 @@
+import { ProblemSetsServiceClient } from '../protobuf/Problem_setsServiceClientPb';
+import { GetProblemSetRequest, CreateProblemSetRequest, UpdateProblemSetRequest, CreateProblemSetReply, GetProblemSetReply, UpdateProblemSetReply } from '../protobuf/problem_sets_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { CommitId, HeadId, FolderId, Id } from '../models/Identificators';
-import { ProblemSet } from '../models/ProblemSet';
-import { HttpServiceFactory } from './HttpServiceFactory';
+import { AuthService } from './AuthService';
+import { BaseService } from './BaseService';
 
-export class ProblemSetService {
-    private http : HttpService;
+export class ProblemSetService extends BaseService<ProblemSetsServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/problem_set`);
+    constructor(authService: AuthService) {
+        super(authService, new ProblemSetsServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    get(id: CommitId) {
-        return this.http.get<ProblemSet>(`model?id=${id}`);
+    getProblemSet(request: GetProblemSetRequest) {
+        return this.doCall<GetProblemSetRequest, GetProblemSetReply>(this.client.getProblemSet)(request);
     }
 
-    create(folder: FolderId, headName: string, problemSet: ProblemSet) {
-        return this.http.post<Id<HeadId>>(`create`, { folder_id: folder, name: headName, problem_set: problemSet });
+    createProblemSet(request: CreateProblemSetRequest) {
+        return this.doCall<CreateProblemSetRequest, CreateProblemSetReply>(this.client.createProblemSet)(request);
     }
 
-    update(head: HeadId, description: string, problemSet: ProblemSet) {
-        return this.http.post<Id<CommitId>>(`update`, { head_id: head, description: description, problem_set: problemSet });
+    updateProblemSet(request: UpdateProblemSetRequest) {
+        return this.doCall<UpdateProblemSetRequest, UpdateProblemSetReply>(this.client.updateProblemSet)(request);
     }
 }

@@ -1,6 +1,7 @@
 import { makeStyles, Typography, Card, CardActionArea, CardContent } from "@material-ui/core";
 import React from "react";
-import { ProblemReport } from "../../models/Report";
+import { ProblemReportModel } from "../../models/domain";
+import { View } from "../../protobuf/domain_pb";
 import ProblemView from "../train/ProblemView";
 import TimeSpanView from "../utils/TimeSpanView";
 import StatusView from "./StatusView";
@@ -23,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface IReportProblemViewProps {
     startTime: Date;
-    problem: ProblemReport;
+    problem: ProblemReportModel;
     index: number;
 }
 
@@ -38,30 +39,30 @@ export default function ReportProblemView(props: IReportProblemViewProps) {
                     <Typography gutterBottom variant="h5" component="h2">
                         {props.index}. {props.problem.title}
                     </Typography>
-                    <ProblemView view={props.problem.view} />
+                    <ProblemView view={props.problem.view ?? { language: View.Language.PLAIN_TEXT, content: "" }} />
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Answer
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.problem.answer ? props.problem.answer : "Skipped"}
+                        {props.problem.userAnswer?.value ?? "Skipped"}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Answer timestamp
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.problem.timestamp ? (<TimeSpanView fromDate={props.startTime} toDate={props.problem.timestamp}/>) : "Skipped"}
+                        {props.problem.userAnswer?.timestamp ? (<TimeSpanView fromDate={new Date(props.startTime)} toDate={new Date(props.problem.userAnswer?.timestamp)}/>) : "Skipped"}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Expected answer
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {props.problem.expected_answer}
+                        {props.problem.expectedAnswer}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Status
                     </Typography>
                     <Typography variant="body2" component="p">
-                        <StatusView isCorrect={props.problem.is_correct} />
+                        <StatusView isCorrect={props.problem.isCorrect} />
                     </Typography>
                 </CardContent>
             </CardActionArea>

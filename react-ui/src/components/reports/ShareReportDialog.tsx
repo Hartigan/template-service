@@ -2,7 +2,8 @@ import { makeStyles, Dialog, DialogTitle, Button, Container } from "@material-ui
 import React from "react";
 import UserSearchView from "../common/UserSearchView";
 import { ReportId, UserId } from "../../models/Identificators";
-import { examinationService } from "../../Services";
+import Services from "../../Services";
+import { ShareReportRequest } from "../../protobuf/examination_pb";
 
 const useStyles = makeStyles({
     root: {
@@ -32,7 +33,15 @@ export default function ShareReportDialog(props: IShareReportDialogProps) {
 
     const onShare = async () => {
         if (state.userId) {
-            await examinationService.shareReport(props.reportId, [ state.userId ], []);
+            const request = new ShareReportRequest();
+            request.setReportId(props.reportId);
+            request.addUserIds(state.userId);
+            const reply = await Services.examinationService.shareReport(request);
+            const error = reply.getError();
+            if (error) {
+                Services.logger.error(error.getDescription());
+            }
+            
             props.onClose();
         }
     };

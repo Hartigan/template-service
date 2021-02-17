@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
+import { ProblemSetModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { ProblemSet } from '../../../models/ProblemSet';
 import { IAppState, problemSetEditDialogSelector, problemSetPreviewSelector } from '../../../store/Store';
 import { fetchProblemSet } from '../preview/ProblemSetPreviewSlice';
 import EditProblemSetDialog, { IEditProblemSetDialogActions, IEditProblemSetDialogParameters } from './EditProblemSetDialog';
@@ -19,19 +19,19 @@ const mapStateToProps = (state: IAppState) : IEditProblemSetDialogParameters => 
 
     return {
         ...localState,
-        headId: preview.problemSetPreview.commit.head_id,
+        headId: preview.problemSetPreview.commit.headId,
     };
 };
 
 const mapDispatchToProps = (dispatch) : IEditProblemSetDialogActions => {
     return {
-        saveProblemSet: (headId: HeadId, problemSet: ProblemSet, desc: string) => dispatch(saveProblemSet({
+        saveProblemSet: (headId: HeadId, problemSet: ProblemSetModel, desc: string) => dispatch(saveProblemSet({
             headId: headId,
             problemSet: problemSet,
             description: desc,
         })),
         cancel: () => dispatch(cancel()),
-        updateProblemSet: (problemSet: ProblemSet) => dispatch(updateProblemSet(problemSet)),
+        updateProblemSet: (problemSet: ProblemSetModel) => dispatch(updateProblemSet(problemSet)),
         updateDescription: (desc: string) => dispatch(updateDescription(desc)),
         updateHead: (headId: HeadId) => dispatch(fetchProblemSet({ headId: headId })),
     };

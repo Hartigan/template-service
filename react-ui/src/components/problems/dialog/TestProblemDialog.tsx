@@ -3,9 +3,10 @@ import React, { useEffect } from "react";
 import CloseIcon from '@material-ui/icons/Close';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import { GeneratedProblem } from "../../../models/GeneratedProblem";
 import { CommitId } from "../../../models/Identificators";
 import ProblemView from "../../train/ProblemView";
+import { GeneratedProblemModel } from "../../../models/domain";
+import { View } from "../../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -31,7 +32,7 @@ export interface ITestProblemDialogParameters {
     } | {
         loading: 'succeeded',
         seed: number,
-        problem: GeneratedProblem;
+        problem: GeneratedProblemModel;
     },
     answer: string;
     isCorrect: boolean | null;
@@ -108,7 +109,7 @@ export default function TestProblemDialog(props: ITestProblemDialogProps) {
                         </IconButton>
                     </ListItem>
                 <ListItem>
-                    {props.data.loading === 'succeeded' ? <ProblemView view={props.data.problem.view} /> : null}
+                    {props.data.loading === 'succeeded' ? <ProblemView view={props.data.problem.view ?? { language: View.Language.PLAIN_TEXT, content: "" }} /> : null}
                 </ListItem>
                 <ListItem>
                     <Typography variant="body1">

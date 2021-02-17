@@ -1,8 +1,9 @@
 import { makeStyles, TextField, Typography, Card, CardContent } from "@material-ui/core";
 import React from "react";
-import { SubmissionProblem } from "../../models/Submission";
 import ProblemView from "./ProblemView";
 import { GeneratedProblemId } from "../../models/Identificators";
+import { SubmissionProblemModel } from "../../models/domain";
+import { View } from "../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -27,7 +28,7 @@ interface IState {
 
 export interface ISubmissionProblemViewProps {
     index: number;
-    problem: SubmissionProblem;
+    problem: SubmissionProblemModel;
     answer: string | undefined;
     onAnswer: (answer: string, generatedProblemId: GeneratedProblemId) => Promise<boolean>;
 }
@@ -61,7 +62,7 @@ export default function SubmissionProblemView(props: ISubmissionProblemViewProps
                 <Typography className={classes.title} variant="h6">
                     Problem #{props.index + 1}
                 </Typography>
-                <ProblemView view={props.problem.view} />
+                <ProblemView view={props.problem.view ?? { language: View.Language.PLAIN_TEXT, content: "" }} />
                 <TextField
                     className={classes.inputLabel}
                     label="Answer"

@@ -1,9 +1,9 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { ProblemSet } from "../../../models/ProblemSet";
 import { HeadId } from "../../../models/Identificators";
 import ProblemSetEditorContainer from "../editor/ProblemSetEditorContainer";
+import { ProblemSetModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -25,15 +25,15 @@ const useStyles = makeStyles(theme => ({
 export interface IEditProblemSetDialogParameters {
     open: boolean;
     commitDescription: string;
-    problemSet: ProblemSet | null;
+    problemSet: ProblemSetModel | null;
     saving: 'idle' | 'pending' | 'succeeded';
     headId: HeadId | null;
 };
 
 export interface IEditProblemSetDialogActions {
-    saveProblemSet(headId: HeadId, problemSet: ProblemSet, desc: string) : void;
+    saveProblemSet(headId: HeadId, problemSet: ProblemSetModel, desc: string) : void;
     cancel() : void;
-    updateProblemSet(problemSet: ProblemSet) : void;
+    updateProblemSet(problemSet: ProblemSetModel) : void;
     updateDescription(desc: string) : void;
     updateHead(headId: HeadId): void;
 };

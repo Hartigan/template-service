@@ -106,6 +106,7 @@ type Startup private () =
                         builder.WithOrigins("*")
                         |> fun x -> x.SetPreflightMaxAge(TimeSpan.FromDays(30.0))
                         |> fun x -> x.AllowAnyHeader()
+                        |> fun x -> x.WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding")
                         |> ignore
                     )
             )
@@ -121,23 +122,45 @@ type Startup private () =
         app.UseAuthentication() |> ignore
         app.UseAuthorization() |> ignore
 
+        app.UseGrpcWeb() |> ignore
+
         app.UseEndpoints(fun endpoints ->
-            endpoints.MapControllers()
-            |> fun x -> x.RequireAuthorization()
-            |> ignore
             endpoints.MapMetrics() |> ignore
             endpoints.MapHealthChecks("/health") |> ignore
 
-            endpoints.MapGrpcService<FoldersApi>() |> ignore
-            endpoints.MapGrpcService<GroupsApi>() |> ignore
-            endpoints.MapGrpcService<PermissionsApi>() |> ignore
-            endpoints.MapGrpcService<ExaminationApi>() |> ignore
-            endpoints.MapGrpcService<PermissionsApi>() |> ignore
-            endpoints.MapGrpcService<ProblemsApi>() |> ignore
-            endpoints.MapGrpcService<ProblemSetsApi>() |> ignore
-            endpoints.MapGrpcService<UsersApi>() |> ignore
-            endpoints.MapGrpcService<VersionControlApi>() |> ignore
-            )
+            endpoints.MapGrpcService<FoldersApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<GroupsApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<PermissionsApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<ExaminationApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<ProblemsApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<ProblemSetsApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<UsersApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+            endpoints.MapGrpcService<VersionControlApi>()
+            |> fun x -> x.EnableGrpcWeb()
+            |> fun x -> x.RequireAuthorization()
+            |> ignore
+        )
         |> ignore
 
     member val Configuration : IConfiguration = null with get, set

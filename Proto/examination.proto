@@ -108,7 +108,7 @@ message ShareReportReply {
 }
 
 message GetReportsRequest {
-  string pattern = 1;
+  google.protobuf.StringValue pattern = 1;
   google.protobuf.StringValue user_id = 2;
   domain.DateInterval date_interval = 3;
   uint32 offset = 4;
@@ -201,7 +201,8 @@ message CompleteSubmissionReply {
     Status status = 2;
   }
   oneof result {
-    Error error = 1;
+    string report_id = 1;
+    Error error = 2;
   }
 }
 

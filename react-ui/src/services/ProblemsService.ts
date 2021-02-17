@@ -1,34 +1,32 @@
+import { ProblemsServiceClient } from '../protobuf/ProblemsServiceClientPb';
+import { GetProblemRequest, TestProblemRequest, ValidateRequest, CreateProblemRequest, UpdateProblemRequest, CreateProblemReply, GetProblemReply, TestProblemReply, UpdateProblemReply, ValidateReply } from '../protobuf/problems_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { CommitId, HeadId, FolderId, Id } from '../models/Identificators';
-import { Problem } from '../models/Problem';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { GeneratedProblem } from '../models/GeneratedProblem';
+import { AuthService } from './AuthService';
+import { BaseService } from './BaseService';
 
-export class ProblemsService {
-    private http : HttpService;
+export class ProblemsService extends BaseService<ProblemsServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/problems`);
+    constructor(authService: AuthService) {
+        super(authService, new ProblemsServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    get(id: CommitId) {
-        return this.http.get<Problem>(`model?id=${id}`);
+    getProblem(request: GetProblemRequest) {
+        return this.doCall<GetProblemRequest, GetProblemReply>(this.client.getProblem)(request);
     }
 
-    test(id: CommitId, seed: number) {
-        return this.http.get<GeneratedProblem>(`test?id=${id}&seed=${seed}`);
+    testProblem(request: TestProblemRequest) {
+        return this.doCall<TestProblemRequest, TestProblemReply>(this.client.testProblem)(request);
     }
 
-    validate(id: CommitId, expected: string, actual: string) {
-        return this.http.get<boolean>(`validate?id=${id}&expected=${encodeURIComponent(expected)}&actual=${encodeURIComponent(actual)}`);
+    validate(request: ValidateRequest) {
+        return this.doCall<ValidateRequest, ValidateReply>(this.client.validate)(request);
     }
 
-    create(folder: FolderId, headName: string, problem: Problem) {
-        return this.http.post<Id<HeadId>>(`create`, { folder_id: folder, name: headName, problem: problem });
+    createProblem(request: CreateProblemRequest) {
+        return this.doCall<CreateProblemRequest, CreateProblemReply>(this.client.createProblem)(request);
     }
 
-    update(head: HeadId, description: string, problem: Problem) {
-        return this.http.post<Id<CommitId>>(`update`, { head_id: head, description: description, problem: problem });
+    updateProblem(request: UpdateProblemRequest) {
+        return this.doCall<UpdateProblemRequest, UpdateProblemReply>(this.client.updateProblem)(request);
     }
 }

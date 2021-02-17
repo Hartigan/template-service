@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
+import { ProblemSetModel } from '../../../models/domain';
 import { FolderId } from '../../../models/Identificators';
-import { ProblemSet } from '../../../models/ProblemSet';
 import { editorTabFilesTreeSelector, IAppState, problemSetCreateDialogSelector } from '../../../store/Store';
 import { editorTabFetchRoot } from '../../files/tree/EditorTabFilesTreeSlice';
 import CreateProblemSetDialog, { ICreateProblemSetDialogActions, ICreateProblemSetDialogParameters } from './CreateProblemSetDialog';
@@ -18,7 +18,7 @@ const mapStateToProps = (state: IAppState) : ICreateProblemSetDialogParameters =
 
 const mapDispatchToProps = (dispatch) : ICreateProblemSetDialogActions => {
     return {
-        createProblemSet: (folderId: FolderId, title: string, problemSet: ProblemSet) => dispatch(createProblemSet({
+        createProblemSet: (folderId: FolderId, title: string, problemSet: ProblemSetModel) => dispatch(createProblemSet({
             folderId: folderId,
             title: title,
             problemSet: problemSet,

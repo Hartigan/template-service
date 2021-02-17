@@ -2,7 +2,8 @@ import * as React from 'react'
 import { makeStyles, Typography } from '@material-ui/core';
 import NoteIcon from '@material-ui/icons/Note';
 import ListAltIcon from '@material-ui/icons/ListAlt';
-import { HeadLink } from '../../../models/Folder';
+import { HeadLinkModel } from '../../../models/domain';
+import { TargetModel } from '../../../protobuf/domain_pb';
 
 const useStyles = makeStyles(theme => ({
     labelIcon: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IHeadLabelViewProperties {
-    head: HeadLink;
+    head: HeadLinkModel;
 }
 
 export default function HeadLabelView(props: IHeadLabelViewProperties) {
@@ -29,12 +30,12 @@ export default function HeadLabelView(props: IHeadLabelViewProperties) {
 
     var icon = (<div/>);
     switch (props.head.type) {
-        case "problem":
+        case TargetModel.ModelType.PROBLEM:
             icon = (
                 <NoteIcon className={classes.labelIcon} />
             );
             break;
-        case "problem_set":
+        case TargetModel.ModelType.PROBLEMSET:
             icon = (
                 <ListAltIcon className={classes.labelIcon} />
             );

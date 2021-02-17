@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { HeadLink } from '../../../models/Folder';
+import { HeadLinkModel } from '../../../models/domain';
 import { UserId } from '../../../models/Identificators';
 import { IAppState, editorTabHeadSearchSelector } from '../../../store/Store';
 import { editorTabFetchHeads, selectHead, setLimit, setOwnerId, setPage, setPattern, setTags } from './EditorTabHeadSearchSlice';
@@ -14,7 +14,7 @@ const mapStateToProps = (state: IAppState) : IHeadSearchViewParameters => {
 
 const mapDispatchToProps = (dispatch) : IHeadSearchViewActions => {
     return {
-        selectHead: (head: HeadLink) => dispatch(selectHead(head)),
+        selectHead: (head: HeadLinkModel) => dispatch(selectHead(head)),
         setTags: (tags: Array<string>) => dispatch(setTags(tags)),
         setPattern: (pattern: string) => dispatch(setPattern(pattern)),
         setOwnerId: (ownerId: UserId | null) => dispatch(setOwnerId(ownerId)),

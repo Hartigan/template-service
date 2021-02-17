@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
+import { AccessModel } from '../../../models/domain';
 import { GroupId, UserId } from '../../../models/Identificators';
-import { Access } from '../../../models/Permissions';
 import { groupsListSelector, groupViewSelector, IAppState } from '../../../store/Store';
 import GroupView, { IGroupViewActions, IGroupViewParameters } from './GroupView';
 import { addUser, fetchGroup, removeUser, setNewUser, updateUserAccess } from './GroupViewSlice';
@@ -21,7 +21,7 @@ const mapDispatchToProps = (dispatch) : IGroupViewActions => {
         fetchGroup: (groupId: GroupId) => dispatch(fetchGroup({ groupId })),
         addUser: (groupId: GroupId, userId: UserId) => dispatch(addUser({ groupId, userId })),
         removeUser: (groupId: GroupId, userId: UserId) => dispatch(removeUser({ groupId, userId })),
-        updateUserAccess: (groupId: GroupId, userId: UserId, access: Access) => dispatch(updateUserAccess({ groupId, userId, access })),
+        updateUserAccess: (groupId: GroupId, userId: UserId, access: AccessModel) => dispatch(updateUserAccess({ groupId, userId, access })),
         setNewUser: (userId: UserId | null) => dispatch(setNewUser(userId)),
     };
 };

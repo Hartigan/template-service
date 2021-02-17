@@ -1,15 +1,16 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { HeadLink } from '../../../models/Folder';
-import { Head } from '../../../models/Head';
+import { HeadLinkModel, HeadModel } from '../../../models/domain';
 import { UserId } from '../../../models/Identificators';
-import { versionService } from '../../../Services';
+import { SearchRequest } from '../../../protobuf/version_pb';
+import Services from '../../../Services';
+import { toStringValue } from '../../utils/Utils';
 
 export interface IHeadSearchState {
     data: {
         loading: 'idle' | 'pending' | 'failed' | 'succeeded';
-        heads: Array<Head>;
+        heads: Array<HeadModel>;
     };
-    selected: HeadLink | null;
+    selected: HeadLinkModel | null;
     search: {
         tags: Array<string>;
         pattern: string;
@@ -29,14 +30,23 @@ export function createHeadSearchSlice(prefix: string) {
                 offset: number;
                 limit: number;
             }) => {
-                const result = await versionService.search(
-                    params.ownerId,
-                    params.tags,
-                    params.pattern,
-                    params.offset,
-                    params.limit,
-                );
-                return result;
+                const request = new SearchRequest();
+                request.setOwnerId(toStringValue(params.ownerId));
+                request.setTagsList(params.tags);
+                request.setPattern(toStringValue(params.pattern));
+                request.setOffset(params.offset);
+                request.setLimit(params.limit);
+                const reply = await Services.versionService.search(request);
+
+                const error = reply.getError();
+                if (error) {
+                    Services.logger.error(error.getDescription());
+                }
+
+                return reply
+                    .getHeads()
+                    ?.getHeadsList()
+                    ?.map(x => x.toObject()) ?? [];
             }
     );
 
@@ -57,7 +67,7 @@ export function createHeadSearchSlice(prefix: string) {
             }
         } as IHeadSearchState,
         reducers: {
-            selectHead: (state, action: PayloadAction<HeadLink>) => {
+            selectHead: (state, action: PayloadAction<HeadLinkModel>) => {
                 state.selected = action.payload;
             },
             setTags: (state, action: PayloadAction<Array<string>>) => {
@@ -113,7 +123,7 @@ export function createHeadSearchSlice(prefix: string) {
         },
         extraReducers: builder => {
             builder
-                .addCase(fetchHeads.fulfilled, (state, action: PayloadAction<Array<Head>>) => {
+                .addCase(fetchHeads.fulfilled, (state, action: PayloadAction<Array<HeadModel>>) => {
                     state.data = {
                         loading: 'succeeded',
                         heads: action.payload,

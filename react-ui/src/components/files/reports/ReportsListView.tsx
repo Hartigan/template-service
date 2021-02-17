@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { makeStyles, List, ListItem } from '@material-ui/core';
 import ReportLabelView from './ReportLabelView';
-import { Report } from '../../../models/Report';
+import { ReportModel } from '../../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -10,9 +10,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportsListViewProps {
-    reports: Array<Report>;
-    onSelect: (link: Report) => void;
-    selected: Report | null;
+    reports: Array<ReportModel>;
+    onSelect: (link: ReportModel) => void;
+    selected: ReportModel | null;
 };
 
 export default function ReportsListView(props: IReportsListViewProps) {

@@ -1,14 +1,11 @@
 import { makeStyles, Dialog, TextField, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem, FormControl } from "@material-ui/core";
 import React, { useEffect } from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { Problem } from "../../../models/Problem";
-import { Controller } from "../../../models/Controller";
-import { View } from "../../../models/View";
-import { Validator } from "../../../models/Validator";
 import ControllerEditor from "../ControllerEditor";
 import ViewEditor from "../ViewEditor";
 import ValidatorEditor from "../ValidatorEditor";
 import { FolderId } from "../../../models/Identificators";
+import { ControllerModel, ProblemModel, ValidatorModel, ViewModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -33,21 +30,21 @@ const useStyles = makeStyles(theme => ({
 export interface ICreateProblemDialogParameters {
     open: boolean;
     title: string;
-    controller: Controller;
-    view: View;
-    validator: Validator;
+    controller: ControllerModel;
+    view: ViewModel;
+    validator: ValidatorModel;
     creating: 'idle' | 'pending' | 'succeeded';
     folderId: FolderId | null;
 };
 
 export interface ICreateProblemDialogActions {
-    create(folderId: FolderId, title: string, problem: Problem): void;
+    create(folderId: FolderId, title: string, problem: ProblemModel): void;
     close(): void;
     updateFolder(folderId: FolderId): void;
     updateTitle(title: string): void;
-    updateController(controller: Controller): void;
-    updateView(view: View): void;
-    updateValidator(validator: Validator): void;
+    updateController(controller: ControllerModel): void;
+    updateView(view: ViewModel): void;
+    updateValidator(validator: ValidatorModel): void;
 };
 
 export interface ICreateProblemDialogProps extends ICreateProblemDialogParameters, ICreateProblemDialogActions {
@@ -67,7 +64,7 @@ export default function CreateProblemDialog(props: ICreateProblemDialogProps) {
             return;
         }
 
-        let problem : Problem = {
+        let problem : ProblemModel = {
             id: "",
             title: props.title,
             controller: props.controller,

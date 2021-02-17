@@ -1,8 +1,8 @@
 import { makeStyles, List, ListItem, Card, CardContent, Typography, CardActions, IconButton } from "@material-ui/core";
 import React from "react";
-import { ProblemSlot } from "../../models/ProblemSet";
 import ProblemHeadListItemView from "./ProblemHeadListItemView";
 import DeleteIcon from '@material-ui/icons/Delete';
+import { ProblemSet } from "../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface ISlotsListViewProps {
-    slots: Array<ProblemSlot>;
+    slots: Array<ProblemSet.Slot.AsObject>;
     selectedSlot: number | null;
     selectedProblemInSlot: number | null;
     onRemoveSlot?(index: number): void;
@@ -87,7 +87,7 @@ export default function SlotsListView(props: ISlotsListViewProps) {
                                         </Typography>
                                         <List className={classes.problems}>
                                             {
-                                                slot.head_ids.map((headId, headIndex) => {
+                                                slot.headIdsList.map((headId, headIndex) => {
                                                     return (
                                                         <ProblemHeadListItemView
                                                             key={`slot_${slotIndex}_head_${headIndex}`}

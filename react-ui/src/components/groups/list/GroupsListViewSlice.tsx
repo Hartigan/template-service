@@ -1,12 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { GroupModel } from '../../../models/domain';
 import { GroupId } from '../../../models/Identificators';
-import { Group } from '../../../models/Permissions';
-import { groupService } from '../../../Services';
+import { GetGroupsRequest } from '../../../protobuf/groups_pb';
+import Services from '../../../Services';
 
 export interface IGroupsListViewState {
     data: {
         loading: 'idle' | 'pending' | 'succeeded';
-        groups: Array<Group>;
+        groups: Array<GroupModel>;
     };
     selectedGroup: GroupId | null;
 };
@@ -14,13 +15,20 @@ export interface IGroupsListViewState {
 export const fetchGroups = createAsyncThunk(
     `groups/list/fetchGroups`,
     async () => {
-        const groups = await groupService.getGroups({
-            admin: true,
-            read: false,
-            write: false,
-            generate: false
-        });
-        return groups;
+        const request = new GetGroupsRequest();
+        request.setAdmin(true);
+        request.setRead(false);
+        request.setWrite(false);
+        request.setGenerate(false);
+        const reply = await Services.groupService.getGroups(request);
+
+        const error = reply.getError()
+
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        
+        return reply.getGroups()?.getGroupsList()?.map(x => x.toObject()) ?? [];
     }
 );
 

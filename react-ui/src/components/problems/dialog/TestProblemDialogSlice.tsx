@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { GeneratedProblem } from '../../../models/GeneratedProblem';
+import { GeneratedProblemModel } from '../../../models/domain';
 import { CommitId } from '../../../models/Identificators';
-import { problemsService } from '../../../Services';
+import { TestProblemRequest, ValidateRequest } from '../../../protobuf/problems_pb';
+import Services from '../../../Services';
 
 export interface ITestProblemDialogState {
     open: boolean;
@@ -11,7 +12,7 @@ export interface ITestProblemDialogState {
     } | {
         loading: 'succeeded',
         seed: number,
-        problem: GeneratedProblem;
+        problem: GeneratedProblemModel;
     },
     answer: string;
     isCorrect: boolean | null;
@@ -20,19 +21,42 @@ export interface ITestProblemDialogState {
 export const generateProblem = createAsyncThunk(
     `problem/dialog/generateProblem`,
     async (params: { seed: number; commitId: CommitId; }) => {
-        const problem = await problemsService.test(params.commitId, params.seed);
-        return {
-            seed: params.seed,
-            problem: problem,
-        };
+        const request = new TestProblemRequest();
+        request.setCommitId(params.commitId);
+        request.setSeed(params.seed);
+        const reply = await Services.problemsService.testProblem(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        const problem = reply.getProblem()?.toObject();
+        if (problem) {
+            return {
+                seed: params.seed,
+                problem: problem,
+            };
+        }
+
+        return null;
     }
 );
 
 export const validateProblem = createAsyncThunk(
     `problem/dialog/validateProblem`,
     async (params: { commitId: CommitId; expected: string; actual: string; }) => {
-        const result = await problemsService.validate(params.commitId, params.expected, params.actual);
-        return result;
+        const request = new ValidateRequest();
+        request.setCommitId(params.commitId);
+        request.setActualAnswer(params.actual);
+        request.setExpectedAnswer(params.expected);
+        const reply = await Services.problemsService.validate(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return reply.getIsCorrect();
     }
 );
 
@@ -69,10 +93,18 @@ const slice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(generateProblem.fulfilled, (state, action) => {
-                state.data = {
-                    loading: 'succeeded',
-                    ...action.payload,
-                };
+                if (action.payload) {
+                    state.data = {
+                        loading: 'succeeded',
+                        ...action.payload,
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: 'idle'
+                    };
+                }
+                
                 state.isCorrect = null;
             })
             .addCase(generateProblem.pending, (state) => {

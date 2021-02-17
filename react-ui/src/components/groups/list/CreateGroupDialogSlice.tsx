@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { groupService } from '../../../Services';
+import { CreateGroupRequest } from '../../../protobuf/groups_pb';
+import Services from '../../../Services';
 
 export interface ICreateGroupDialogState {
     open: boolean;
@@ -13,7 +14,17 @@ export interface ICreateGroupDialogState {
 export const createGroup = createAsyncThunk(
     `groups/list/createGroup`,
     async (params: { name: string; desc: string; }) => {
-        await groupService.create(params.name, params.desc);
+        const request = new CreateGroupRequest();
+        request.setName(params.name);
+        request.setDescription(params.desc);
+        const reply = await Services.groupService.createGroup(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return reply.getGroupId();
     }
 );
 

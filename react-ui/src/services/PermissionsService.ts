@@ -1,56 +1,36 @@
+import { PermissionsServiceClient } from '../protobuf/PermissionsServiceClientPb';
+import { AddMembersReply, AddMembersRequest, GetAccessInfoReply, GetAccessInfoRequest, GetPermissionsReply, GetPermissionsRequest, RemoveMembersReply, RemoveMembersRequest, SetIsPublicReply, SetIsPublicRequest, UpdatePermissionsReply, UpdatePermissionsRequest } from '../protobuf/permissions_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { GroupId, FolderId, HeadId, SubmissionId, ReportId, UserId } from '../models/Identificators';
-import { Permissions, Access } from '../models/Permissions';
+import { AuthService } from './AuthService';
+import { BaseService } from './BaseService';
 
-export type ProtectedType = "folder" | "head" | "commit" | "submission" | "report";
-export type ProtectedId = FolderId | HeadId | SubmissionId | ReportId;
-export interface Protected {
-    id: ProtectedId;
-    type: ProtectedType;
-}
+export class PermissionsService extends BaseService<PermissionsServiceClient> {
 
-export class PermissionsService {
-    private http : HttpService;
-
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/permissions`);
+    constructor(authService: AuthService) {
+        super(authService, new PermissionsServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getPermissions(item: Protected) {
-        return this.http.get<Permissions>(`permissions?id=${item.id}&type=${item.type}`);
+    getPermissions(request: GetPermissionsRequest) {
+        return this.doCall<GetPermissionsRequest, GetPermissionsReply>(this.client.getPermissions)(request);
     }
 
-    getAccess(item: Protected) {
-        return this.http.get<Access>(`access?id=${item.id}&type=${item.type}`);
+    setIsPublic(request: SetIsPublicRequest) {
+        return this.doCall<SetIsPublicRequest, SetIsPublicReply>(this.client.setIsPublic)(request);
     }
 
-    updatePermissionsGroup(item: Protected, groupId: GroupId, access: Access) {
-        return this.http.post<void>(`update_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId, access: access });
+    getAccessInfo(request: GetAccessInfoRequest) {
+        return this.doCall<GetAccessInfoRequest, GetAccessInfoReply>(this.client.getAccessInfo)(request);
     }
 
-    removePermissionsGroup(item: Protected, groupId: GroupId) {
-        return this.http.post<void>(`remove_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId });
+    updatePermissions(request: UpdatePermissionsRequest) {
+        return this.doCall<UpdatePermissionsRequest, UpdatePermissionsReply>(this.client.updatePermissions)(request);
     }
 
-    addPermissionsGroup(item: Protected, groupId: GroupId) {
-        return this.http.post<void>(`add_permissions_group?id=${item.id}&type=${item.type}`, { group_id: groupId });
+    addMembers(request: AddMembersRequest) {
+        return this.doCall<AddMembersRequest, AddMembersReply>(this.client.addMembers)(request);
     }
 
-    updatePermissionsMember(item: Protected, userId: UserId, access: Access) {
-        return this.http.post<void>(`update_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId, access: access });
-    }
-
-    removePermissionsMember(item: Protected, userId: GroupId) {
-        return this.http.post<void>(`remove_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
-    }
-
-    addPermissionsMember(item: Protected, userId: GroupId) {
-        return this.http.post<void>(`add_permissions_member?id=${item.id}&type=${item.type}`, { user_id: userId });
-    }
-
-    setIsPublic(item: Protected, isPublic: boolean) {
-        return this.http.post<void>(`set_is_public?id=${item.id}&type=${item.type}`, { is_public: isPublic });
+    removeMembers(request: RemoveMembersRequest) {
+        return this.doCall<RemoveMembersRequest, RemoveMembersReply>(this.client.removeMembers)(request);
     }
 }

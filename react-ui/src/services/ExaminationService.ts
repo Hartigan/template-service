@@ -1,92 +1,56 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { Submission, ProblemAnswer } from '../models/Submission';
-import { SubmissionId, ReportId, Id, HeadId, CommitId, UserId, GroupId } from '../models/Identificators';
-import { Report } from '../models/Report';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { ProblemSetPreview } from '../models/ProblemSetPreview';
-import { Head } from '../models/Head';
-import { SubmissionPreview } from '../models/SubmissionPreview';
-import { SearchInterval } from '../models/SearchInterval';
+import { ExaminationServiceClient } from '../protobuf/ExaminationServiceClientPb';
+import { AuthService } from './AuthService';
+import { ApplyAnswerReply, ApplyAnswerRequest, CompleteSubmissionReply, CompleteSubmissionRequest, GetProblemSetPreviewReply, GetProblemSetPreviewRequest, GetProblemSetsReply, GetProblemSetsRequest, GetReportReply, GetReportRequest, GetReportsReply, GetReportsRequest, GetSubmissionPreviewReply, GetSubmissionReply, GetSubmissionRequest, GetSubmissionsReply, GetSubmissionsRequest, ShareReportReply, ShareReportRequest, StartSubmissionReply, StartSubmissionRequest } from '../protobuf/examination_pb';
+import { BaseService } from './BaseService';
 
-export class ExaminationService {
-    private http : HttpService;
+export class ExaminationService extends BaseService<ExaminationServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/examination`);
+    constructor(authService: AuthService) {
+        super(authService, new ExaminationServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getSubmission(id: SubmissionId) {
-        return this.http.get<Submission>(`submission?id=${id}`);
+    getSubmission(request: GetSubmissionRequest) {
+        return this.doCall<GetSubmissionRequest, GetSubmissionReply>(this.client.getSubmission)(request);
     }
 
-    applyAnswer(submissionId: SubmissionId, problemAnswer: ProblemAnswer) {
-        return this.http.post<void>(`answer`, { id: submissionId, answer: problemAnswer.answer, generated_problem_id: problemAnswer.generated_problem_id });
+    applyAnswer(request: ApplyAnswerRequest) {
+        return this.doCall<ApplyAnswerRequest, ApplyAnswerReply>(this.client.applyAnswer)(request);
     }
 
-    complete(id: SubmissionId) {
-        return this.http.get<Id<ReportId>>(`complete?id=${id}`);
+    completeSubmission(request: CompleteSubmissionRequest) {
+        return this.doCall<CompleteSubmissionRequest, CompleteSubmissionReply>(this.client.completeSubmission)(request);
     }
 
-    start(id: HeadId) {
-        return this.http.get<Id<SubmissionId>>(`start?id=${id}`);
+    startSubmission(request: StartSubmissionRequest) {
+        return this.doCall<StartSubmissionRequest, StartSubmissionReply>(this.client.startSubmission)(request);
     }
 
-    getReport(id: ReportId) {
-        return this.http.get<Report>(`report?id=${id}`);
+    getReport(request: GetReportRequest) {
+        return this.doCall<GetReportRequest, GetReportReply>(this.client.getReport)(request);
     }
 
-    getSubmissions() {
-        return this.http.get<Array<SubmissionId>>(`submissions`);
+    getSubmissions(request: GetSubmissionsRequest) {
+        return this.doCall<GetSubmissionsRequest, GetSubmissionsReply>(this.client.getSubmissions)(request);
     }
 
-    getReports(pattern: string | null, userId: UserId | null, date: SearchInterval<Date> | null, offset: number, limit: number) {
-        return this.http.post<Array<Report>>(`reports`, {
-            pattern: pattern ? pattern : null,
-            user_id: userId,
-            date: date,
-            offset: offset,
-            limit: limit
-        });
+    getReports(request: GetReportsRequest) {
+        return this.doCall<GetReportsRequest, GetReportsReply>(this.client.getReports)(request);
     }
 
-    shareReport(reportId: ReportId, users: Array<UserId>, groups: Array<GroupId>) {
-        return this.http.post<void>(`share_report`, {
-            id: reportId,
-            user_ids: users,
-            group_ids: groups
-        });
+    shareReport(request: ShareReportRequest) {
+        return this.doCall<ShareReportRequest, ShareReportReply>(this.client.shareReport)(request);
     }
 
-    getProblemSets(
-        isPublic: boolean,
-        pattern: string | null,
-        tags: Array<string> | null,
-        authorId: UserId | null,
-        problemsCount: SearchInterval<number> | null,
-        duration: SearchInterval<number> | null,
-        offset: number,
-        limit: number) {
-        return this.http.post<Array<Head>>(
-            `problem_sets`,
-            {
-                is_public: isPublic,
-                pattern: pattern ? pattern : null,
-                tags: tags ? tags : null,
-                author_id: authorId,
-                problems_count: problemsCount,
-                duration: duration,
-                offset: offset,
-                limit: limit
-            }
-        );
+    getProblemSets(request: GetProblemSetsRequest) {
+        return this.doCall<GetProblemSetsRequest, GetProblemSetsReply>(this.client.getProblemSets)(request);
     }
 
-    getProblemSetPreview(id: CommitId) {
-        return this.http.get<ProblemSetPreview>(`problem_set_preview?id=${id}`);
+    getProblemSetPreview(request: GetProblemSetPreviewRequest) {
+        return this.doCall<GetProblemSetPreviewRequest, GetProblemSetPreviewReply>(this.client.getProblemSetPreview)(request);
     }
 
-    getSubmissionPreview(id: SubmissionId) {
-        return this.http.get<SubmissionPreview>(`submission_preview?id=${id}`);
+    getSubmissionPreview(request: GetSubmissionRequest) {
+        return this.doCall<GetSubmissionRequest, GetSubmissionPreviewReply>(this.client.getSubmissionPreview)(request);
     }
 }

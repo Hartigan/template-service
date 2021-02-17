@@ -10,7 +10,3 @@ export type GeneratedProblemSetId = string;
 export type SubmissionId = string;
 export type ReportId = string;
 export type GroupId = string;
-
-export interface Id<T> {
-    id: T;
-}

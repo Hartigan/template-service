@@ -1,17 +1,18 @@
 import React from "react";
-import { GeneratedView } from "../../models/GeneratedView";
 import { Typography } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 import 'katex/dist/katex.min.css';
 import { InlineTex } from "react-tex";
+import { GeneratedViewModel } from "../../models/domain";
+import { View } from "../../protobuf/domain_pb";
 
 export interface IProblemViewProps {
-    view: GeneratedView;
+    view: GeneratedViewModel;
 }
 
 export default function ProblemView(props: IProblemViewProps) {
     switch(props.view.language) {
-        case "markdown":
+        case View.Language.MARKDOWN:
             return (
                 <div>
                     <ReactMarkdown
@@ -20,7 +21,7 @@ export default function ProblemView(props: IProblemViewProps) {
                 </div>
                 
             );
-        case "tex":
+        case View.Language.TEX:
             return (
                 <div>
                     <InlineTex
@@ -28,7 +29,7 @@ export default function ProblemView(props: IProblemViewProps) {
                         />
                 </div>
             );
-        case "plain_text":
+        case View.Language.PLAIN_TEXT:
         default:
             return (
                 <div>

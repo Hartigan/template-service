@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { authService } from '../../Services';
+import Services from '../../Services';
 
 export interface IAuthContentState {
     name: string | null;
@@ -8,7 +8,7 @@ export interface IAuthContentState {
 }
 
 export const fetchUser = createAsyncThunk('auth/fetchUser', async () => {
-    const user = await authService.getUser();
+    const user = await Services.authService.getUser();
     return user?.profile.name ?? null;
 });
 

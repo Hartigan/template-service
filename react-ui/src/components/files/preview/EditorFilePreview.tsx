@@ -1,11 +1,11 @@
 import { makeStyles, Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { Head } from "../../../models/Head";
 import TagsEditorView from "../../utils/TagsEditorView";
-import { HeadLink } from "../../../models/Folder";
 import { HeadId } from "../../../models/Identificators";
 import ProblemSetPreviewContainer from "../../problem_sets/preview/ProblemSetPreviewContainer";
 import ProblemEditorContainer from "../../problems/editor/ProblemEditorContainer";
+import { HeadLinkModel, HeadModel } from "../../../models/domain";
+import { TargetModel } from "../../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -15,9 +15,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IEditorFilePreviewParameters {
-    current: HeadLink | null;
+    current: HeadLinkModel | null;
     data: {
-        head: Head;
+        head: HeadModel;
         loading: 'succeeded';
     } | {
         loading: 'idle' | 'pending' | 'failed';
@@ -53,12 +53,12 @@ export default function EditorFilePreview(props: IEditorFilePreviewProps) {
 
         const head = props.data.head;
 
-        switch (head.commit.target.type) {
-            case "problem":
+        switch (head.commit?.target?.type) {
+            case TargetModel.ModelType.PROBLEM:
                 return (
                     <ProblemEditorContainer />
                 );
-            case "problem_set":
+            case TargetModel.ModelType.PROBLEMSET:
                 return (
                     <ProblemSetPreviewContainer />
                 );
@@ -75,21 +75,21 @@ export default function EditorFilePreview(props: IEditorFilePreviewProps) {
             if (props.data.loading !== 'succeeded') {
                 return;
             }
-            props.updateTags(props.data.head.id, props.data.head.tags.filter(x => x !== tag));
+            props.updateTags(props.data.head.id, props.data.head.tagsList.filter(x => x !== tag));
         };
 
         const onAdd = async (tag: string) => {
             if (props.data.loading !== 'succeeded' || !tag) {
                 return;
             }
-            const tags = [ ...props.data.head.tags, tag ];
+            const tags = [ ...props.data.head.tagsList, tag ];
             
             props.updateTags(props.data.head.id, tags);
         };
 
         return (
             <TagsEditorView
-                tags={props.data.head.tags}
+                tags={props.data.head.tagsList}
                 onAdd={onAdd}
                 onRemove={onRemove}
                 />

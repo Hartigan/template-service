@@ -1,16 +1,15 @@
 import { makeStyles, Paper, Grid, IconButton, List, Typography, FormControlLabel, Checkbox } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { Protected, ProtectedId } from "../../../services/PermissionsService";
 import { GroupId, UserId } from "../../../models/Identificators";
-import { Access, Permissions } from "../../../models/Permissions";
 import UserSearchView from "../../common/UserSearchView";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import MemberListItemView from "../MemberListItemView";
 import GroupSearchView from "../../common/GroupSearchView";
 import { PermissionCapability } from "../PermissionCapability";
-import { TargetType } from "../../../models/Commit";
 import GroupListItemView from "../list/GroupListItemView";
+import { AccessModel, PermissionsModel, ProtectedItemModel } from "../../../models/domain";
+import { ProtectedItem } from "../../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -39,37 +38,32 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export interface ProtectedItem {
-    id: ProtectedId;
-    type: TargetType | "report";
-};
-
 export interface IPermissionsViewParameters {
-    protectedItem: ProtectedItem | null;
+    protectedItem: ProtectedItemModel | null;
     title: string;
 
     data: {
         loading: 'idle' | 'pending';
     } | {
         loading: 'succeeded';
-        permissions: Permissions;
-        protected: Protected;
+        permissions: PermissionsModel;
+        protected: ProtectedItemModel;
     };
     newUserId: UserId | null;
     newGroupId: GroupId | null;
 };
 
 export interface IPermissionsViewActions {
-    fetchPermissions(item: Protected): void;
+    fetchPermissions(item: ProtectedItemModel): void;
     setNewUser(userId: UserId | null): void;
     setNewGroup(groupId: GroupId | null): void;
-    addMember(item: Protected, userId: UserId): void;
-    removeMember(item: Protected, userId: UserId): void;
-    updateMemberAccess(item: Protected, userId: UserId, access: Access): void;
-    addGroup(item: Protected, groupId: GroupId): void;
-    removeGroup(item: Protected, groupId: GroupId): void;
-    updateGroupAccess(item: Protected, groupId: GroupId, access: Access): void;
-    setIsPublic(item: Protected, isPublic: boolean): void;
+    addMember(item: ProtectedItemModel, userId: UserId): void;
+    removeMember(item: ProtectedItemModel, userId: UserId): void;
+    updateMemberAccess(item: ProtectedItemModel, userId: UserId, access: AccessModel): void;
+    addGroup(item: ProtectedItemModel, groupId: GroupId): void;
+    removeGroup(item: ProtectedItemModel, groupId: GroupId): void;
+    updateGroupAccess(item: ProtectedItemModel, groupId: GroupId, access: AccessModel): void;
+    setIsPublic(item: ProtectedItemModel, isPublic: boolean): void;
 };
 
 export interface IPermissionsViewProps extends IPermissionsViewParameters, IPermissionsViewActions {
@@ -77,29 +71,13 @@ export interface IPermissionsViewProps extends IPermissionsViewParameters, IPerm
 
 export default function PermissionsView(props: IPermissionsViewProps) {
 
-    const fromProtectedItem = (item: ProtectedItem) => {
-        switch (item.type) {
-            case "report":
-                return {
-                    id: item.id,
-                    type: "report"
-                } as Protected;
-            case "problem":
-            case "problem_set":
-                return {
-                    id: item.id,
-                    type: "head"
-                } as Protected;
-        }
-    };
-
     useEffect(() => {
         if (props.protectedItem === null) {
             return;
         }
 
         if (props.data.loading === 'idle' || (props.data.loading === 'succeeded' && props.data.protected.id !== props.protectedItem.id)) {
-            props.fetchPermissions(fromProtectedItem(props.protectedItem));
+            props.fetchPermissions(props.protectedItem);
         }
     });
 
@@ -117,7 +95,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         props.removeMember(props.data.protected, userId);
     };
 
-    const onUpdateMemberAccess = (userId: UserId, access: Access) => {
+    const onUpdateMemberAccess = (userId: UserId, access: AccessModel) => {
         if (props.data.loading !== 'succeeded') {
             return;
         }
@@ -138,7 +116,7 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         props.removeGroup(props.data.protected, groupId);
     };
 
-    const onUpdateGroupAccess = (groupId: GroupId, access: Access) => {
+    const onUpdateGroupAccess = (groupId: GroupId, access: AccessModel) => {
         if (props.data.loading !== 'succeeded') {
             return;
         }
@@ -158,12 +136,12 @@ export default function PermissionsView(props: IPermissionsViewProps) {
         }
 
         switch (props.protectedItem.type) {
-            case "report":
+            case ProtectedItem.ProtectedType.REPORT:
                 return [ PermissionCapability.Read, PermissionCapability.Admin ];
-            case "problem_set":
-                return [ PermissionCapability.Generate, PermissionCapability.Admin ];
-            case "problem":
+            case ProtectedItem.ProtectedType.HEAD:
                 return [ PermissionCapability.Generate, PermissionCapability.Read, PermissionCapability.Write, PermissionCapability.Admin ];
+            default:
+                return [];
         }
     }();
 
@@ -180,11 +158,11 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                                     {props.title}
                                 </Typography>
                             </Grid>
-                            {props.protectedItem.type === "problem_set"
+                            {props.protectedItem.type === ProtectedItem.ProtectedType.HEAD
                                 ? (
                                     <Grid item className={classes.searchButtons}>
                                         <FormControlLabel
-                                            control={<Checkbox color="primary" checked={props.data.permissions.is_public} onChange={(event, value) => setIsPublic(value)}/>}
+                                            control={<Checkbox color="primary" checked={props.data.permissions.isPublic} onChange={(event, value) => setIsPublic(value)}/>}
                                             label="Public generate"
                                             labelPlacement="start"
                                             />
@@ -211,10 +189,10 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                     </Grid>
                     <Grid item className={classes.content}>
                         <List component="nav" className={classes.membersList}>
-                            {props.data.permissions.groups.map(groupAccess => {
+                            {props.data.permissions.groupsList.map(groupAccess => {
                                 return (
                                     <GroupListItemView 
-                                        key={groupAccess.group_id}
+                                        key={groupAccess.groupId}
                                         groupAccess={groupAccess}
                                         capability={capabilities}
                                         onRemove={onRemoveGroup}
@@ -242,10 +220,10 @@ export default function PermissionsView(props: IPermissionsViewProps) {
                     </Grid>
                     <Grid item className={classes.content}>
                         <List component="nav" className={classes.membersList}>
-                            {props.data.permissions.members.map(member => {
+                            {props.data.permissions.membersList.map(member => {
                                 return (
                                     <MemberListItemView 
-                                        key={member.user_id}
+                                        key={member.userId}
                                         member={member}
                                         onRemove={onRemoveMember}
                                         capability={capabilities}

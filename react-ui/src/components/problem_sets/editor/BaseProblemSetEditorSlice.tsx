@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ProblemModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { Problem } from '../../../models/Problem';
-import { problemsService, versionService } from '../../../Services';
+import { GetProblemRequest } from '../../../protobuf/problems_pb';
+import { GetHeadRequest } from '../../../protobuf/version_pb';
+import Services from '../../../Services';
 
 export interface IProblemSetEditorState {
     selectedSlot: number | null;
@@ -11,33 +13,62 @@ export interface IProblemSetEditorState {
     } | {
         loading: 'succeeded';
         headId: HeadId;
-        problem: Problem;
+        problem: ProblemModel;
     };
     removePreview: {
         loading: 'idle' | 'pending' | 'failed';
     } | {
         loading: 'succeeded';
         headId: HeadId;
-        problem: Problem;
+        problem: ProblemModel;
     };
 };
 
+async function getProblem(headId: HeadId) {
+    const request = new GetHeadRequest();
+    request.setHeadId(headId);
+    const reply = await Services.versionService.getHead(request);
+    const error = reply.getError();
+
+    if (error) {
+        Services.logger.error(error.getDescription());
+        return null;
+    }
+
+    const commit = reply.getHead()?.getCommit()?.toObject();
+
+    if (!commit) {
+        return null;
+    }
+
+    const problemRequest = new GetProblemRequest();
+    problemRequest.setCommitId(commit.id);
+    const problemReply = await Services.problemsService.getProblem(problemRequest);
+
+    const problemError = problemReply.getError();
+    if (problemError) {
+        Services.logger.error(problemError.getDescription());
+    }
+
+    const problem = problemReply.getProblem();
+    if (problem) {
+        return { headId: headId, problem: problem.toObject() };
+    }
+    return null;
+}
+
 export function createProblemSetEditorSlice(prefix: string) {
     const fetchAddPreview = createAsyncThunk(
-            `problem_sets/editor/${prefix}-fetchAddPreview`,
-            async (params: { headId: HeadId }) => {
-                const head = await versionService.getHead(params.headId);
-                const problem = await problemsService.get(head.commit.id);
-                return { headId: params.headId, problem: problem };
-            }
+        `problem_sets/editor/${prefix}-fetchAddPreview`,
+        async (params: { headId: HeadId }) => {
+            return await getProblem(params.headId);
+        }
     );
 
     const fetchRemovePreview = createAsyncThunk(
         `problem_sets/editor/${prefix}-fetchRemovePreview`,
         async (params: { headId: HeadId }) => {
-            const head = await versionService.getHead(params.headId);
-            const problem = await problemsService.get(head.commit.id);
-            return { headId: params.headId, problem: problem };
+            return await getProblem(params.headId);
         }
     );
 
@@ -66,10 +97,18 @@ export function createProblemSetEditorSlice(prefix: string) {
         extraReducers: builder => {
             builder
                 .addCase(fetchAddPreview.fulfilled, (state, action) => {
-                    state.addPreview = {
-                        loading: 'succeeded',
-                        ...action.payload,
+                    if (action.payload) {
+                        state.addPreview = {
+                            loading: 'succeeded',
+                            ...action.payload,
+                        }
                     }
+                    else {
+                        state.addPreview = {
+                            loading: 'failed'
+                        }
+                    }
+                    
                 })
                 .addCase(fetchAddPreview.pending, (state) => {
                     state.addPreview = {
@@ -77,9 +116,16 @@ export function createProblemSetEditorSlice(prefix: string) {
                     };
                 })
                 .addCase(fetchRemovePreview.fulfilled, (state, action) => {
-                    state.removePreview = {
-                        loading: 'succeeded',
-                        ...action.payload,
+                    if (action.payload) {
+                        state.removePreview = {
+                            loading: 'succeeded',
+                            ...action.payload,
+                        }
+                    }
+                    else {
+                        state.removePreview = {
+                            loading: 'failed'
+                        }
                     }
                 })
                 .addCase(fetchRemovePreview.pending, (state) => {

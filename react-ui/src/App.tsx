@@ -6,7 +6,8 @@ import NavigationTabs from './components/tabs/NavigationTabs';
 import { User } from 'oidc-client';
 import MenuIcon from '@material-ui/icons/Menu';
 import AuthContainer from './components/auth/AuthContainer';
-import { authService, userService } from './Services';
+import Services from './Services';
+import { InitRequest } from './protobuf/users_pb';
 
 const useStyles = makeStyles(theme => ({
     offset: theme.mixins.toolbar,
@@ -58,9 +59,10 @@ const App: React.FC = () => {
             return;
         }
 
-        authService.getUser().then(user => {
+        Services.authService.getUser().then(user => {
             if (user) {
-                userService.init();
+                const request = new InitRequest();
+                Services.userService.init(request);
             }
             setState({
                 ...state,

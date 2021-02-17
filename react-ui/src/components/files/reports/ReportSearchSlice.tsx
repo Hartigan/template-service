@@ -1,11 +1,14 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ReportModel } from '../../../models/domain';
 import { UserId } from '../../../models/Identificators';
-import { Report } from '../../../models/Report';
 import { SearchInterval } from '../../../models/SearchInterval';
-import { examinationService } from '../../../Services';
+import { DateInterval } from '../../../protobuf/domain_pb';
+import { GetReportsRequest } from '../../../protobuf/examination_pb';
+import Services from '../../../Services';
+import { toStringValue, tryMap } from '../../utils/Utils';
 
 export interface IReportSearchState {
-    selected: Report | null;
+    selected: ReportModel | null;
     search: {
         pattern: string;
         ownerId: UserId | null;
@@ -14,7 +17,7 @@ export interface IReportSearchState {
         limit: number;
     },
     data: {
-        reports: Array<Report>;
+        reports: Array<ReportModel>;
         loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     }
 };
@@ -28,14 +31,27 @@ export const fetchReports = createAsyncThunk(
         offset: number;
         limit: number;
     }) => {
-        const result = examinationService.getReports(
-            params.pattern,
-            params.ownerId,
-            params.date,
-            params.offset,
-            params.limit
+        const request = new GetReportsRequest();
+        request.setPattern(toStringValue(params.pattern));
+        request.setUserId(toStringValue(params.ownerId));
+        request.setDateInterval(
+            tryMap(params.date, x => {
+                const result = new DateInterval();
+                result.setStart(x.from?.getUTCSeconds() ?? 0)
+                result.setEnd(x.to?.getUTCSeconds() ?? 0)
+                return result;
+            })
         );
-        return result;
+        request.setOffset(params.offset)
+        request.setLimit(params.limit)
+        const reply = await Services.examinationService.getReports(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return reply.getReports()?.getReportsList()?.map(x => x.toObject()) ?? [];
     }
 );
 
@@ -56,7 +72,7 @@ const slice = createSlice({
         }
     } as IReportSearchState,
     reducers: {
-        selectReport: (state, action: PayloadAction<Report>) => {
+        selectReport: (state, action: PayloadAction<ReportModel>) => {
             state.selected = action.payload;
         },
         setPattern: (state, action: PayloadAction<string>) => {
@@ -112,7 +128,7 @@ const slice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(fetchReports.fulfilled, (state, action: PayloadAction<Array<Report>>) => {
+            .addCase(fetchReports.fulfilled, (state, action: PayloadAction<Array<ReportModel>>) => {
                 state.data = {
                     loading: 'succeeded',
                     reports: action.payload,

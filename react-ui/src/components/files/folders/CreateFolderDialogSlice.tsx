@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FolderId } from '../../../models/Identificators';
-import { foldersService } from '../../../Services';
+import { CreateFolderRequest } from '../../../protobuf/folders_pb';
+import Services from '../../../Services';
 
 export interface ICreateFolderDialogState {
     open: boolean;
@@ -13,7 +14,18 @@ export interface ICreateFolderDialogState {
 export const createFolder = createAsyncThunk(
     `files/folders/createFolder`,
     async (params: { folderId: FolderId; name: string; }) => {
-        await foldersService.createFolder(params.name, params.folderId);
+        const request = new CreateFolderRequest();
+        request.setDestinationId(params.folderId);
+        request.setName(params.name);
+        const reply = await Services.foldersService.createFolder(request);
+
+        const error = reply.getError();
+
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return reply.getNewFolderId();
     }
 );
 

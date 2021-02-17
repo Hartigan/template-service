@@ -1,8 +1,8 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React from "react";
 import DateView from "../utils/DateView";
-import { Report } from "../../models/Report";
 import { ReportId } from "../../models/Identificators";
+import { ReportModel } from "../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,9 +16,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportPreviewViewProps {
-    preview: Report;
+    preview: ReportModel;
     onOpenShare: (reportId: ReportId) => void;
-    onOpenReport: (report: Report) => void;
+    onOpenReport: (report: ReportModel) => void;
 }
 
 export default function ReportPreviewView(props: IReportPreviewViewProps) {
@@ -32,27 +32,27 @@ export default function ReportPreviewView(props: IReportPreviewViewProps) {
                     Title
                 </Typography>
                 <Typography variant="h5" component="h2">
-                    {props.preview.problem_set.title}
+                    {props.preview.problemSet?.title}
                 </Typography>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     User
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.preview.author.username}
+                    {props.preview.author?.username}
                 </Typography>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Started at
                 </Typography>
-                <DateView date={props.preview.started_at} />
+                <DateView date={new Date(props.preview.startedAt)} />
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Finished at
                 </Typography>
-                <DateView date={props.preview.started_at} />
+                <DateView date={new Date(props.preview.startedAt)} />
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Result
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.preview.problem_set.problems.map(x => (x.is_correct ? 1 : 0) as number).reduce((sum, x) => sum + x)} of {props.preview.problem_set.problems.length}
+                    {props.preview.problemSet?.problemsList?.map(x => (x.isCorrect ? 1 : 0) as number).reduce((sum, x) => sum + x)} of {props.preview.problemSet?.problemsList.length ?? 0}
                 </Typography>
             </CardContent>
             <CardActions>

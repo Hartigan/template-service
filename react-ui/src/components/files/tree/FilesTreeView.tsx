@@ -4,8 +4,8 @@ import TreeView from '@material-ui/lab/TreeView';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import FolderView, { IFolderNode } from './FolderView';
-import { FolderLink, HeadLink } from '../../../models/Folder';
-import { TargetType } from '../../../models/Commit';
+import { FolderLinkModel, HeadLinkModel } from '../../../models/domain';
+import { TargetModel } from '../../../protobuf/domain_pb';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,8 +17,8 @@ const useStyles = makeStyles(theme => ({
 export interface IFilesTreeActions {
     setExpanded: (expanded: Array<string>) => void;
     fetchRoot: () => void;
-    selectFolder: (folder: FolderLink) => void;
-    selectHead: (head: HeadLink) => void;
+    selectFolder: (folder: FolderLinkModel) => void;
+    selectHead: (head: HeadLinkModel) => void;
 }
 
 export interface IFileTreeParameters {
@@ -30,9 +30,9 @@ export interface IFileTreeParameters {
     };
 
     expanded: Array<string>;
-    selectedFolder: FolderLink | null;
-    selectedHead: HeadLink | null;
-    filter?: Array<TargetType>;
+    selectedFolder: FolderLinkModel | null;
+    selectedHead: HeadLinkModel | null;
+    filter?: Array<TargetModel.ModelType>;
 }
 
 export interface IFilesTreeViewProps extends IFilesTreeActions, IFileTreeParameters {

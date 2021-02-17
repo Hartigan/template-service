@@ -2,8 +2,8 @@ import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton
 import React from "react";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { GroupId } from "../../../models/Identificators";
-import { Access, GroupAccess } from "../../../models/Permissions";
 import { PermissionCapability } from "../PermissionCapability";
+import { AccessModel, GroupAccessModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,22 +16,27 @@ const useStyles = makeStyles(theme => ({
 
 export interface IGroupListItemViewProps {
     onRemove: (groupId: GroupId) => void;
-    onUpdateAccess: (GroupId: GroupId, access: Access) => void;
-    groupAccess: GroupAccess;
+    onUpdateAccess: (GroupId: GroupId, access: AccessModel) => void;
+    groupAccess: GroupAccessModel;
     capability: Array<PermissionCapability>;
 }
 
 export default function GroupListItemView(props: IGroupListItemViewProps) {
 
-    const access = props.groupAccess.access;
+    const access : AccessModel = props.groupAccess.access ?? {
+        read: false,
+        write: false,
+        generate: false,
+        admin: false
+    };
 
     const classes = useStyles();
 
     const setGenerate = (value: boolean) => {
         props.onUpdateAccess(
-            props.groupAccess.group_id,
+            props.groupAccess.groupId,
             {
-                ...props.groupAccess.access,
+                ...access,
                 generate: value
             }
         )
@@ -39,9 +44,9 @@ export default function GroupListItemView(props: IGroupListItemViewProps) {
 
     const setRead = (value: boolean) => {
         props.onUpdateAccess(
-            props.groupAccess.group_id,
+            props.groupAccess.groupId,
             {
-                ...props.groupAccess.access,
+                ...access,
                 read: value
             }
         )
@@ -49,9 +54,9 @@ export default function GroupListItemView(props: IGroupListItemViewProps) {
 
     const setWrite = (value: boolean) => {
         props.onUpdateAccess(
-            props.groupAccess.group_id,
+            props.groupAccess.groupId,
             {
-                ...props.groupAccess.access,
+                ...access,
                 write: value
             }
         )
@@ -59,16 +64,16 @@ export default function GroupListItemView(props: IGroupListItemViewProps) {
 
     const setAdmin = (value: boolean) => {
         props.onUpdateAccess(
-            props.groupAccess.group_id,
+            props.groupAccess.groupId,
             {
-                ...props.groupAccess.access,
+                ...access,
                 admin: value
             }
         )
     };
 
     return (
-        <ListItem key={props.groupAccess.group_id} className={classes.root}>
+        <ListItem key={props.groupAccess.groupId} className={classes.root}>
             <ListItemText primary={props.groupAccess.name}/>
             <ListItemSecondaryAction>
                 <Toolbar className={classes.toolbar}>
@@ -112,7 +117,7 @@ export default function GroupListItemView(props: IGroupListItemViewProps) {
                             }
                         })
                     }
-                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.groupAccess.group_id)}>
+                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.groupAccess.groupId)}>
                         <DeleteIcon />
                     </IconButton>
                 </Toolbar>

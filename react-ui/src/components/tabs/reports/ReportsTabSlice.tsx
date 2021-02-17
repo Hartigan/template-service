@@ -1,11 +1,14 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ReportModel } from '../../../models/domain';
 import { ReportId, UserId } from '../../../models/Identificators';
-import { Report } from '../../../models/Report';
 import { SearchInterval } from '../../../models/SearchInterval';
-import { examinationService } from '../../../Services';
+import { DateInterval } from '../../../protobuf/domain_pb';
+import { GetReportsRequest } from '../../../protobuf/examination_pb';
+import Services from '../../../Services';
+import { toStringValue, tryMap } from '../../utils/Utils';
 
 export interface IReportsTabState {
-    reports: Array<Report>;
+    reports: Array<ReportModel>;
     loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     search: {
         userId: UserId | null;
@@ -16,20 +19,31 @@ export interface IReportsTabState {
         limit: number;
     },
     share: { open: false; } | { open: true; reportId: ReportId; };
-    report: { open: false; } | { open: true; report: Report; };
+    report: { open: false; } | { open: true; report: ReportModel; };
 };
 
 export const fetchReports = createAsyncThunk(
         'tabs/reports/fetchReports',
         async (params: { pattern: string | null, userId: UserId | null, date: SearchInterval<Date> | null, offset: number, limit: number }) => {
-        const reports = await examinationService.getReports(
-                params.pattern,
-                params.userId,
-                params.date,
-                params.offset,
-                params.limit
-            );
-        return reports;
+        const request = new GetReportsRequest();
+        request.setPattern(toStringValue(params.pattern));
+        request.setUserId(toStringValue(params.userId));
+        request.setDateInterval(
+            tryMap(params.date, x => {
+                const result = new DateInterval()
+                result.setStart(x.from.getUTCSeconds());
+                result.setEnd(x.to.getUTCSeconds());
+                return result;
+            })
+        );
+        request.setOffset(params.offset);
+        request.setLimit(params.limit);
+        const reply = await Services.examinationService.getReports(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getReports()?.getReportsList()?.map(x => x.toObject()) ?? [];
     }
 );
 
@@ -116,7 +130,7 @@ const slice = createSlice({
                 open: false
             };
         },
-        openReport: (state, action: PayloadAction<Report>) => {
+        openReport: (state, action: PayloadAction<ReportModel>) => {
             state.report = {
                 open: true,
                 report: action.payload,
@@ -130,7 +144,7 @@ const slice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(fetchReports.fulfilled, (state, action: PayloadAction<Report[]>) => {
+            .addCase(fetchReports.fulfilled, (state, action) => {
                 state.reports = action.payload;
                 state.loading = 'succeeded';
             })

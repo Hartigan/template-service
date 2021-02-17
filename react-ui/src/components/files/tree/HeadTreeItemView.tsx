@@ -1,12 +1,12 @@
 import * as React from 'react'
 import TreeItem from '@material-ui/lab/TreeItem';
-import { HeadLink } from '../../../models/Folder';
 import HeadLabelView from '../heads/HeadLabelView';
+import { HeadLinkModel } from '../../../models/domain';
 
 export interface IHeadTreeItemViewProperties {
-    head: HeadLink;
-    selected: HeadLink | null;
-    onSelect: (head: HeadLink) => void;
+    head: HeadLinkModel;
+    selected: HeadLinkModel | null;
+    onSelect: (head: HeadLinkModel) => void;
 }
 
 export default function HeadTreeItemView(props: IHeadTreeItemViewProperties) {

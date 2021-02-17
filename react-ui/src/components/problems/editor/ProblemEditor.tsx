@@ -1,20 +1,16 @@
 import { makeStyles, List, ListItem, FormControl, TextField, Container, IconButton, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { Commit } from "../../../models/Commit";
 import ControllerEditor from "../ControllerEditor";
 import ViewEditor from "../ViewEditor";
 import ValidatorEditor from "../ValidatorEditor";
-import { Controller } from "../../../models/Controller";
-import { View } from "../../../models/View";
-import { Validator } from "../../../models/Validator";
-import { Problem } from "../../../models/Problem";
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SaveIcon from '@material-ui/icons/Save';
 import BugReportIcon from '@material-ui/icons/BugReport';
-import { Access } from "../../../models/Permissions";
 import { HeadId } from "../../../models/Identificators";
 import TestProblemDialogContainer from "../dialog/TestProblemDialogContainer";
+import { AccessModel, CommitModel, ControllerModel, ProblemModel, ValidatorModel, ViewModel } from "../../../models/domain";
+import { Controller, Validator, View } from "../../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -39,9 +35,9 @@ export interface IProblemEditorParameters {
         loading: 'idle' | 'pending';
     } | {
         loading: 'succeeded';
-        commit: Commit;
-        problem: Problem;
-        access: Access;
+        commit: CommitModel;
+        problem: ProblemModel;
+        access: AccessModel;
     },
     updating: 'idle' | 'pending';
 };
@@ -53,9 +49,9 @@ export interface IProblemEditorParameters {
         loading: 'idle' | 'pending';
     } | {
         loading: 'succeeded';
-        commit: Commit;
-        problem: Problem;
-        access: Access;
+        commit: CommitModel;
+        problem: ProblemModel;
+        access: AccessModel;
     },
     updating: 'idle' | 'pending';
     headId: HeadId | null;
@@ -63,11 +59,11 @@ export interface IProblemEditorParameters {
 
 export interface IProblemEditorActions {
     fetchProblem(headId: HeadId): void;
-    saveProblem(headId: HeadId, description: string, problem: Problem): void;
+    saveProblem(headId: HeadId, description: string, problem: ProblemModel): void;
     updateTitle(title: string): void;
-    updateController(controller: Controller): void;
-    updateView(view: View): void;
-    updateValidator(validator: Validator): void;
+    updateController(controller: ControllerModel): void;
+    updateView(view: ViewModel): void;
+    updateValidator(validator: ValidatorModel): void;
     edit(): void;
     cancel(): void;
     updateDescription(description: string): void;
@@ -83,7 +79,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
             return;
         }
 
-        if (props.data.loading === 'idle' || (props.data.loading === 'succeeded' && props.data.commit.head_id !== props.headId)) {
+        if (props.data.loading === 'idle' || (props.data.loading === 'succeeded' && props.data.commit.headId !== props.headId)) {
             props.fetchProblem(props.headId);
         }
     });
@@ -92,7 +88,7 @@ export default function ProblemEditor(props: IProblemEditorProps) {
 
     const onSave = () => {
         if (props.data.loading === 'succeeded') {
-            props.saveProblem(props.data.commit.head_id, props.description, props.data.problem);
+            props.saveProblem(props.data.commit.headId, props.description, props.data.problem);
         }
     };
 
@@ -152,19 +148,19 @@ export default function ProblemEditor(props: IProblemEditorProps) {
                     </ListItem>
                     <ListItem>
                         <ControllerEditor
-                            value={props.data.problem.controller}
+                            value={props.data.problem.controller ?? { language: Controller.Language.C_SHARP, content: "" }}
                             onChange={props.updateController}
                             disabled={props.disabled} />
                     </ListItem>
                     <ListItem>
                         <ViewEditor
-                            value={props.data.problem.view}
+                            value={props.data.problem.view ?? { language: View.Language.PLAIN_TEXT, content: "" }}
                             onChange={props.updateView}
                             disabled={props.disabled} />
                     </ListItem>
                     <ListItem>
                         <ValidatorEditor
-                            value={props.data.problem.validator}
+                            value={props.data.problem.validator ?? { language: Validator.Language.C_SHARP, content: "" }}
                             onChange={props.updateValidator}
                             disabled={props.disabled} />
                     </ListItem>

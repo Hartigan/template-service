@@ -143,7 +143,7 @@ type BackConverter private () =
 type Converter private () =
 
     static member Convert(o: DateTimeOffset) =
-        o.Ticks
+        o.ToUnixTimeMilliseconds()
 
     static member Convert<'IN, 'OUT>(input: List<'IN>, output: Google.Protobuf.Collections.RepeatedField<'OUT>, converter: 'IN -> 'OUT) =
         input |> List.iter(fun item -> output.Add(converter(item)))

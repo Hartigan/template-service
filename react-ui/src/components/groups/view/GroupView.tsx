@@ -1,11 +1,11 @@
 import { makeStyles, Paper, Grid, IconButton, List } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { GroupId, UserId } from "../../../models/Identificators";
-import { Group, Access } from "../../../models/Permissions";
 import UserSearchView from "../../common/UserSearchView";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import MemberListItemView from "../MemberListItemView";
 import { PermissionCapability } from "../PermissionCapability";
+import { AccessModel, GroupModel } from "../../../models/domain";
 
 
 
@@ -38,7 +38,7 @@ export interface IGroupViewParameters {
         loading: 'idle' | 'pending';
     } | {
         loading: 'succeeded';
-        group: Group;
+        group: GroupModel;
     };
     newUserId: UserId | null;
     groupId: GroupId | null;
@@ -48,7 +48,7 @@ export interface IGroupViewActions {
     fetchGroup(groupId: GroupId): void;
     addUser(groupId: GroupId, userId: UserId): void;
     removeUser(groupId: GroupId, userId: UserId): void;
-    updateUserAccess(groupId: GroupId, userId: UserId, access: Access): void;
+    updateUserAccess(groupId: GroupId, userId: UserId, access: AccessModel): void;
     setNewUser(userId: UserId | null): void;
 }
 
@@ -83,7 +83,7 @@ export default function GroupView(props: IGroupViewProps) {
         props.removeUser(props.data.group.id, userId);
     };
 
-    const onUpdateAccess = async (userId: UserId, access: Access) => {
+    const onUpdateAccess = async (userId: UserId, access: AccessModel) => {
         if (props.data.loading !== 'succeeded') {
             return;
         }
@@ -115,10 +115,10 @@ export default function GroupView(props: IGroupViewProps) {
                     </Grid>
                     <Grid item className={classes.content}>
                         <List component="nav" className={classes.membersList}>
-                            {props.data.group.members.map(member => {
+                            {props.data.group?.membersList?.map(member => {
                                 return (
                                     <MemberListItemView 
-                                        key={member.user_id}
+                                        key={member.userId}
                                         member={member}
                                         capability={[
                                             PermissionCapability.Generate,

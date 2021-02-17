@@ -100,9 +100,9 @@ type PermissionsApi(permissionsService: IPermissionsService,
                         return SetIsPublicReply()
         } |> Async.StartAsTask
 
-    override this.GetAccess(request, context) =
+    override this.GetAccessInfo(request, context) =
         async {
-            let reply = GetAccessReply()
+            let reply = GetAccessInfoReply()
             request.ProtectedItems
             |> AsyncSeq.ofSeq
             |> AsyncSeq.mapAsync(fun protectedItem ->

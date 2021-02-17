@@ -1,11 +1,11 @@
 import { makeStyles, Dialog, AppBar, Toolbar, IconButton, Typography, List, ListItem, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { Report } from "../../models/Report";
 import ReportProblemView from "./ReportProblemView";
 import ReportProblemSetView from "./ReportProblemSetView";
 import TimeSpanView from "../utils/TimeSpanView";
 import StatusView from "./StatusView";
+import { ReportModel } from "../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -34,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 export interface IReportDialogProps {
     open: boolean;
     onClose: () => void;
-    report: Report;
+    report: ReportModel;
 }
 
 export default function ReportDialog(props: IReportDialogProps) {
@@ -83,19 +83,19 @@ export default function ReportDialog(props: IReportDialogProps) {
                             </TableHead>
                             <TableBody>
                             {
-                                props.report.problem_set.problems.map((problem, index) =>
+                                props.report.problemSet?.problemsList?.map((problem, index) =>
                                     {
                                         return (
-                                            <TableRow key={"problem_" + problem.id}>
+                                            <TableRow key={"problem_" + problem.generatedProblemId}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell align="right">{problem.title}</TableCell>
                                                 <TableCell align="right">
-                                                    {problem.timestamp ? (<TimeSpanView fromDate={props.report.started_at} toDate={problem.timestamp}/>) : "Skipped"}
+                                                    {problem.userAnswer?.timestamp ? (<TimeSpanView fromDate={new Date(props.report.startedAt)} toDate={new Date(problem.userAnswer?.timestamp)}/>) : "Skipped"}
                                                 </TableCell>
-                                                <TableCell align="right">{problem.answer ? problem.answer : "Skipped"}</TableCell>
-                                                <TableCell align="right">{problem.expected_answer}</TableCell>
+                                                <TableCell align="right">{problem.userAnswer?.value ?? "Skipped"}</TableCell>
+                                                <TableCell align="right">{problem.expectedAnswer}</TableCell>
                                                 <TableCell align="right">
-                                                    <StatusView isCorrect={problem.is_correct} />
+                                                    <StatusView isCorrect={problem.isCorrect} />
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -107,15 +107,15 @@ export default function ReportDialog(props: IReportDialogProps) {
                     </TableContainer>
                 </ListItem>
                 {
-                    props.report.problem_set.problems.map((problem, index) =>
+                    props.report.problemSet?.problemsList?.map((problem, index) =>
                         {
                             return (
                                 <ListItem
-                                    key={"problem_" + problem.id}
+                                    key={"problem_" + problem.generatedProblemId}
                                     >
                                     <ReportProblemView
                                         index={index + 1}
-                                        startTime={props.report.started_at}
+                                        startTime={new Date(props.report.startedAt)}
                                         problem={problem}
                                         />
                                 </ListItem>

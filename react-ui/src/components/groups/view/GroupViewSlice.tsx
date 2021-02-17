@@ -1,46 +1,91 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { AccessModel, GroupModel } from '../../../models/domain';
 import { UserId, GroupId } from '../../../models/Identificators';
-import { Access, Group } from '../../../models/Permissions';
-import { groupService } from '../../../Services';
+import { AddMembersReply, AddMembersRequest, GetGroupRequest, RemoveMembersReply, RemoveMembersRequest, UpdateMemberRequest } from '../../../protobuf/groups_pb';
+import Services from '../../../Services';
+import { tryCreateAccess } from '../../utils/Utils';
 
 export interface IGroupViewState {
     data: {
         loading: 'idle' | 'pending';
     } | {
         loading: 'succeeded';
-        group: Group;
+        group: GroupModel;
     };
     newUserId: UserId | null;
 };
 
+async function getGroup(params: { groupId: GroupId; }) {
+    const request = new GetGroupRequest();
+    request.setGroupId(params.groupId);
+    const reply = await Services.groupService.getGroup(request);
+
+    const error = reply.getError();
+    if (error) {
+        Services.logger.error(error.getDescription());
+    }
+
+    return reply.getGroup()?.toObject();
+}
+
 export const fetchGroup = createAsyncThunk(
     `groups/view/fetchGroup`,
     async (params: { groupId: GroupId; }) => {
-        return await groupService.get(params.groupId);
+        return await getGroup(params);
     }
 );
 
 export const addUser = createAsyncThunk(
     `groups/view/addGroupMember`,
     async (params: { groupId: GroupId; userId: UserId}) => {
-        await groupService.addMember(params.groupId, params.userId);
-        return await groupService.get(params.groupId);
+        const request = new AddMembersRequest();
+        request.addUsers(params.userId);
+        request.setGroupId(params.groupId);
+        const reply = await Services.groupService.addMembers(request);
+
+        reply.getUsersList().forEach(entry => {
+            if (entry.getStatus() !== AddMembersReply.Status.OK) {
+                Services.logger.error(`failed with status ${entry.getStatus()}`)
+            }
+        });
+
+        return await getGroup(params);
     }
 );
 
 export const removeUser = createAsyncThunk(
     `groups/view/removeGroupMember`,
     async (params: { groupId: GroupId; userId: UserId}) => {
-        await groupService.removeMember(params.groupId, params.userId);
-        return await groupService.get(params.groupId);
+        const request = new RemoveMembersRequest();
+        request.addUsers(params.userId);
+        request.setGroupId(params.groupId);
+        const reply = await Services.groupService.removeMembers(request);
+
+        reply.getUsersList().forEach(entry => {
+            if (entry.getStatus() !== RemoveMembersReply.Status.OK) {
+                Services.logger.error(`failed with status ${entry.getStatus()}`)
+            }
+        });
+        return await getGroup(params);
     }
 );
 
 export const updateUserAccess = createAsyncThunk(
     `groups/view/updateGroupMemberAccess`,
-    async (params: { groupId: GroupId; userId: UserId; access: Access; }) => {
-        await groupService.updateMember(params.groupId, params.userId, params.access);
-        return await groupService.get(params.groupId);
+    async (params: { groupId: GroupId; userId: UserId; access: AccessModel; }) => {
+        const request = new UpdateMemberRequest();
+        request.setAccess(tryCreateAccess(params.access));
+        request.setUserId(params.userId);
+        request.setGroupId(params.groupId);
+        const reply = await Services.groupService.updateMember(request);
+
+        const error = reply.getError();
+
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+
+        return await getGroup(params);
     }
 );
 
@@ -60,28 +105,57 @@ const slice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(addUser.fulfilled, (state, action) => {
-                state.data = {
-                    group: action.payload,
-                    loading: "succeeded",
-                };
+                if (action.payload) {
+                    state.data = {
+                        group: action.payload,
+                        loading: "succeeded",
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: "idle"
+                    };
+                }
+                
             })
             .addCase(removeUser.fulfilled, (state, action) => {
-                state.data = {
-                    group: action.payload,
-                    loading: "succeeded",
-                };
+                if (action.payload) {
+                    state.data = {
+                        group: action.payload,
+                        loading: "succeeded",
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: "idle"
+                    };
+                }
             })
             .addCase(updateUserAccess.fulfilled, (state, action) => {
-                state.data = {
-                    group: action.payload,
-                    loading: "succeeded",
-                };
+                if (action.payload) {
+                    state.data = {
+                        group: action.payload,
+                        loading: "succeeded",
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: "idle"
+                    };
+                }
             })
             .addCase(fetchGroup.fulfilled, (state, action) => {
-                state.data = {
-                    group: action.payload,
-                    loading: "succeeded",
-                };
+                if (action.payload) {
+                    state.data = {
+                        group: action.payload,
+                        loading: "succeeded",
+                    };
+                }
+                else {
+                    state.data = {
+                        loading: "idle"
+                    };
+                }
             })
             .addCase(fetchGroup.pending, (state) => {
                 state.data = {

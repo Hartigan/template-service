@@ -1,25 +1,24 @@
+import { UsersServiceClient } from '../protobuf/UsersServiceClientPb';
+import { InitRequest, GetUserRequest, GetUserReply, InitReply, SearchRequest, SearchReply } from '../protobuf/users_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { UserId } from '../models/Identificators';
-import { User } from '../models/User';
+import { AuthService } from './AuthService';
+import { BaseService } from './BaseService';
 
-export class UserService {
-    private http : HttpService;
+export class UserService extends BaseService<UsersServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/user`);
+    constructor(authService: AuthService) {
+        super(authService, new UsersServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    init() {
-        return this.http.get<void>(`init`);
+    init(request: InitRequest) {
+        return this.doCall<InitRequest, InitReply>(this.client.init)(request);
     }
 
-    get(id: UserId) {
-        return this.http.get<User>(`get?id=${id}`);
+    getUser(request: GetUserRequest) {
+        return this.doCall<GetUserRequest, GetUserReply>(this.client.getUser)(request);
     }
 
-    search(pattern: string | null, offset: number, limit: number) {
-        return this.http.post<Array<User>>(`search`, { pattern: pattern ? pattern : null, offset: offset, limit: limit });
+    search(request: SearchRequest) {
+        return this.doCall<SearchRequest, SearchReply>(this.client.search)(request);
     }
 }

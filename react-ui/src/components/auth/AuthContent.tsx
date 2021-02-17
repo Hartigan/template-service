@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { Button, makeStyles, Toolbar, Menu, MenuItem } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { authService } from '../../Services';
 import { fetchUser } from './AuthContentSlice';
+import Services from '../../Services';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -34,11 +34,11 @@ export default function AuthContent(props: IAuthContentProps) {
     }); 
 
     const login = () => {
-        authService.login();
+        Services.authService.login();
     }
 
     const logout = () => {
-        authService.logout();
+        Services.authService.logout();
     };
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement>) => {

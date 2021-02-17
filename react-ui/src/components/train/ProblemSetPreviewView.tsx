@@ -1,8 +1,7 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React from "react";
+import { HeadModel, ProblemSetPreviewModel } from "../../models/domain";
 import { HeadId } from "../../models/Identificators";
-import { ProblemSetPreview } from "../../models/ProblemSetPreview";
-import { Head } from "../../models/Head";
 import TagsView from "../utils/TagsView";
 
 
@@ -21,8 +20,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IProblemSetPreviewViewProps {
-    head: Head;
-    preview: ProblemSetPreview;
+    head: HeadModel;
+    preview: ProblemSetPreviewModel;
     onStartSubmission: (headId: HeadId) => void;
 }
 
@@ -40,25 +39,25 @@ export default function ProblemSetPreviewView(props: IProblemSetPreviewViewProps
                     {props.preview.title}
                 </Typography>
                 <div className={classes.tags}>
-                    <TagsView tags={props.head.tags} />
+                    <TagsView tags={props.head.tagsList} />
                 </div>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Duration
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.preview.duration / 60}
+                    {props.preview.durationS / 60}
                 </Typography>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Problems count
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.preview.problems_count}
+                    {props.preview.problemsCount}
                 </Typography>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     Author
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {props.preview.author.username}
+                    {props.preview.author?.username}
                 </Typography>
             </CardContent>
             <CardActions>

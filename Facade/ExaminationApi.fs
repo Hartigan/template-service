@@ -102,6 +102,7 @@ type ExaminationApi(permissionsService: IPermissionsService,
                     return reply
                 | Ok(model) -> 
                     let reply = CompleteSubmissionReply()
+                    reply.ReportId <- model.Value
                     return reply
             | Error(ex) ->
                 logger.LogError(ex, "Access denied")

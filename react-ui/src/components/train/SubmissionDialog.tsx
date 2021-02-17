@@ -1,10 +1,11 @@
 import { makeStyles, Dialog, Button, AppBar, Toolbar, IconButton, Typography, List, ListItem } from "@material-ui/core";
 import React from "react";
 import CloseIcon from '@material-ui/icons/Close';
-import { Submission } from "../../models/Submission";
 import SubmissionProblemView from "./SubmissionProblemView";
 import { GeneratedProblemId, ReportId } from "../../models/Identificators";
-import { examinationService } from "../../Services";
+import Services from "../../Services";
+import { SubmissionModel } from "../../models/domain";
+import { ApplyAnswerRequest, CompleteSubmissionRequest } from "../../protobuf/examination_pb";
 
 const useStyles = makeStyles(theme => ({
     appBar: {
@@ -28,7 +29,7 @@ export interface ISubmissionDialogProps {
     open: boolean;
     onClose: () => void;
     onComplete: (id: ReportId) => void;
-    submission: Submission;
+    submission: SubmissionModel;
 }
 
 export default function SubmissionDialog(props: ISubmissionDialogProps) {
@@ -38,19 +39,31 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
     };
 
     const onAnswer = async (ans: string, generatedProblemId: GeneratedProblemId) => {
-        await examinationService.applyAnswer(
-            props.submission.id,
-            {
-                answer: ans,
-                generated_problem_id: generatedProblemId
-            }
-        );
+        const request = new ApplyAnswerRequest();
+        request.setSubmissionId(props.submission.id);
+        request.setGeneratedProblemId(generatedProblemId);
+        request.setAnswer(ans);
+        const reply = await Services.examinationService.applyAnswer(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
         return true;
     };
 
     const onComplete = async () => {
-        const reply = await examinationService.complete(props.submission.id);
-        props.onComplete(reply.id);
+        const request = new CompleteSubmissionRequest();
+        request.setSubmissionId(props.submission.id);
+        const reply = await Services.examinationService.completeSubmission(request);
+
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        const reportId = reply.getReportId();
+        if (reportId) {
+            props.onComplete(reportId);
+        }
     };
 
     const classes = useStyles();
@@ -76,9 +89,9 @@ export default function SubmissionDialog(props: ISubmissionDialogProps) {
             <List
                 className={classes.list}>
                 {
-                    props.submission.problem_set.problems.map((problem, index) =>
+                    props.submission.problemSet?.problemsList?.map((problem, index) =>
                         {
-                            const answer = props.submission.answers.find(ans => ans.generated_problem_id === problem.id);
+                            const answer = props.submission.answersList.find(ans => ans.id === problem.id);
 
                             return (
                                 <ListItem

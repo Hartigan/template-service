@@ -1,12 +1,13 @@
 import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { HeadId } from "../../models/Identificators";
-import { Head } from "../../models/Head";
 import RemoveIcon from '@material-ui/icons/Remove';
-import { versionService } from "../../Services";
+import Services from "../../Services";
+import { HeadModel } from "../../models/domain";
+import { GetHeadRequest } from "../../protobuf/version_pb";
 
 interface IState {
-    head: Head | null;
+    head: HeadModel | null;
 }
 
 export interface IProblemHeadListItemViewProps {
@@ -29,10 +30,20 @@ export default function ProblemHeadListItemView(props: IProblemHeadListItemViewP
         if (state.head && state.head.id === props.headId) {
             return;
         }
+        const request = new GetHeadRequest();
+        request.setHeadId(props.headId);
+        Services.versionService
+            .getHead(request)
+            .then(reply => {
+                const error = reply.getError();
+                if (error) {
+                    Services.logger.error(error.getDescription());
+                }
+                const head = reply.getHead()?.toObject();
+                if (!head) {
+                    return;
+                }
 
-        versionService
-            .getHead(props.headId)
-            .then(head => {
                 if (!canUpdate || props.headId !== head.id) {
                     return;
                 }

@@ -1,63 +1,45 @@
+import { FoldersServiceClient } from '../protobuf/FoldersServiceClientPb';
+import { GetFolderRequest, CreateFolderRequest, GetRootRequest, GetTrashRequest, MoveToTrashRequest, RestoreFromTrashRequest, MoveRequest, RenameRequest, GetFolderReply, CreateFolderReply, GetRootReply, GetTrashReply, MoveReply, MoveToTrashReply, RenameReply, RestoreFromTrashReply } from '../protobuf/folders_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
-import { HttpService } from './HttpService';
-import { Folder } from '../models/Folder';
-import { FolderId, Id, HeadId } from '../models/Identificators';
-import { HttpServiceFactory } from './HttpServiceFactory';
-import { Trash } from '../models/Trash';
+import { AuthService } from './AuthService';
+import { BaseService } from './BaseService';
 
-export class FoldersService {
-    private http : HttpService;
+export class FoldersService extends BaseService<FoldersServiceClient> {
 
-    constructor(httpServiceFactory: HttpServiceFactory) {
-        this.http = httpServiceFactory.create(`${GlobalSettings.ApiBaseUrl}/folders`);
+    constructor(authService: AuthService) {
+        super(authService, new FoldersServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getFolder(folderId: FolderId) {
-        return this.http.get<Folder>(`get?folder_id=${folderId}`);
+    getFolder(request: GetFolderRequest) {
+        return this.doCall<GetFolderRequest, GetFolderReply>(this.client.getFolder)(request);
     }
 
-    createFolder(name: string, destinationId: FolderId) {
-        return this.http.post<Id<FolderId>>(`create_folder`, { name: name, destination_id: destinationId });
+    createFolder(request: CreateFolderRequest) {
+        return this.doCall<CreateFolderRequest, CreateFolderReply>(this.client.createFolder)(request);
     }
 
-    getRoot() {
-        return this.http.get<Folder>(`get_root`);
+    getRoot(request: GetRootRequest) {
+        return this.doCall<GetRootRequest, GetRootReply>(this.client.getRoot)(request);
     }
 
-    getTrash() {
-        return this.http.get<Trash>(`get_trash`);
+    getTrash(request: GetTrashRequest) {
+        return this.doCall<GetTrashRequest, GetTrashReply>(this.client.getTrash)(request);
     }
 
-    moveHeadToTrash(parentId: FolderId, headId: HeadId) {
-        return this.http.post<void>(`move_head_to_trash`, { parent_id: parentId, target_id: headId });
+    moveToTrash(request: MoveToTrashRequest) {
+        return this.doCall<MoveToTrashRequest, MoveToTrashReply>(this.client.moveToTrash)(request);
     }
 
-    moveFolderToTrash(parentId: FolderId, folderId: FolderId) {
-        return this.http.post<void>(`move_folder_to_trash`, { parent_id: parentId, target_id: folderId });
+    restoreFromTrash(request: RestoreFromTrashRequest) {
+        return this.doCall<RestoreFromTrashRequest, RestoreFromTrashReply>(this.client.restoreFromTrash)(request);
     }
 
-    restoreHead(headId: HeadId) {
-        return this.http.post<void>(`restore_head`, { target_id: headId });
+    move(request: MoveRequest) {
+        return this.doCall<MoveRequest, MoveReply>(this.client.move)(request);
     }
 
-    restoreFolder(folderId: FolderId) {
-        return this.http.post<void>(`restore_folder`, { target_id: folderId });
-    }
-
-    moveHead(headId: HeadId, sourceId: FolderId, destinationId: FolderId) {
-        return this.http.post<void>(`move_head`, { head_id: headId, source_id: sourceId, destination_id: destinationId });
-    }
-
-    moveFolder(folderId: FolderId, sourceId: FolderId, destinationId: FolderId) {
-        return this.http.post<void>(`move_folder`, { folder_id: folderId, source_id: sourceId, destination_id: destinationId });
-    }
-
-    renameFolder(parentId: FolderId, targetId: FolderId, name: string) {
-        return this.http.post<void>(`rename_folder`, { parent_id: parentId, target_id: targetId, name: name });
-    }
-
-    renameHead(parentId: FolderId, headId: HeadId, name: string) {
-        return this.http.post<void>(`rename_head`, { parent_id: parentId, head_id: headId, name: name });
+    rename(request: RenameRequest) {
+        return this.doCall<RenameRequest, RenameReply>(this.client.rename)(request);
     }
 }
 

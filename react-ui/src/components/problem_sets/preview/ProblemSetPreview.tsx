@@ -1,14 +1,11 @@
 import { makeStyles, Box, List, ListItem, Container, IconButton, Typography, Grid } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { Commit } from "../../../models/Commit";
 import EditIcon from '@material-ui/icons/Edit';
-import { ProblemSet } from "../../../models/ProblemSet";
 import { HeadId } from "../../../models/Identificators";
-import { Problem } from "../../../models/Problem";
 import SlotsListView from "../SlotsListView";
 import ProblemPreview from "../ProblemPreview";
-import { Access } from "../../../models/Permissions";
 import EditProblemSetDialogContainer from "../dialogs/EditProblemSetDialogContainer";
+import { AccessModel, CommitModel, ProblemModel, ProblemSetModel } from "../../../models/domain";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -40,9 +37,9 @@ export interface IProblemSetPreviewParameters {
         loading: 'idle' | 'pending' | 'failed';
     } | {
         loading: 'successed';
-        commit: Commit;
-        access: Access;
-        problemSet: ProblemSet;
+        commit: CommitModel;
+        access: AccessModel;
+        problemSet: ProblemSetModel;
     };
     selectedSlot: number | null;
     selectedProblemInSlot: number | null;
@@ -51,7 +48,7 @@ export interface IProblemSetPreviewParameters {
     } | {
         loading: 'successed';
         headId: HeadId;
-        problem: Problem;
+        problem: ProblemModel;
     };
 };
 
@@ -60,7 +57,7 @@ export interface IProblemSetPreviewActions {
     fetchProblemPreview(headId: HeadId): void;
     selectSlot(slot: number): void;
     selectProblemInSlot(slot: number, problem: number): void;
-    openEditDialog(problemSet: ProblemSet): void;
+    openEditDialog(problemSet: ProblemSetModel): void;
 };
 
 export interface IProblemSetPreviewProps extends IProblemSetPreviewActions, IProblemSetPreviewParameters{
@@ -74,7 +71,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
         }
 
         if (props.problemSetPreview.loading === 'idle'
-            || (props.problemSetPreview.loading === 'successed' && props.headId !== props.problemSetPreview.commit.head_id)) {
+            || (props.problemSetPreview.loading === 'successed' && props.headId !== props.problemSetPreview.commit.headId)) {
             props.fetchProblemSetPreview(props.headId);
         }
 
@@ -83,8 +80,8 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                 const problemHeadId =
                     props.problemSetPreview
                         .problemSet
-                        .slots[props.selectedSlot]
-                        ?.head_ids[props.selectedProblemInSlot] ?? null;
+                        .slotsList[props.selectedSlot]
+                        ?.headIdsList[props.selectedProblemInSlot] ?? null;
 
                 if (problemHeadId !== null && (props.problemPreview.loading === 'idle' || (props.problemPreview.loading === 'successed' && props.problemPreview.headId !== problemHeadId))) {
                     props.fetchProblemPreview(problemHeadId);
@@ -157,14 +154,14 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                             Duration
                         </Typography>
                         <Typography variant="h5" component="h2">
-                            {props.problemSetPreview.problemSet.duration / 60} min
+                            {props.problemSetPreview.problemSet.durationS / 60} min
                         </Typography>
                     </Box>
                 </ListItem>
                 <Grid container className={classes.listContainer}>
                     <Grid item className={classes.problemsList}>
                         <SlotsListView
-                            slots={props.problemSetPreview.problemSet.slots}
+                            slots={props.problemSetPreview.problemSet.slotsList}
                             selectedSlot={props.selectedSlot}
                             selectedProblemInSlot={props.selectedProblemInSlot}
                             onSelectSlot={props.selectSlot}

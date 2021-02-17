@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { makeStyles, Typography } from '@material-ui/core';
 import AssessmentIcon from '@material-ui/icons/Assessment';
-import { Report } from '../../../models/Report';
 import DateView from '../../utils/DateView';
+import { ReportModel } from '../../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     labelIcon: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportLabelViewProperties {
-    report: Report;
+    report: ReportModel;
 }
 
 export default function ReportLabelView(props: IReportLabelViewProperties) {
@@ -31,9 +31,9 @@ export default function ReportLabelView(props: IReportLabelViewProperties) {
     return (
         <div className={classes.labelRoot}>
             <AssessmentIcon className={classes.labelIcon} />
-            <DateView date={props.report.finished_at} dateOnly={true} />
+            <DateView date={new Date(props.report.finishedAt)} dateOnly={true} />
             <Typography variant="body2" className={classes.labelText}>
-                {props.report.problem_set.title}
+                {props.report.problemSet?.title}
             </Typography>
         </div>
     );

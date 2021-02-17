@@ -1,9 +1,10 @@
 import { makeStyles, Button, Card, CardContent, Typography, CardActions } from "@material-ui/core";
 import React, { useEffect } from "react";
-import { SubmissionPreview } from "../../models/SubmissionPreview";
 import { SubmissionId } from "../../models/Identificators";
 import DateView from "../utils/DateView";
-import { examinationService } from "../../Services";
+import Services from "../../Services";
+import { SubmissionPreviewModel } from "../../models/domain";
+import { GetSubmissionPreviewRequest } from "../../protobuf/examination_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface IState {
-    preview: SubmissionPreview | null;
+    preview: SubmissionPreviewModel | null;
 }
 
 export interface ISubmissionPreviewViewProps {
@@ -34,16 +35,27 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
     useEffect(() => {
         let isCancelled = false;
         if (state.preview === null || state.preview.id !== props.submissionId) {
-            examinationService
-                .getSubmissionPreview(props.submissionId)
-                .then(submission => {
+            const request = new GetSubmissionPreviewRequest();
+            request.setSubmissionId(props.submissionId);
+            Services.examinationService
+                .getSubmissionPreview(request)
+                .then(reply => {
                     if (isCancelled) {
                         return;
                     }
-                    setState({
-                        ...state,
-                        preview: submission
-                    });
+
+                    const error = reply.getError();
+                    if (error) {
+                        Services.logger.error(error.getDescription());
+                    }
+
+                    const submission = reply.getPreview()?.toObject();
+                    if (submission) {
+                        setState({
+                            ...state,
+                            preview: submission
+                        });
+                    }
                 });
         }
 
@@ -68,16 +80,16 @@ export default function SubmissionPreviewView(props: ISubmissionPreviewViewProps
                         Author
                     </Typography>
                     <Typography variant="body2" component="p">
-                        {state.preview.author.username}
+                        {state.preview.author?.username}
                     </Typography>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Started at
                     </Typography>
-                    <DateView date={state.preview.started_at} />
+                    <DateView date={new Date(state.preview.startedAt)} />
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Deadline
                     </Typography>
-                    <DateView date={state.preview.deadline} />
+                    <DateView date={new Date(state.preview.deadline)} />
                 </CardContent>
                 <CardActions>
                     <Button

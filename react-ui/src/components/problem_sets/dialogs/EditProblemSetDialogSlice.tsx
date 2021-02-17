@@ -1,19 +1,41 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ProblemSetModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { ProblemSet } from '../../../models/ProblemSet';
-import { problemSetService } from '../../../Services';
+import { ProblemSet } from '../../../protobuf/domain_pb';
+import { UpdateProblemSetRequest } from '../../../protobuf/problem_sets_pb';
+import Services from '../../../Services';
 
 export interface IEditProblemSetDialogState {
     open: boolean;
     commitDescription: string;
-    problemSet: ProblemSet | null;
+    problemSet: ProblemSetModel | null;
     saving: 'idle' | 'pending' | 'succeeded';
 };
 
 export const saveProblemSet = createAsyncThunk(
     `problem_sets/dialogs/saveProblemSet`,
-    async (params: { headId: HeadId; problemSet: ProblemSet; description: string }) => {
-        await problemSetService.update(params.headId, params.description, params.problemSet);
+    async (params: { headId: HeadId; problemSet: ProblemSetModel; description: string }) => {
+        const problemSet = new ProblemSet();
+        problemSet.setDurationS(params.problemSet.durationS);
+        problemSet.setId(params.problemSet.id);
+        problemSet.setTitle(params.problemSet.title);
+        problemSet.setSlotsList(
+            params.problemSet.slotsList.map(slot => {
+                const result = new ProblemSet.Slot();
+                result.setHeadIdsList(slot.headIdsList);
+                return result;
+            })
+        );
+        const request = new UpdateProblemSetRequest();
+        request.setHeadId(params.headId);
+        request.setDescription(params.description);
+        request.setProblemSet(problemSet);
+        const reply = await Services.problemSetService.updateProblemSet(request);
+        const error = reply.getError();
+        if (error) {
+            Services.logger.error(error.getDescription());
+        }
+        return reply.getCommitId();
     }
 );
 
@@ -26,7 +48,7 @@ const slice = createSlice({
         saving: 'idle',
     } as IEditProblemSetDialogState,
     reducers: {
-        openEditProblemSetDialog: (state, action: PayloadAction<ProblemSet>) => {
+        openEditProblemSetDialog: (state, action: PayloadAction<ProblemSetModel>) => {
             state.problemSet = action.payload;
             state.open = true;
             state.commitDescription = "";
@@ -37,7 +59,7 @@ const slice = createSlice({
             state.open = false;
             state.saving = 'idle';
         },
-        updateProblemSet: (state, action: PayloadAction<ProblemSet>) => {
+        updateProblemSet: (state, action: PayloadAction<ProblemSetModel>) => {
             state.problemSet = action.payload;
         },
         updateDescription: (state, action: PayloadAction<string>) => {

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { makeStyles, Box } from '@material-ui/core';
-import { Report } from '../../models/Report';
 import ReportPreviewView from './ReportPreviewView';
 import { ReportId } from '../../models/Identificators';
+import { ReportModel } from '../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -15,9 +15,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportsListViewProps {
-    reports: Array<Report>;
+    reports: Array<ReportModel>;
     onOpenShare: (reportId: ReportId) => void;
-    onOpenReport: (report: Report) => void;
+    onOpenReport: (report: ReportModel) => void;
 };
 
 export default function ReportsListView(props: IReportsListViewProps) {

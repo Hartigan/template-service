@@ -3,9 +3,11 @@ import React, { useEffect } from "react";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { User } from "../../models/User";
 import { UserId } from "../../models/Identificators";
-import { userService } from "../../Services";
+import Services from "../../Services";
+import { UserModel } from "../../models/domain";
+import { SearchRequest } from "../../protobuf/users_pb";
+import { toStringValue } from "../utils/Utils";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 interface IState {
     open: boolean;
     pattern: string;
-    users: Array<User> | null;
+    users: Array<UserModel> | null;
 }
 
 export interface IUserSearchViewProps {
@@ -38,13 +40,24 @@ export default function UserSearchView(props: IUserSearchViewProps) {
         let active = true;
 
         if (state.users === null && state.open) {
-            userService
-                .search(state.pattern, 0, 10)
-                .then(users => {
+            const request = new SearchRequest();
+            request.setPattern(toStringValue(state.pattern));
+            request.setOffset(0);
+            request.setLimit(10);
+            Services.userService
+                .search(request)
+                .then(reply => {
+                    const error = reply.getError();
+
+                    if (error) {
+                        Services.logger.error(error.getDescription());
+                    }
+
                     if (active) {
+                        const users = reply.getUsers()?.getUsersList() ?? [];
                         setState({
                             ...state,
-                            users: users,
+                            users: users.map(x => x.toObject()),
                         });
                     }
                 });
@@ -80,7 +93,7 @@ export default function UserSearchView(props: IUserSearchViewProps) {
             onClose={() => setOpen(false)}
             getOptionSelected={(option, value) => option.username === value.username}
             getOptionLabel={option => option.username}
-            onChange={(event: any, value: User | null) => props.onUserSelected(value ? value.id : null)}
+            onChange={(event: any, value: UserModel | null) => props.onUserSelected(value ? value.id : null)}
             options={state.users === null ? [] : state.users}
             loading={loading}
             renderInput={params => (

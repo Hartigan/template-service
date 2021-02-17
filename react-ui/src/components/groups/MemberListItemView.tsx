@@ -1,9 +1,9 @@
 import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, IconButton, FormControlLabel, Checkbox, Toolbar } from "@material-ui/core";
 import React from "react";
-import { Member, Access } from "../../models/Permissions";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { UserId } from "../../models/Identificators";
 import { PermissionCapability } from "./PermissionCapability";
+import { AccessModel, MemberModel } from "../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -16,22 +16,27 @@ const useStyles = makeStyles(theme => ({
 
 export interface IMemberListItemViewProps {
     onRemove: (userId: UserId) => void;
-    onUpdateAccess: (userId: UserId, access: Access) => void;
-    member: Member;
+    onUpdateAccess: (userId: UserId, access: AccessModel) => void;
+    member: MemberModel;
     capability: Array<PermissionCapability>;
 }
 
 export default function MemberListItemView(props: IMemberListItemViewProps) {
 
-    const access = props.member.access;
+    const access = props.member.access ?? {
+        read: false,
+        write: false,
+        generate: false,
+        admin: false
+    };
 
     const classes = useStyles();
 
     const setGenerate = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.member.userId,
             {
-                ...props.member.access,
+                ...access,
                 generate: value
             }
         )
@@ -39,9 +44,9 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setRead = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.member.userId,
             {
-                ...props.member.access,
+                ...access,
                 read: value
             }
         )
@@ -49,9 +54,9 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setWrite = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.member.userId,
             {
-                ...props.member.access,
+                ...access,
                 write: value
             }
         )
@@ -59,16 +64,16 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
 
     const setAdmin = (value: boolean) => {
         props.onUpdateAccess(
-            props.member.user_id,
+            props.member.userId,
             {
-                ...props.member.access,
+                ...access,
                 admin: value
             }
         )
     };
 
     return (
-        <ListItem key={props.member.user_id} className={classes.root}>
+        <ListItem key={props.member.userId} className={classes.root}>
             <ListItemText primary={props.member.name}/>
             <ListItemSecondaryAction>
                 <Toolbar className={classes.toolbar}>
@@ -116,7 +121,7 @@ export default function MemberListItemView(props: IMemberListItemViewProps) {
                             }
                         })
                     }
-                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.member.user_id)}>
+                    <IconButton aria-label="delete" onClick={() => props.onRemove(props.member.userId)}>
                         <DeleteIcon />
                     </IconButton>
                 </Toolbar>

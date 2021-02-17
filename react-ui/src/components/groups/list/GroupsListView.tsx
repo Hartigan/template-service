@@ -3,8 +3,8 @@ import { makeStyles, Box, Container, IconButton } from '@material-ui/core';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import GroupExplorerView from '../GroupExplorerView';
 import { GroupId } from '../../../models/Identificators';
-import { Group } from '../../../models/Permissions';
 import CreateGroupDialogContainer from './CreateGroupDialogContainer';
+import { GroupModel } from '../../../models/domain';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 export interface IGroupsListViewParameters {
     data: {
         loading: 'idle' | 'pending' | 'succeeded';
-        groups: Array<Group>;
+        groups: Array<GroupModel>;
     };
     selectedGroup: GroupId | null;
 }

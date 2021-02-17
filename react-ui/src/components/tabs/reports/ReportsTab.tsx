@@ -1,7 +1,6 @@
 import { makeStyles, Grid, Paper, Toolbar, Typography, Switch, Box, Container } from "@material-ui/core";
 import React from "react";
 import { useDispatch } from 'react-redux';
-import { Report } from "../../../models/Report";
 import { ReportId, UserId } from "../../../models/Identificators";
 import UserSearchView from "../../common/UserSearchView";
 import ReportsListView from "../../reports/ReportsListView";
@@ -12,6 +11,7 @@ import SearchDateIntervalView from "../../common/SearchDateIntervalView";
 import { closeReport, closeShare, fetchReports, openReport, openShare, updateAdvanced, updateDate, updateLimit, updatePage, updatePattern, updateUser } from "./ReportsTabSlice";
 import ShareReportDialog from "../../reports/ShareReportDialog";
 import ReportDialog from "../../common/ReportDialog";
+import { ReportModel } from "../../../models/domain";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -68,7 +68,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface IReportsTabProps {
-    reports: Array<Report>;
+    reports: Array<ReportModel>;
     loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     search : {
         userId: UserId | null;
@@ -79,7 +79,7 @@ export interface IReportsTabProps {
         limit: number;
     },
     share: { open: false; } | { open: true; reportId: ReportId; };
-    report: { open: false; } | { open: true; report: Report; };
+    report: { open: false; } | { open: true; report: ReportModel; };
 }
 
 export default function ReportsTab(props: IReportsTabProps) {
