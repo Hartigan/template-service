@@ -1,5 +1,5 @@
 import { FoldersServiceClient } from '../protobuf/FoldersServiceClientPb';
-import { GetFolderRequest, CreateFolderRequest, GetRootRequest, GetTrashRequest, MoveToTrashRequest, RestoreFromTrashRequest, MoveRequest, RenameRequest, GetFolderReply, CreateFolderReply, GetRootReply, GetTrashReply, MoveReply, MoveToTrashReply, RenameReply, RestoreFromTrashReply } from '../protobuf/folders_pb';
+import { GetFoldersRequest, CreateFolderRequest, GetRootRequest, GetTrashRequest, MoveToTrashRequest, RestoreFromTrashRequest, MoveRequest, RenameRequest, GetFoldersReply, CreateFolderReply, GetRootReply, GetTrashReply, MoveReply, MoveToTrashReply, RenameReply, RestoreFromTrashReply } from '../protobuf/folders_pb';
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { AuthService } from './AuthService';
 import { BaseService } from './BaseService';
@@ -10,8 +10,8 @@ export class FoldersService extends BaseService<FoldersServiceClient> {
         super(authService, new FoldersServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getFolder(request: GetFolderRequest) {
-        return this.doCall<GetFolderRequest, GetFolderReply>(this.client.getFolder)(request);
+    getFolders(request: GetFoldersRequest) {
+        return this.doCall<GetFoldersRequest, GetFoldersReply>(this.client.getFolders)(request);
     }
 
     createFolder(request: CreateFolderRequest) {

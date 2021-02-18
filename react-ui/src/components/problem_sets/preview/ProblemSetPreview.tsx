@@ -2,7 +2,7 @@ import { makeStyles, Box, List, ListItem, Container, IconButton, Typography, Gri
 import React, { useEffect } from "react";
 import EditIcon from '@material-ui/icons/Edit';
 import { HeadId } from "../../../models/Identificators";
-import SlotsListView from "../SlotsListView";
+import SlotsListView, { ISlotData } from "../SlotsListView";
 import ProblemPreview from "../ProblemPreview";
 import EditProblemSetDialogContainer from "../dialogs/EditProblemSetDialogContainer";
 import { AccessModel, CommitModel, ProblemModel, ProblemSetModel } from "../../../models/domain";
@@ -40,6 +40,7 @@ export interface IProblemSetPreviewParameters {
         commit: CommitModel;
         access: AccessModel;
         problemSet: ProblemSetModel;
+        slots: Array<ISlotData>;
     };
     selectedSlot: number | null;
     selectedProblemInSlot: number | null;
@@ -161,7 +162,7 @@ export default function ProblemSetPreview(props: IProblemSetPreviewProps) {
                 <Grid container className={classes.listContainer}>
                     <Grid item className={classes.problemsList}>
                         <SlotsListView
-                            slots={props.problemSetPreview.problemSet.slotsList}
+                            slots={props.problemSetPreview.slots}
                             selectedSlot={props.selectedSlot}
                             selectedProblemInSlot={props.selectedProblemInSlot}
                             onSelectSlot={props.selectSlot}

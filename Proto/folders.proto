@@ -8,7 +8,7 @@ option csharp_namespace = "GrpcFolders";
 package folders;
 
 service FoldersService {
-  rpc GetFolder(GetFolderRequest) returns (GetFolderReply);
+  rpc GetFolders(GetFoldersRequest) returns (GetFoldersReply);
   rpc CreateFolder(CreateFolderRequest) returns (CreateFolderReply);
   rpc GetRoot(GetRootRequest) returns (GetRootReply);
   rpc GetTrash(GetTrashRequest) returns (GetTrashReply);
@@ -171,19 +171,20 @@ message CreateFolderRequest {
   string destination_id = 2;
 }
 
-message GetFolderReply {
-  message Error {
-    string description = 1;
-    enum Status {
-      UNKNOWN = 0;
-      NO_ACCESS = 1;
-    }
+message GetFoldersReply {
+  enum Status {
+    Ok = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+  }
+  message Entry {
+    string folder_id = 1;
     Status status = 2;
+    domain.Folder folder = 3;
   }
-  oneof result {
-    domain.Folder folder = 1;
-    Error error = 2;
-  }
+  repeated Entry entries = 1;
 }
 
-message GetFolderRequest { string folder_id = 1; }
+message GetFoldersRequest {
+  repeated string folder_ids = 1;
+}

@@ -9,7 +9,7 @@ option csharp_namespace = "GrpcVersion";
 package version;
 
 service VersionService {
-  rpc GetHead(GetHeadRequest) returns (GetHeadReply);
+  rpc GetHeads(GetHeadsRequest) returns (GetHeadsReply);
   rpc GetCommit(GetCommitRequest) returns (GetCommitReply);
   rpc UpdateTags(UpdateTagsRequest) returns (UpdateTagsReply);
   rpc Search(SearchRequest) returns (SearchReply);
@@ -72,19 +72,20 @@ message GetCommitReply {
 
 message GetCommitRequest { string commit_id = 1; }
 
-message GetHeadReply {
-  message Error {
-    string description = 1;
-    enum Status {
-      UNKNOWN = 0;
-      NO_ACCESS = 1;
-    }
+message GetHeadsReply {
+  enum Status {
+    OK = 0;
+    UNKNOWN = 1;
+    NO_ACCESS = 2;
+  }
+  message Entry {
+    string head_id = 1;
     Status status = 2;
+    domain.Head head = 3;
   }
-  oneof result {
-    domain.Head head = 1;
-    Error error = 2;
-  }
+  repeated Entry entries = 1;
 }
 
-message GetHeadRequest { string head_id = 1; }
+message GetHeadsRequest {
+  repeated string head_ids = 1;
+}

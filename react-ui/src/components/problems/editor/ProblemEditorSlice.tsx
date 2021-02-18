@@ -4,9 +4,8 @@ import { HeadId } from '../../../models/Identificators';
 import { Controller, Problem, ProtectedItem, Validator, View } from '../../../protobuf/domain_pb';
 import { GetAccessInfoRequest } from '../../../protobuf/permissions_pb';
 import { GetProblemRequest, UpdateProblemRequest } from '../../../protobuf/problems_pb';
-import { GetHeadRequest } from '../../../protobuf/version_pb';
 import Services from '../../../Services';
-import { tryMap } from '../../utils/Utils';
+import { getHead, tryMap } from '../../utils/Utils';
 
 export interface IProblemEditorState {
     description: string;
@@ -25,14 +24,8 @@ export interface IProblemEditorState {
 export const fetchProblem = createAsyncThunk(
     `problem/editor/fetchProblem`,
     async (params: { headId: HeadId; }) => {
-        const headRequest = new GetHeadRequest();
-        headRequest.setHeadId(params.headId);
-        const headReply = await Services.versionService.getHead(headRequest);
-        const headError = headReply.getError();
-        if (headError) {
-            Services.logger.error(headError.getDescription());
-        }
-        const commit = headReply.getHead()?.getCommit()?.toObject();
+        const head = await getHead(Services.versionService, params.headId);
+        const commit = head?.commit;
         if (!commit) {
             return null;
         }

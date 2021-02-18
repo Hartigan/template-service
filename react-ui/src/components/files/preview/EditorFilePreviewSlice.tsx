@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { HeadModel } from '../../../models/domain';
 import { HeadId } from '../../../models/Identificators';
-import { GetHeadRequest, UpdateTagsRequest } from '../../../protobuf/version_pb';
+import { UpdateTagsRequest } from '../../../protobuf/version_pb';
 import Services from '../../../Services';
+import { getHead } from '../../utils/Utils';
 
 export interface IEditorFilePreviewState {
     data: {
@@ -13,19 +14,14 @@ export interface IEditorFilePreviewState {
     }
 };
 
+
+
 export const fetchHead = createAsyncThunk(
     `files/preview/fetchHead`,
     async (params: {
         headId: HeadId;
     }) => {
-        const request = new GetHeadRequest();
-        request.setHeadId(params.headId);
-        const reply = await Services.versionService.getHead(request);
-        const error = reply.getError();
-        if (error) {
-            Services.logger.error(error.getDescription());
-        }
-        return reply.getHead()?.toObject();
+        return await getHead(Services.versionService, params.headId);
     }
 );
 
@@ -45,16 +41,7 @@ export const updateTags = createAsyncThunk(
             Services.logger.error(updateError.getDescription());
         }
 
-        const headRequest = new GetHeadRequest();
-        headRequest.setHeadId(params.headId);
-        const reply = await Services.versionService.getHead(headRequest);
-
-        const error = reply.getError();
-        if (error) {
-            Services.logger.error(error.getDescription());
-        }
-
-        return reply.getHead()?.toObject();
+        return await getHead(Services.versionService, params.headId);
     }
 );
 

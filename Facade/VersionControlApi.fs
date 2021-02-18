@@ -22,33 +22,40 @@ type VersionControlApi(permissionsService: IPermissionsService,
 
     member private this.GetUserId(context: ServerCallContext) = UserId(context.GetHttpContext().User.FindFirst(ClaimTypes.NameIdentifier).Value)
 
-    override this.GetHead(request, context) =
+    override this.GetHeads(request, context) =
         async {
             let userId = this.GetUserId(context)
-            let headId = HeadId(request.HeadId)
-            match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! versionControlService.Get(headId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get head")
-                    let error = GetHeadReply.Types.Error()
-                    error.Description <- ex.Message
-                    error.Status <- GetHeadReply.Types.Error.Types.Status.Unknown
-                    let reply = GetHeadReply()
-                    reply.Error <- error
-                    return reply
-                | Ok(model) ->
-                    let reply = GetHeadReply()
-                    reply.Head <- Converter.Convert(model)
-                    return reply
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                let error = GetHeadReply.Types.Error()
-                error.Description <- ex.Message
-                error.Status <- GetHeadReply.Types.Error.Types.Status.NoAccess
-                let reply = GetHeadReply()
-                reply.Error <- error
-                return reply
+            let reply = GetHeadsReply()
+
+            let! entries =
+                request.HeadIds
+                |> AsyncSeq.ofSeq
+                |> AsyncSeq.mapAsyncParallel(fun id ->
+                    async {
+                        let entry = GetHeadsReply.Types.Entry()
+                        entry.HeadId <- id
+                        let headId = HeadId(id)
+                        match! permissionsService.CheckPermissions(ProtectedId.Head(headId), userId, AccessModel.CanRead) with
+                        | Ok() ->
+                            match! versionControlService.Get(headId) with
+                            | Error(ex) ->
+                                logger.LogError(ex, "Cannot get head")
+                                entry.Status <- GetHeadsReply.Types.Status.Unknown
+                                return entry
+                            | Ok(model) ->
+                                entry.Head <- Converter.Convert(model)
+                                entry.Status <- GetHeadsReply.Types.Status.Ok
+                                return entry
+                        | Error(ex) ->
+                            logger.LogError(ex, "Access denied")
+                            entry.Status <- GetHeadsReply.Types.Status.NoAccess
+                            return entry
+                    }
+                )
+                |> AsyncSeq.toArrayAsync
+
+            reply.Entries.AddRange(entries)
+            return reply
         }
         |> Async.StartAsTask
 

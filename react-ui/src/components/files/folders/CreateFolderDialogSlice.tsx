@@ -36,7 +36,7 @@ const slice = createSlice({
         name: "",
         errorDescription: "",
         error: false,
-        creating: 'succeeded',
+        creating: 'idle',
     } as ICreateFolderDialogState,
     reducers: {
         openCreateFolderDialog: (state) => {

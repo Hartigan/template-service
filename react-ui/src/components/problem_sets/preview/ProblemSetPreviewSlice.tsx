@@ -5,8 +5,9 @@ import { ProtectedItem } from '../../../protobuf/domain_pb';
 import { GetAccessInfoRequest } from '../../../protobuf/permissions_pb';
 import { GetProblemRequest } from '../../../protobuf/problems_pb';
 import { GetProblemSetRequest } from '../../../protobuf/problem_sets_pb';
-import { GetHeadRequest } from '../../../protobuf/version_pb';
 import Services from '../../../Services';
+import { getHead, getSlotsData } from '../../utils/Utils';
+import { ISlotData } from '../SlotsListView';
 
 export interface IProblemSetPreviewState {
     problemSetPreview: {
@@ -16,6 +17,7 @@ export interface IProblemSetPreviewState {
         commit: CommitModel;
         access: AccessModel;
         problemSet: ProblemSetModel;
+        slots: Array<ISlotData>;
     };
     selectedSlot: number | null;
     selectedProblemInSlot: number | null;
@@ -31,16 +33,9 @@ export interface IProblemSetPreviewState {
 export const fetchProblemSet = createAsyncThunk(
     `problem_sets/preview/fetchProblemSet`,
     async (params: { headId: HeadId; }) => {
-        const headRequest = new GetHeadRequest();
-        headRequest.setHeadId(params.headId);
-        const headReply = await Services.versionService.getHead(headRequest);
+        const head = await getHead(Services.versionService, params.headId);
 
-        const headError = headReply.getError();
-        if (headError) {
-            Services.logger.error(headError.getDescription());
-        }
-
-        const commit = headReply.getHead()?.getCommit()?.toObject();
+        const commit = head?.commit;
         if (!commit) {
             return null;
         }
@@ -67,28 +62,23 @@ export const fetchProblemSet = createAsyncThunk(
         accessRequest.setProtecteditemsList([ protectedItem ]);
         const accessReply = await Services.permissionsService.getAccessInfo(accessRequest);
 
+        const slots = await getSlotsData(Services.versionService, problemSet.slotsList);
+
         const access = accessReply.getAccessMap().get(params.headId)?.toObject();
         if (!access) {
             return null;
         }
 
-        return { commit: commit, access: access, problemSet: problemSet };
+        return { commit: commit, access: access, problemSet: problemSet, slots: slots };
     }
 );
 
 export const fetchProblemPreview = createAsyncThunk(
     `problem_sets/preview/fetchProblemPreview`,
     async (params: { headId: HeadId; }) => {
-        const headRequest = new GetHeadRequest();
-        headRequest.setHeadId(params.headId);
-        const headReply = await Services.versionService.getHead(headRequest);
+        const head = await getHead(Services.versionService, params.headId);
 
-        const headError = headReply.getError();
-        if (headError) {
-            Services.logger.error(headError.getDescription());
-        }
-
-        const commit = headReply.getHead()?.getCommit()?.toObject();
+        const commit = head?.commit;
         if (!commit) {
             return null;
         }
@@ -106,6 +96,7 @@ export const fetchProblemPreview = createAsyncThunk(
         if (!problem) {
             return null;
         }
+
         return { headId: params.headId, problem: problem };
     }
 );

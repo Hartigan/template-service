@@ -24,33 +24,40 @@ type FoldersApi(foldersService: IFoldersService,
 
     member private this.GetUserId(context: ServerCallContext) = UserId(context.GetHttpContext().User.FindFirst(ClaimTypes.NameIdentifier).Value)
 
-    override this.GetFolder(request, context) =
+    override this.GetFolders(request, context) =
         async {
             let userId = this.GetUserId(context)
-            let folderId = FolderId(request.FolderId)
-            match! permissionsService.CheckPermissions(ProtectedId.Folder(folderId), userId, AccessModel.CanRead) with
-            | Ok() ->
-                match! foldersService.Get(folderId) with
-                | Error(ex) ->
-                    logger.LogError(ex, "Cannot get folder")
-                    let error = GetFolderReply.Types.Error()
-                    error.Description <- ex.Message
-                    error.Status <- GetFolderReply.Types.Error.Types.Status.Unknown
-                    let reply = GetFolderReply()
-                    reply.Error <- error
-                    return reply
-                | Ok(model) ->
-                    let reply = GetFolderReply()
-                    reply.Folder <- Converter.Convert(model)
-                    return reply
-            | Error(ex) ->
-                logger.LogError(ex, "Access denied")
-                let error = GetFolderReply.Types.Error()
-                error.Description <- ex.Message
-                error.Status <- GetFolderReply.Types.Error.Types.Status.NoAccess
-                let reply = GetFolderReply()
-                reply.Error <- error
-                return reply
+            let reply = GetFoldersReply()
+
+            let! entries =
+                request.FolderIds
+                |> AsyncSeq.ofSeq
+                |> AsyncSeq.mapAsyncParallel(fun id ->
+                    async {
+                        let entry = GetFoldersReply.Types.Entry()
+                        entry.FolderId <- id
+                        let folderId = FolderId(id)
+                        match! permissionsService.CheckPermissions(ProtectedId.Folder(folderId), userId, AccessModel.CanRead) with
+                        | Ok() ->
+                            match! foldersService.Get(folderId) with
+                            | Error(ex) ->
+                                logger.LogError(ex, "Cannot get folder")
+                                entry.Status <- GetFoldersReply.Types.Status.Unknown
+                                return entry
+                            | Ok(model) ->
+                                entry.Folder <- Converter.Convert(model)
+                                entry.Status <- GetFoldersReply.Types.Status.Ok
+                                return entry
+                        | Error(ex) ->
+                            logger.LogError(ex, "Access denied")
+                            entry.Status <- GetFoldersReply.Types.Status.NoAccess
+                            return entry
+                    }
+                )
+                |> AsyncSeq.toArrayAsync
+
+            reply.Entries.AddRange(entries)
+            return reply
         }
         |> Async.StartAsTask
 

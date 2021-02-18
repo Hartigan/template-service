@@ -1,7 +1,7 @@
 import { GlobalSettings } from '../settings/GlobalSettings'
 import { AuthService } from './AuthService';
 import { VersionServiceClient } from '../protobuf/VersionServiceClientPb';
-import { GetCommitReply, GetCommitRequest, GetHeadReply, GetHeadRequest, SearchReply, SearchRequest, UpdateTagsReply, UpdateTagsRequest } from '../protobuf/version_pb';
+import { GetCommitReply, GetCommitRequest, GetHeadsReply, GetHeadsRequest, SearchReply, SearchRequest, UpdateTagsReply, UpdateTagsRequest } from '../protobuf/version_pb';
 import { BaseService } from './BaseService';
 
 export class VersionService extends BaseService<VersionServiceClient> {
@@ -10,8 +10,8 @@ export class VersionService extends BaseService<VersionServiceClient> {
         super(authService, new VersionServiceClient(GlobalSettings.ApiBaseUrl));
     }
 
-    getHead(request: GetHeadRequest) {
-        return this.doCall<GetHeadRequest, GetHeadReply>(this.client.getHead)(request);
+    getHeads(request: GetHeadsRequest) {
+        return this.doCall<GetHeadsRequest, GetHeadsReply>(this.client.getHeads)(request);
     }
 
     getCommit(request: GetCommitRequest) {

@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FolderLinkModel, FolderModel, HeadLinkModel } from '../../../models/domain';
-import { GetFolderRequest, GetRootRequest } from '../../../protobuf/folders_pb';
+import { GetRootRequest } from '../../../protobuf/folders_pb';
 import Services from '../../../Services';
+import { getFolders } from '../../utils/Utils';
 import { IFolderNode } from './FolderView';
 
 export interface IFilesTreeState {
@@ -21,24 +22,8 @@ export function createFileTreeSlice(prefix: string) {
             `files/tree/${prefix}-fetchRoot`,
             async () => {
                 async function getNode(folder: FolderModel) : Promise<IFolderNode> {
-                    const foldersReply = await Promise.all(
-                        folder.foldersList.map(f => {
-                            const request = new GetFolderRequest();
-                            request.setFolderId(f.id)
-                            return Services.foldersService.getFolder(request);
-                        })
-                    );
-
-                    const folders = foldersReply.flatMap(reply => {
-                        const error = reply.getError();
-                        if (error) {
-                            Services.logger.error(error.getDescription());
-                        }
-
-                        const folder = reply.getFolder()?.toObject();
-                        return folder ? [ folder ] : [];
-                    });
-
+                    const foldersIds = folder.foldersList.map(f => f.id);
+                    const folders = foldersIds.length === 0 ? [] : await getFolders(Services.foldersService, foldersIds);
                     const foldersNodes = await Promise.all(folders.map(f => getNode(f)));
                     return {
                         folder: {

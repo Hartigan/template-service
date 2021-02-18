@@ -1,10 +1,11 @@
 import { makeStyles, TextField, Button, List, ListItem, FormControl, Grid, Box } from "@material-ui/core";
 import React, { useEffect } from "react";
 import ProblemPreview from "../ProblemPreview";
-import SlotsListView from "../SlotsListView";
+import SlotsListView, { ISlotData } from "../SlotsListView";
 import DurationInput from "../DurationInput";
 import { HeadId } from "../../../models/Identificators";
-import { ProblemModel, ProblemSetModel } from "../../../models/domain";
+import { HeadModel, ProblemModel, ProblemSetModel } from "../../../models/domain";
+import { ProblemSet } from "../../../protobuf/domain_pb";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -42,16 +43,44 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+
+export type SlotsDelta = {
+    type: "add_slot";
+    index: number;
+} | {
+    type: "remove_slot";
+    index: number;
+} | {
+    type: "add_problem";
+    index: number;
+    problemIndex: number;
+} | {
+    type: "remove_problem";
+    index: number;
+    problemIndex: number;
+};
+
 export interface IProblemSetEditorActions {
     onUpdate(problemSet: ProblemSetModel): void;
+    initSlots(slotsList: Array<ProblemSet.Slot.AsObject>): void;
     fetchAddPreview(headId: HeadId): void;
     fetchRemovePreview(headId: HeadId): void;
+    addSlot(slotIndex: number): void;
+    addProblemIntoSlot(slotIndex: number, problemIndex: number, head: HeadModel): void;
+    removeSlot(slotIndex: number): void;
+    removeProblemFromSlot(slotIndex: number, problemIndex: number): void;
     selectSlot(pos: number): void;
     selectProblemInSlot(slot: number, problem: number): void;
 };
 
 export interface IProblemSetEditorParameters {
     problemSet: ProblemSetModel;
+    slots: {
+        loading: 'idle' | 'pending' | 'failed';
+    } | {
+        loading: 'succeeded';
+        data: Array<ISlotData>;
+    };
     selectedAddProblem: HeadId | null;
     problemsTree: JSX.Element;
     selectedSlot: number | null;
@@ -60,14 +89,14 @@ export interface IProblemSetEditorParameters {
         loading: 'idle' | 'pending' | 'failed';
     } | {
         loading: 'succeeded';
-        headId: HeadId;
+        head: HeadModel;
         problem: ProblemModel;
     };
     removePreview: {
         loading: 'idle' | 'pending' | 'failed';
     } | {
         loading: 'succeeded';
-        headId: HeadId;
+        head: HeadModel;
         problem: ProblemModel;
     };
 };
@@ -77,8 +106,13 @@ export interface IProblemSetEditorProps extends IProblemSetEditorActions, IProbl
 
 export default function ProblemSetEditor(props: IProblemSetEditorProps) {
     useEffect(() => {
+
+        if (props.slots.loading === 'idle') {
+            props.initSlots(props.problemSet.slotsList);
+        }
+
         if (props.addPreview.loading === 'idle' ||
-            (props.addPreview.loading === 'succeeded' && props.addPreview.headId !== props.selectedAddProblem)) {
+            (props.addPreview.loading === 'succeeded' && props.addPreview.head.id !== props.selectedAddProblem)) {
             if (props.selectedAddProblem) {
                 props.fetchAddPreview(props.selectedAddProblem);
             }
@@ -93,7 +127,7 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                     ?? null;
             if (headId) {
                 if (props.removePreview.loading === 'idle' ||
-                    (props.removePreview.loading === 'succeeded' && props.removePreview.headId !== headId)) {
+                    (props.removePreview.loading === 'succeeded' && props.removePreview.head.id !== headId)) {
                     props.fetchAddPreview(headId);
                 }
             }
@@ -128,6 +162,8 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
 
         slots.splice(pos, 0, newSlot);
 
+        props.addSlot(pos);
+
         props.onUpdate({
             ...props.problemSet,
             slotsList: slots
@@ -138,6 +174,8 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
         const slots = [...props.problemSet.slotsList];
         slots.splice(index, 1);
 
+        props.removeSlot(index);
+
         props.onUpdate({
             ...props.problemSet,
             slotsList: slots
@@ -145,13 +183,15 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
     };
 
     const onAdd = () => {
-        if (props.selectedAddProblem && props.selectedSlot !== null) {
+        if (props.selectedAddProblem && props.selectedSlot !== null && props.addPreview.loading === "succeeded") {
             const slots = [...props.problemSet.slotsList];
             const slot = slots[props.selectedSlot];
             slots[props.selectedSlot] = {
                 ...slot,
                 headIdsList: slot.headIdsList.concat([ props.selectedAddProblem ])
             };
+
+            props.addProblemIntoSlot(props.selectedSlot, slot.headIdsList.length, props.addPreview.head);
 
             props.onUpdate({
                 ...props.problemSet,
@@ -169,6 +209,9 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
             ...props.problemSet.slotsList[slotIndex],
             headIdsList: headIds
         };
+
+        props.removeProblemFromSlot(slotIndex, index);
+
         props.onUpdate({
             ...props.problemSet,
             slotsList: slots
@@ -245,7 +288,7 @@ export default function ProblemSetEditor(props: IProblemSetEditorProps) {
                     <Grid container className={classes.container}>
                         <Grid item className={classes.list}>
                             <SlotsListView
-                                slots={props.problemSet.slotsList}
+                                slots={props.slots.loading === "succeeded" ? props.slots.data : []}
                                 selectedSlot={props.selectedSlot}
                                 selectedProblemInSlot={props.selectedProblemInSlot}
                                 onRemoveProblem={onRemove}
