@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build csharp-generator
-      run: docker build . --file ./docker/Release/CSharpGenerator.Dockerfile --tag ts-csharp-generator:$(date +%s)
+      run: docker build . --file ./docker/Release/CSharpGenerator.Dockerfile --tag ts-csharp-generator:${GITHUB_SHA::6}
