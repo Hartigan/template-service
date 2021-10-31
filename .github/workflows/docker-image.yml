@@ -27,10 +27,28 @@ jobs:
       uses: docker/setup-buildx-action@v1
     
     - name: Build and push csharp-generator
-      id: docker_build
+      id: docker_build_csharp_generator
       uses: docker/build-push-action@v2
       with:
         context: ./
         file: ./docker/Release/CSharpGenerator.Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-csharp-generator:${{ github.sha }}
+        
+    - name: Build and push web-api
+      id: docker_build_web_api
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./docker/Release/WebApi.Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-web-api:${{ github.sha }}
+        
+    - name: Build and push react-ui
+      id: docker_build_react_ui
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./docker/Release/ReactUI.Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-web-api:${{ github.sha }}
