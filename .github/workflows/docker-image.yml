@@ -33,4 +33,4 @@ jobs:
         context: ./
         file: ./docker/Release/CSharpGenerator.Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-csharp-generator:${GITHUB_SHA::6}
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-csharp-generator:${{ github.sha }}
