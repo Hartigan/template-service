@@ -23,14 +23,14 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
+      id: buildx
+      uses: docker/setup-buildx-action@v1
     
     - name: Build and push csharp-generator
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./docker/Release/CSharpGenerator.Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-csharp-generator:${GITHUB_SHA::6}
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./docker/Release/CSharpGenerator.Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-csharp-generator:${GITHUB_SHA::6}
