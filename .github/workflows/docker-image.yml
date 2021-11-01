@@ -51,4 +51,4 @@ jobs:
         context: ./react-ui
         file: ./docker/Release/ReactUI.Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-web-api:${{ github.sha }}
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ts-react-ui:${{ github.sha }}
