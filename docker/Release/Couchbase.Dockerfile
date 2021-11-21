@@ -1,4 +1,4 @@
-FROM couchbase:6.5.1
+FROM couchbase:7.0.2
 
 COPY setup_couchbase.sh /opt/couchbase/
 
