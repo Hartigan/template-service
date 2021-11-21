@@ -7,8 +7,6 @@ services:
     build:
       context: ./../..
       dockerfile: ./docker/Release/CSharpGenerator.Dockerfile
-    ports:
-    - "80"
     networks:
       default:
         ipv4_address: 10.5.0.2
@@ -21,8 +19,6 @@ services:
       dockerfile: ./docker/Release/WebApi.Dockerfile
     volumes:
     - ./appsettings.json:/app/appsettings.json:ro
-    ports:
-    - "80"
     links:
     - db:database
     - keycloak-server:auth-server
@@ -53,8 +49,6 @@ services:
     build:
       context: ./../../react-ui
       dockerfile: ./../docker/Release/ReactUI.Dockerfile
-    ports:
-    - "80"
     networks:
       default:
         ipv4_address: 10.5.0.6
@@ -79,8 +73,6 @@ services:
     image: grafana/grafana
     container_name: grafana
     restart: always
-    ports:
-    - 3000:3000
     volumes:
     - grafana-volume:/vol01/Docker/monitoring
     links:
@@ -92,8 +84,6 @@ services:
     image: influxdb
     container_name: influxdb
     restart: always
-    ports:
-    - 8086:8086
     volumes:
     - influxdb-volume:/vol01/Docker/monitoring
     environment:
@@ -130,7 +120,7 @@ services:
       default:
         ipv4_address: 10.5.0.10
   postgres-server:
-    image: "postgres"
+    image: "postgres:14"
     container_name: "user-db"
     restart: always
     volumes:
@@ -143,7 +133,7 @@ services:
       default:
         ipv4_address: 10.5.0.11
   keycloak-server:
-    image: "quay.io/keycloak/keycloak:latest"
+    image: "quay.io/keycloak/keycloak:15.0.2"
     container_name: "auth-service"
     restart: always
     environment:
@@ -153,8 +143,9 @@ services:
       DB_USER: keycloak
       DB_SCHEMA: public
       DB_PASSWORD: password
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: Pa55w0rd
+      PROXY_ADDRESS_FORWARDING: "true"
+      #KEYCLOAK_USER: admin
+      #KEYCLOAK_PASSWORD: Pa55w0rd
     command: -b 0.0.0.0 -Djboss.http.port=8080 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/prod-realm.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
     volumes:
     - ./prod-realm.json:/tmp/prod-realm.json:ro
